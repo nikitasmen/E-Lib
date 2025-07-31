@@ -8,6 +8,140 @@ E-Lib is a PHP-based web application designed for managing and accessing a digit
 
 The application features a modular architecture with separate routes for web pages and API endpoints, allowing for a clean separation of concerns and easy extensibility.
 
+## 🚀 Installation Guide
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- **PHP 8.0 or higher** with the following extensions:
+  - OpenSSL
+  - MongoDB
+  - JSON
+  - Fileinfo
+  - Ctype
+  - PDO (if using SQL database in the future)
+- **Composer** (PHP package manager)
+- **MongoDB Server** (version 4.4 or later)
+- **Web Server** (Apache/Nginx with mod_rewrite enabled)
+- **Node.js** (for frontend assets compilation)
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/e-lib.git
+cd e-lib
+```
+
+### Step 2: Install Dependencies
+
+1. Install PHP dependencies:
+   ```bash
+   composer install
+   ```
+
+2. Install frontend dependencies (if applicable):
+   ```bash
+   npm install
+   npm run build
+   ```
+
+### Step 3: Configure Environment
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Generate application key:
+   ```bash
+   php -r "file_put_contents('.env', str_replace('your_jwt_secret_key_here', bin2hex(random_bytes(32)), file_get_contents('.env')));"
+   ```
+
+3. Edit the `.env` file with your configuration:
+   ```env
+   # Database Configuration
+   DB_CONNECTION=mongo
+   DB_HOST=localhost
+   DB_PORT=27017
+   DB_DATABASE=e_lib
+   
+   # JWT Configuration
+   JWT_SECRET=your_secure_jwt_secret
+   
+   # Application URL
+   APP_URL=http://localhost:8000
+   
+   # Email Configuration (for notifications and support)
+   MAIL_MAILER=smtp
+   MAIL_HOST=smtp.mailtrap.io
+   MAIL_PORT=2525
+   MAIL_USERNAME=your_username
+   MAIL_PASSWORD=your_password
+   MAIL_ENCRYPTION=tls
+   MAIL_FROM_ADDRESS=hello@example.com
+   MAIL_FROM_NAME="${APP_NAME}"
+   ```
+
+### Step 4: Database Setup
+
+1. Ensure MongoDB is running
+2. Import sample data (if available):
+   ```bash
+   mongorestore --db e_lib database/dumps/e_lib
+   ```
+   Or create the database manually.
+
+
+### Step 5: Run the Application
+
+#### For Development:
+```bash
+php -S localhost:8000 -t public
+```
+
+#### For Production:
+1. Configure your web server (Apache/Nginx) to point to the `public` directory
+2. Set up proper SSL certificates
+3. Configure your web server's document root to `/path/to/e-lib/public`
+
+### Step 6: Access the Application
+
+Open your browser and visit:
+- Frontend: `http://localhost:8000`
+- Admin Panel: `http://localhost:8000/admin` (if applicable)
+
+Default admin credentials (if applicable):
+- Email: admin@example.com
+- Password: password
+
+## 🔧 Troubleshooting
+
+- **MongoDB Connection Issues**:
+  - Ensure MongoDB service is running
+  - Check connection string in `.env`
+  - Verify database credentials and permissions
+
+- **File Permissions**:
+  - Ensure storage and bootstrap/cache directories are writable
+  - Run `composer dump-autoload` if class not found errors occur
+
+- **Environment Variables**:
+  - Clear configuration cache: `php artisan config:clear`
+  - Ensure `.env` file exists and is properly formatted
+
+## 🔄 Updating
+
+To update to the latest version:
+
+```bash
+git pull origin main
+composer install
+php artisan migrate
+npm install
+npm run build
+```
+
 ## Key Features
 
 - **Book Management**: Add, edit, search, and remove books from the library
