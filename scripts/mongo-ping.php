@@ -1,9 +1,11 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * CLI: same Mongo path as the web app (MongoConnectionFactory).
  * Usage: php scripts/mongo-ping.php
  */
+
 $root = dirname(__DIR__);
 require_once $root . '/vendor/autoload.php';
 

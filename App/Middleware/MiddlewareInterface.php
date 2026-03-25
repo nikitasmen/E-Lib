@@ -1,8 +1,10 @@
 <?php
+
 // filepath: /Users/hub/Documents/Personal/GenCode/E-Lib/App/Middleware/MiddlewareInterface.php
 namespace App\Middleware;
 
-interface MiddlewareInterface {
+interface MiddlewareInterface
+{
     /**
      * Process the request and either pass to the next middleware or return a response
      *

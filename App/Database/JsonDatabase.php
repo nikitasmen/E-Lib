@@ -1,28 +1,30 @@
 <?php
+
 namespace App\Database;
 
 use App\Integration\Database\JsonDbInteraction;
 use Exception;
 
-class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
+class JsonDatabase extends JsonDbInteraction implements DatabaseInterface
+{
     /**
      * @var string Storage directory path
      */
     protected $storageDir;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string|null $storageDir Optional custom storage directory
      */
     public function __construct($storageDir = null)
     {
-        $this->storageDir = self::initialize($storageDir);    
+        $this->storageDir = self::initialize($storageDir);
     }
-    
+
     /**
      * Insert a document into a collection
-     * 
+     *
      * @param string $collection Collection name
      * @param array $data Document data
      * @return array Result with insertedId
@@ -39,13 +41,13 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
                     $data['_id'] = substr(md5(uniqid(rand(), true)), 0, 24);
                 }
             }
-            
+
             // Load existing collection data
             $collectionData = self::loadCollection($collection);
-            
+
             // Add the new document
             $collectionData[] = $data;
-            
+
             // Save the updated collection
             if (self::saveCollection($collection, $collectionData)) {
                 return ['insertedId' => $data['_id']];
@@ -57,10 +59,10 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
             return ['error' => $e->getMessage()];
         }
     }
-    
+
     /**
      * Find documents in a collection
-     * 
+     *
      * @param string $collection Collection name
      * @param array $filter Filter criteria
      * @return array Found documents
@@ -70,27 +72,27 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
         try {
             // Load collection data
             $collectionData = self::loadCollection($collection);
-            
+
             // Filter documents
             if (empty($filter)) {
                 return $collectionData;
             }
-            
+
             // Apply filters
-            $results = array_filter($collectionData, function($document) use ($filter) {
+            $results = array_filter($collectionData, function ($document) use ($filter) {
                 return $this->matchesFilter($document, $filter);
             });
-            
+
             return array_values($results); // Reset array keys
         } catch (Exception $e) {
             echo("JsonDatabase Find Error: " . $e->getMessage());
             return [];
         }
     }
-    
+
     /**
      * Find a single document in a collection
-     * 
+     *
      * @param string $collection Collection name
      * @param array $filter Filter criteria
      * @return array|null Found document or null
@@ -100,24 +102,24 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
         try {
             // Load collection data
             $collectionData = self::loadCollection($collection);
-            
+
             // Find first matching document
             foreach ($collectionData as $document) {
                 if ($this->matchesFilter($document, $filter)) {
                     return $document;
                 }
             }
-            
+
             return null;
         } catch (Exception $e) {
             echo("JsonDatabase FindOne Error: " . $e->getMessage());
             return null;
         }
     }
-    
+
     /**
      * Update documents in a collection
-     * 
+     *
      * @param string $collection Collection name
      * @param array $filter Filter criteria
      * @param array $update Update data
@@ -128,10 +130,10 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
         try {
             // Load collection data
             $collectionData = self::loadCollection($collection);
-            
+
             // Track modified count
             $modifiedCount = 0;
-            
+
             // Update matching documents
             foreach ($collectionData as &$document) {
                 if ($this->matchesFilter($document, $filter)) {
@@ -142,22 +144,22 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
                     $modifiedCount++;
                 }
             }
-            
+
             // Save the updated collection if any documents were modified
             if ($modifiedCount > 0) {
                 self::saveCollection($collection, $collectionData);
             }
-            
+
             return ['modifiedCount' => $modifiedCount];
         } catch (Exception $e) {
             echo("JsonDatabase Update Error: " . $e->getMessage());
             return ['error' => $e->getMessage()];
         }
     }
-    
+
     /**
      * Delete documents from a collection
-     * 
+     *
      * @param string $collection Collection name
      * @param array $filter Filter criteria
      * @return array Result with deletedCount
@@ -167,10 +169,10 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
         try {
             // Load collection data
             $collectionData = self::loadCollection($collection);
-            
+
             // Keep track of original count to calculate deleted count
             $originalCount = count($collectionData);
-            
+
             // Filter out documents that match the criteria
             $newCollectionData = [];
             foreach ($collectionData as $document) {
@@ -178,25 +180,25 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
                     $newCollectionData[] = $document;
                 }
             }
-            
+
             // Calculate deleted count
             $deletedCount = $originalCount - count($newCollectionData);
-            
+
             // Save the updated collection if any documents were deleted
             if ($deletedCount > 0) {
                 self::saveCollection($collection, $newCollectionData);
             }
-            
+
             return ['deletedCount' => $deletedCount];
         } catch (Exception $e) {
             echo("JsonDatabase Delete Error: " . $e->getMessage());
             return ['error' => $e->getMessage()];
         }
     }
-    
+
     /**
      * Check if a document matches a filter
-     * 
+     *
      * @param array $document Document to check
      * @param array $filter Filter criteria
      * @return bool True if document matches filter
@@ -206,7 +208,7 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
         if (empty($filter)) {
             return true;
         }
-        
+
         foreach ($filter as $key => $value) {
             // Handle ObjectId comparison
             if ($value instanceof \MongoDB\BSON\ObjectId) {
@@ -217,7 +219,7 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
             if (strpos($key, '.') !== false) {
                 $parts = explode('.', $key);
                 $current = $document;
-                
+
                 // Navigate to the nested value
                 foreach ($parts as $part) {
                     if (!isset($current[$part])) {
@@ -225,7 +227,7 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
                     }
                     $current = $current[$part];
                 }
-                
+
                 if ($current !== $value) {
                     return false;
                 }
@@ -236,11 +238,11 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
                 }
             }
         }
-        
+
         return true;
     }
 
-    
+
     public function aggregate(string $collection, array $pipeline): array
     {
         // Not implemented for JSON database

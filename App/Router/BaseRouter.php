@@ -1,11 +1,13 @@
 <?php
+
 namespace App\Router;
 
 use App\Router\ApiRouter;
 use App\Router\PageRouter;
 use App\Middleware\MiddlewareManager;
 
-class BaseRouter {
+class BaseRouter
+{
     private $apiRouter;
     private $pageRouter;
     private $baseUrl;
@@ -13,7 +15,7 @@ class BaseRouter {
 
     /**
      * Constructor
-     * 
+     *
      * @param string $baseUrl Base URL for the application
      */
     public function __construct($baseUrl = '')
@@ -30,28 +32,30 @@ class BaseRouter {
      * @param \App\Middleware\MiddlewareInterface $middleware
      * @return $this
      */
-    public function addMiddleware($middleware) {
+    public function addMiddleware($middleware)
+    {
         $this->middlewareManager->add($middleware);
         return $this;
     }
 
-    public function handleRequest() {
+    public function handleRequest()
+    {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
         if (strpos($path, $this->baseUrl) === 0) {
             $path = substr($path, strlen($this->baseUrl));
         }
-        
+
         // Create request array for middleware
         $request = [
             'method' => $method,
             'path' => $path,
             'isApi' => strpos($path, '/api') === 0
         ];
-        
+
         // Run middleware stack with appropriate router as final handler
-        $this->middlewareManager->run($request, function($request) {
+        $this->middlewareManager->run($request, function ($request) {
             if ($request['isApi']) {
                 $this->apiRouter->handleRequest($request['method'], $request['path']);
             } else {
@@ -60,4 +64,3 @@ class BaseRouter {
         });
     }
 }
-

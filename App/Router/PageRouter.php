@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 namespace App\Router;
 
 use App\Controllers\PageController;
@@ -6,21 +7,24 @@ use App\Includes\Environment;
 use App\Includes\ResponseHandler;
 use App\Services\CasService;
 
-// require_once(__DIR__ . '/../../vendor/autoload.php'); 
+// require_once(__DIR__ . '/../../vendor/autoload.php');
 // use Firebase\JWT\JWT;
 // use Firebase\JWT\Key;
 
-class PageRouter { 
+class PageRouter
+{
     private $routes = [];
     private $casService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->defineRoutes();
         $this->casService = new CasService();
         // Remove the setSecurityHeaders call from constructor - will call it at the right time
     }
 
-    private function defineRoutes() { 
+    private function defineRoutes()
+    {
         $this->routes = [
             ['path' => '/index', 'handler' => [new PageController(), 'home']],
             ['path' => '/', 'handler' => [new PageController(), 'home']],
@@ -35,18 +39,19 @@ class PageRouter {
             ['path' => '/signup', 'handler' => [new PageController(), 'home', ['showSignup' => true]]],
             ['path' => '/admin/logs', 'handler' => [new PageController(), 'viewLogs']],
             ['path' => '/docs', 'handler' => [new PageController(), 'docs']],
-        ];            
+        ];
     }
 
-    public function handleRequest($path) {
+    public function handleRequest($path)
+    {
         // Set security headers at the beginning of request handling
         // but only if no output has been sent yet
         if (!headers_sent()) {
             $this->setSecurityHeaders();
         }
-        
+
         $pathOnly = parse_url($path, PHP_URL_PATH);
-        
+
         // CAS login was previously handled on the /login path
         // Now we'll handle it differently
         if (strpos($pathOnly, '/cas-login') === 0) {
@@ -70,19 +75,20 @@ class PageRouter {
             return;
         }
 
-       
-    foreach ($this->routes as $route) {
-        if (preg_match('#^' . $route['path'] . '$#', $pathOnly, $matches)) {
-            call_user_func_array($route['handler'], $matches);
-            return;
-        }
-    }
-        
-        $pageController = new PageController();
-        $pageController->error();    
-    }    
 
-    private function setSecurityHeaders() {
+        foreach ($this->routes as $route) {
+            if (preg_match('#^' . $route['path'] . '$#', $pathOnly, $matches)) {
+                call_user_func_array($route['handler'], $matches);
+                return;
+            }
+        }
+
+        $pageController = new PageController();
+        $pageController->error();
+    }
+
+    private function setSecurityHeaders()
+    {
         // Security headers
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
@@ -102,13 +108,13 @@ class PageRouter {
             . "connect-src {$connectSrc}; "
             . "worker-src 'self' blob: https://cdnjs.cloudflare.com;"
         );
-    
+
         // Remove content-type JSON header since this is for HTML pages
         // Only set CORS headers
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization');
-        
+
         // Don't set Content-Type header here as it should be different for HTML vs JSON responses
     }
 

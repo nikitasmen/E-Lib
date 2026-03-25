@@ -1,23 +1,27 @@
 <?php
+
 // filepath: /Users/hub/Documents/Personal/GenCode/app/Services/CasService.php
 namespace App\Services;
 
 use App\Includes\Environment;
 
-class CasService {
+class CasService
+{
     private $casServerUrl;
     private $httpClient;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->casServerUrl = Environment::get('CAS_SERVER_URL', 'https://cas-server.example.org/cas');
-        
+
         // Try to use Guzzle if available, otherwise use a simple fallback
         if (class_exists('\GuzzleHttp\Client')) {
             $this->httpClient = new \GuzzleHttp\Client();
         }
     }
 
-    public function authenticate($ticket, $serviceUrl) {
+    public function authenticate($ticket, $serviceUrl)
+    {
         try {
             if ($this->httpClient) {
                 // Use Guzzle client
@@ -37,13 +41,13 @@ class CasService {
                     return false;
                 }
             }
-            
+
             // Process the CAS server response
             $lines = explode("\n", trim($body));
             if (count($lines) >= 1 && strtolower(trim($lines[0])) === 'yes') {
-                return true; 
+                return true;
             }
-            
+
             return false;
         } catch (\Exception $e) {
             echo("CAS authentication error: " . $e->getMessage());

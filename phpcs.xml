@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<ruleset name="E-Lib">
+    <description>PHP_CodeSniffer — PSR-12 for application code (views excluded).</description>
+
+    <file>App</file>
+    <file>public/index.php</file>
+    <file>setup-mongodb-cert.php</file>
+    <file>docker-entrypoint.php</file>
+    <file>check-system.php</file>
+    <file>scripts</file>
+
+    <exclude-pattern>*/Views/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <config name="ignore_warnings_on_exit" value="1"/>
+
+    <rule ref="PSR12"/>
+
+    <!-- Entry/bootstrap scripts mix declarations and side effects by design -->
+    <rule ref="PSR1.Files.SideEffects">
+        <exclude-pattern>App/bootstrap.php</exclude-pattern>
+        <exclude-pattern>public/index.php</exclude-pattern>
+        <exclude-pattern>setup-mongodb-cert.php</exclude-pattern>
+        <exclude-pattern>docker-entrypoint.php</exclude-pattern>
+        <exclude-pattern>check-system.php</exclude-pattern>
+    </rule>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="140"/>
+            <property name="absoluteLineLimit" value="220"/>
+        </properties>
+    </rule>
+</ruleset>

@@ -1,14 +1,16 @@
 <?php
+
 /**
  * Docker Entrypoint Script
- * 
+ *
  * This script runs when the Docker container starts,
  * handling any necessary setup/configuration before
  * starting the Apache server.
  */
 
 // Output function that works in CLI or browser
-function output($message) {
+function output($message)
+{
     echo $message . PHP_EOL;
 }
 
@@ -49,11 +51,11 @@ $certFile = __DIR__ . '/certificates/mongodb-ca.pem';
 // Verify certificate and try to fix if needed
 if (!file_exists($certFile) || filesize($certFile) < 100) {
     output('MongoDB certificate is missing or invalid, attempting to fix...');
-    
+
     // Try to run the cert setup script
     output('Running MongoDB certificate setup script...');
     include_once __DIR__ . '/setup-mongodb-cert.php';
-    
+
     // Double-check that the certificate now exists
     if (!file_exists($certFile) || filesize($certFile) < 100) {
         output('WARNING: MongoDB certificate still unavailable after setup attempts');

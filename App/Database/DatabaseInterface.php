@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Database;
 
-interface DatabaseInterface {
+interface DatabaseInterface
+{
     public function insert(string $collection, array $data): array;
     public function find(string $collection, array $filter = []): array;
     public function findOne(string $collection, array $filter = []);
