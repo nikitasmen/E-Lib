@@ -7,10 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles/add_book.css">
-    <link rel="stylesheet" href="/styles/home.css"> 
+    <link rel="stylesheet" href="/styles/home.css">
+    <link rel="stylesheet" href="/assets/css/MultiSelect.css">
 
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100 add-book-body">
 
     <?php
         include 'Partials/Header.php';

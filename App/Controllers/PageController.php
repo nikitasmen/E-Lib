@@ -52,7 +52,9 @@ class PageController
 
     public function addBookForm()
     {
-        $this->response->renderView(__DIR__ . '/../Views/add_book.php');
+        $this->response->renderView(__DIR__ . '/../Views/add_book.php', [
+            'activePage' => 'add',
+        ]);
     }
 
     public function readBook($path = null, $id = null)

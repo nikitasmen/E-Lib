@@ -4,6 +4,63 @@ body {
     min-height: 100vh;
 }
 
+/* Site header — matches footer slate (#2c3e50) and primary CTAs */
+.site-navbar {
+    background-color: #2c3e50 !important;
+    z-index: 1030;
+}
+
+.site-navbar-brand-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffc107;
+    font-size: 1.1rem;
+}
+
+.site-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.88) !important;
+    border-radius: 0.375rem;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.site-navbar .nav-link:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.site-navbar .nav-link.active {
+    color: #fff !important;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.site-navbar-search-group {
+    min-width: 0;
+    max-width: 16rem;
+}
+
+@media (min-width: 992px) {
+    .site-navbar-search-group {
+        min-width: 14rem;
+    }
+}
+
+.site-navbar-search {
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.site-navbar-search:focus {
+    box-shadow: none !important;
+    outline: 2px solid rgba(13, 110, 253, 0.45);
+    outline-offset: 0;
+}
+
+.site-footer {
+    background-color: #2c3e50;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .login-container {
     background: white;
     padding: 40px;

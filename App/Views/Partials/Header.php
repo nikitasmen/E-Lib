@@ -20,32 +20,35 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['username'])) {
 }
 ?>
 <link rel="stylesheet" href="/styles/userForm.css">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+<nav class="navbar site-navbar navbar-expand-lg navbar-dark shadow-sm sticky-top border-bottom border-light border-opacity-10">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/">
-            <i class="fas fa-book-open me-2"></i>Epictetus Library
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+            <span class="site-navbar-brand-icon rounded-2 d-inline-flex align-items-center justify-content-center">
+                <i class="fas fa-book-open"></i>
+            </span>
+            <span>Epictetus Library</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>" href="/">Home</a>
+                    <a class="nav-link px-lg-3 <?= $activePage === 'home' ? 'active' : '' ?>" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $activePage === 'books' ? 'active' : '' ?>" href="/view-books">Books</a>
+                    <a class="nav-link px-lg-3 <?= $activePage === 'books' ? 'active' : '' ?>" href="/view-books">Books</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $activePage === 'add' ? 'active' : '' ?>" href="/add-book">Add Book</a>
+                    <a class="nav-link px-lg-3 <?= $activePage === 'add' ? 'active' : '' ?>" href="/add-book">Add Book</a>
                 </li>
             </ul>
 
-            <form class="d-flex me-3" id="searchForm" action="<?= htmlspecialchars($searchUrl) ?>" method="GET">
-                <div class="input-group">
-                    <input type="search" name="title" id="bookToSearch" class="form-control" 
-                           placeholder="Search titles..." aria-label="Search">
-                    <button type="submit" class="btn btn-success">
+            <form class="d-flex me-lg-3 mb-2 mb-lg-0" id="searchForm" action="<?= htmlspecialchars($searchUrl) ?>" method="GET">
+                <div class="input-group site-navbar-search-group">
+                    <input type="search" name="title" id="bookToSearch" class="form-control border-0 shadow-none site-navbar-search"
+                           placeholder="Search titles…" aria-label="Search">
+                    <button type="submit" class="btn btn-primary px-3" aria-label="Search">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>

@@ -1,4 +1,4 @@
-<footer class="py-4 mt-auto bg-dark text-light">
+<footer class="site-footer py-4 mt-auto text-light">
     <div class="container">
         <div class="row">
             <!-- Quick Links -->
