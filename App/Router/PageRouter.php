@@ -88,9 +88,20 @@ class PageRouter {
         header('X-Frame-Options: DENY');
         header('X-XSS-Protection: 1; mode=block');
         header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
-        
-        // Updated CSP for icons, Bootstrap, SweetAlert2, etc.
-        header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;");
+
+        $connectSrc = $this->buildConnectSrcDirective();
+
+        // connect-src: fetch/XHR (axios, PDF.js) — default-src alone blocks cross-origin & blob workers
+        // worker-src: PDF.js may use blob workers; worker script from cdnjs
+        header(
+            "Content-Security-Policy: default-src 'self'; "
+            . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            . "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            . "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            . "img-src 'self' data: blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            . "connect-src {$connectSrc}; "
+            . "worker-src 'self' blob: https://cdnjs.cloudflare.com;"
+        );
     
         // Remove content-type JSON header since this is for HTML pages
         // Only set CORS headers
@@ -100,5 +111,42 @@ class PageRouter {
         
         // Don't set Content-Type header here as it should be different for HTML vs JSON responses
     }
-    
+
+    /**
+     * Origins allowed for fetch/XHR (axios, PDF.js). 'self' is the page origin; add CDNs, blob, and
+     * env URLs so localhost vs 127.0.0.1 and API_BASE_URL do not violate connect-src.
+     */
+    private function buildConnectSrcDirective(): string
+    {
+        $parts = [
+            "'self'",
+            'blob:',
+            'data:',
+            'https://cdn.jsdelivr.net',
+            'https://cdnjs.cloudflare.com',
+        ];
+
+        foreach (['APP_URL', 'API_BASE_URL'] as $key) {
+            $raw = Environment::get($key, '');
+            if ($raw === '' || $raw === false) {
+                continue;
+            }
+            $u = parse_url(trim((string) $raw));
+            if (!empty($u['scheme']) && !empty($u['host'])) {
+                $origin = $u['scheme'] . '://' . $u['host'];
+                if (!empty($u['port'])) {
+                    $origin .= ':' . $u['port'];
+                }
+                $parts[] = $origin;
+            }
+        }
+
+        // Dev: page on http://localhost:8000 calling http://127.0.0.1:8000 is cross-origin — allow both
+        $parts[] = 'http://127.0.0.1:*';
+        $parts[] = 'http://localhost:*';
+        $parts[] = 'https://127.0.0.1:*';
+        $parts[] = 'https://localhost:*';
+
+        return implode(' ', array_unique($parts));
+    }
 }

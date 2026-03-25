@@ -180,21 +180,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const dt = e.dataTransfer;
         // Accept multiple file types (PDF, PowerPoint, EPUB, etc.)
         const acceptedFileTypes = [
-            'application/pdf',                          // PDF
-            'application/vnd.ms-powerpoint',            // PPT
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
-            'application/epub+zip',                     // EPUB
-            'application/x-mobipocket-ebook',           // MOBI
-            'application/vnd.amazon.ebook',             // AZW/AZW3
-            'image/vnd.djvu',                           // DJVU
-            'application/msword',                       // DOC
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // DOCX
+            'application/pdf'                          // PDF
         ];
         const files = [...dt.files].filter(file => acceptedFileTypes.includes(file.type) || 
-            /\.(pdf|pptx?|epub|mobi|azw3?|djvu|docx?)$/i.test(file.name));
+            /\.(pdf)$/i.test(file.name));
         
         if (files.length === 0) {
-            Swal.fire('Invalid Files', 'Please select supported document files only.', 'warning');
+            Swal.fire('Invalid Files', 'Please select supported PDF files only.', 'warning');
             return;
         }
         

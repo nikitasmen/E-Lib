@@ -27,6 +27,31 @@ $isGithubActions = getenv('GITHUB_ACTIONS') === 'true';
 $autoloadPath = $projectRoot . '/vendor/autoload.php';
 if (file_exists($autoloadPath)) {
     require_once $autoloadPath;
+} else {
+    die("Composer autoloader not found. Please run 'composer install'");
+}
+
+// Load .env before any code reads MONGO_URI, JWT keys, etc.
+App\Includes\Environment::load($projectRoot . '/.env');
+
+// MongoDB is required; no JSON fallback
+try {
+    App\Repository\DatabaseRepository::getInstance();
+} catch (Throwable $e) {
+    error_log('Database initialization error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+    http_response_code(503);
+    $detail = '';
+    $appDebug = strtolower((string) App\Includes\Environment::get('APP_DEBUG', ''));
+    $debug = in_array($appDebug, ['true', '1', 'yes'], true)
+        || (string) App\Includes\Environment::get('APP_ENV', '') === 'development';
+    if ($debug) {
+        $detail = ' ' . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+    die(
+        'Database error: MongoDB is required but could not be reached. ' .
+        'Verify MONGO_URI placeholders (<db_password> or ${MONGO_PASSWORD}) and MONGO_PASSWORD in .env, Atlas IP allowlist, and DNS. ' .
+        'Run: php scripts/mongo-ping.php. See storage/logs/php_errors.log.' . $detail
+    );
 }
 
 // Define all the required paths
@@ -35,10 +60,8 @@ $requiredFiles = [
     '/App/Router/PageRouter.php',
     '/App/Router/ApiRouter.php',
     '/App/Database/DatabaseInterface.php',
-    '/App/Database/JsonDatabase.php',
     '/App/Database/MongoDatabase.php',
     '/App/Includes/Environment.php',
-    '/App/Integration/Database/JsonDbInteraction.php',
     '/App/Integration/Database/MongoConnectionFactory.php'
 ];
 
@@ -77,8 +100,7 @@ if (!empty($missingFiles)) {
     die();
 }
 
-// Load environment variables before any other code runs
-App\Includes\Environment::load();
+// Environment already loaded above
 
 // Add the new integration folder to the manual includes
 safeRequire($projectRoot . '/App/Integration/Database/MongoConnectionFactory.php');
@@ -90,21 +112,11 @@ if (!class_exists('App\Router\BaseRouter')) {
 
 use App\Includes\SessionManager;
 use App\Router\BaseRouter;
-use App\Integration\Database\MongoConnectionFactory;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\LoggingMiddleware;
 use App\Middleware\JwtAuthMiddleware;
 
 $baseUrl = ''; // Set your base URL here
-
-// Create database connection with built-in fallback
-try {
-    $db = MongoConnectionFactory::create('mongo', [
-        'fallback' => true,  // Enable automatic fallback to JsonDatabase
-    ]);
-} catch (\Exception $e) {
-    die("Critical error: Unable to establish any database connection: " . $e->getMessage());
-}
 
 SessionManager::initialize();
 // Create router with database

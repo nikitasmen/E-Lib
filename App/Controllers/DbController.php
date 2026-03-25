@@ -1,56 +1,82 @@
 <?php
 namespace App\Controllers;
 
-use App\Includes\Environment;
+use App\Factory\DatabaseFactory;
 use Exception;
-use App\Database\JsonDatabase;
-use App\Database\MongoDatabase;
 
+/**
+ * @deprecated Use App\Factory\DatabaseFactory instead
+ * This class is maintained for backward compatibility and delegates all calls
+ * to the DatabaseInterface obtained from DatabaseFactory.
+ */
 class DbController {
     private static $instance = null;
-    private $database;
-    private $databaseName;
+    private $repository;
 
     private function __construct($dbName = null) { 
-    
-        $this->databaseName = $dbName ? $dbName : Environment::get('DB_NAME', 'LibraryDb');   
-        try {
-            $this->database = new MongoDatabase();
-        } catch (Exception $e) {
-            echo("MongoDB Connection Error: " . $e->getMessage());
-            // Create a fallback to JSON files if MongoDB connection fails
-            $this->database = new JsonDatabase();
+        $this->repository = DatabaseFactory::getDatabase();
+        
+        // Display a deprecation warning in development environments
+        if (getenv('APP_ENV') !== 'production') {
+            trigger_error(
+                'DbController is deprecated. Use App\Repository\DatabaseRepository instead.',
+                E_USER_DEPRECATED
+            );
         }
     }
 
-    public static function getInstance() {
+    /**
+     * Get singleton instance
+     *
+     * @param string|null $dbName Optional database name
+     * @return DbController
+     */
+    public static function getInstance($dbName = null) {
         if (self::$instance === null) {
-            self::$instance = new self();
+            self::$instance = new self($dbName);
         }
         return self::$instance;
     }
 
+    /**
+     * @deprecated Use DatabaseRepository::insert instead
+     */
     public function insert(string $collection, array $data): array {
-        return $this->database->insert($collection, $data);
+        return $this->repository->insert($collection, $data);
     }
 
+    /**
+     * @deprecated Use DatabaseRepository::find instead
+     */
     public function find(string $collection, array $filter = []): array {
-        return $this->database->find($collection, $filter);
+        return $this->repository->find($collection, $filter);
     }
 
+    /**
+     * @deprecated Use DatabaseRepository::findOne instead
+     */
     public function findOne(string $collection, array $filter = []) {
-        return $this->database->findOne($collection, $filter);
+        return $this->repository->findOne($collection, $filter);
     }
 
+    /**
+     * @deprecated Use DatabaseRepository::update instead
+     */
     public function update(string $collection, array $filter, array $update): array {
-        return $this->database->update($collection, $filter, $update);
+        return $this->repository->update($collection, $filter, $update);
     }
 
+    /**
+     * @deprecated Use DatabaseRepository::delete instead
+     */
     public function delete(string $collection, array $filter): array {
-        return $this->database->delete($collection, $filter);
+        return $this->repository->delete($collection, $filter);
     }
 
+    /**
+     * @deprecated Use DatabaseRepository::aggregate instead
+     */
     public function getFeatured(string $collection, $pipeline): array {
-        return $this->database->aggregate($collection, $pipeline);
+        return $this->repository->aggregate($collection, $pipeline);
     }
 }

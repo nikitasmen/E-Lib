@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Services\BookService; 
 use App\Includes\ResponseHandler;
 use App\Helpers\FileHelper;
+use App\Helpers\BookDisplayHelper;
 
 class BookController {
     private $bookService;
@@ -19,7 +20,9 @@ class BookController {
         foreach ($books as &$book) {
             unset($book['pdf_path']);
             unset($book['reviews']);
+            BookDisplayHelper::applyThumbnailForApi($book);
         }
+        unset($book);
         if ($books) {
             $this->response->respond(true, $books);
         } else {
@@ -28,6 +31,15 @@ class BookController {
     }   
 
     public function deleteBook($id) {
+        // Check if user is admin
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+            return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+        }
+
         $response = $this->bookService->deleteBook($id);
         if ($response) {
             return $this->response->respond(true, 'Book deleted successfully');
@@ -37,6 +49,15 @@ class BookController {
     }
 
     public function updateBook($id) {
+        // Check if user is admin
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+            return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+        }
+
         // Read and decode JSON data from request body
         $requestBody = file_get_contents('php://input');
         $data = json_decode($requestBody, true);
@@ -102,7 +123,9 @@ class BookController {
         foreach ($books as &$book) {
             unset($book['pdf_path']);
             unset($book['reviews']);
-        } 
+            BookDisplayHelper::applyThumbnailForApi($book);
+        }
+        unset($book);
         if ($books) {
             return $this->response->respond(true, $books);
         } else {
@@ -112,7 +135,11 @@ class BookController {
 
     public function getAllBooks() {
         $books = $this->bookService->getAllBooks();
-        if ($books) { 
+        if ($books) {
+            foreach ($books as &$book) {
+                BookDisplayHelper::applyThumbnailForApi($book);
+            }
+            unset($book);
             return $this->response->respond(true, $books);
         } else {
             return $this->response->respond(false, 'No books found', 404);
@@ -122,6 +149,7 @@ class BookController {
     public function viewBook($id) {
         $book = $this->bookService->getBookDetails($id);
         if ($book) {
+            BookDisplayHelper::applyThumbnailForApi($book);
             return $this->response->respond(true, $book);
         } else {
             return $this->response->respond(false, 'Book not found', 404);
@@ -131,6 +159,10 @@ class BookController {
     public function searchBooks($search) {
         $books = $this->bookService->searchBooks($search);
         if ($books) {
+            foreach ($books as &$book) {
+                BookDisplayHelper::applyThumbnailForApi($book);
+            }
+            unset($book);
             return $this->response->respond(true, $books);
         } else {
             return $this->response->respond(false, 'No books found', 404);
@@ -138,6 +170,14 @@ class BookController {
     }
     
     public function addBook() {
+        // Check if user is admin
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+            return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+        }
         
         // Extract form data
         $title = $_POST['title'] ?? '';
@@ -159,10 +199,20 @@ class BookController {
             return $this->response->respond(false, 'Book already exists', 400);
         }
       
-        // Check file upload
-        if (!isset($_FILES['bookFile']) || $_FILES['bookFile']['error'] != 0) {
-            error_log("File upload error: " . ($_FILES['bookFile']['error'] ?? 'No file uploaded'));
-            return $this->response->respond(false, 'PDF file upload error', 400);
+        // Check file upload (see https://www.php.net/manual/en/features.file-upload.errors.php)
+        if (!isset($_FILES['bookFile'])) {
+            return $this->response->respond(false, 'No file uploaded (missing bookFile).', 400);
+        }
+        $uploadErr = (int) ($_FILES['bookFile']['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($uploadErr !== UPLOAD_ERR_OK) {
+            $msg = match ($uploadErr) {
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'PDF exceeds server upload size limit (php.ini upload_max_filesize / post_max_size).',
+                UPLOAD_ERR_PARTIAL => 'PDF upload was interrupted.',
+                UPLOAD_ERR_NO_FILE => 'No PDF file was selected.',
+                default => 'PDF file upload error (code ' . $uploadErr . ').',
+            };
+            error_log('bookFile upload error: ' . $uploadErr);
+            return $this->response->respond(false, $msg, 400);
         }
 
         // Initialize FileHelper with temporary path
@@ -177,9 +227,10 @@ class BookController {
         }
         
         error_log("PDF stored successfully at: " . $storedFile['path']);
-        
+
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? (dirname(__DIR__, 2) . '/public');
         // Update the FileHelper with the new stored file path
-        $fileHelper = new FileHelper($_SERVER['DOCUMENT_ROOT'] . $storedFile['path']);
+        $fileHelper = new FileHelper($docRoot . $storedFile['path']);
         
         // Generate thumbnail
         $thumbnailPath = $fileHelper->getThumbnail();
@@ -225,7 +276,8 @@ class BookController {
         $bookService = new BookService();
         $book = $bookService->getBookDetails($bookId);
         
-        if (!$book || empty($book['file_path'])) {
+        $rel = $book['file_path'] ?? $book['pdf_path'] ?? '';
+        if (!$book || $rel === '') {
             header('HTTP/1.0 404 Not Found');
             echo "Book not found or has no PDF";
             exit;
@@ -238,11 +290,8 @@ class BookController {
             exit;
         }
         
-        // Get the absolute path to the PDF file
-        $pdfPath = $_SERVER['DOCUMENT_ROOT'] . $book['file_path'];
-        
-        // Check if file exists and is readable
-        if (!file_exists($pdfPath) || !is_readable($pdfPath)) {
+        $pdfPath = $this->resolveStoredPublicFile($rel);
+        if ($pdfPath === null) {
             header('HTTP/1.0 404 Not Found');
             echo "PDF file not found or not readable";
             exit;
@@ -254,9 +303,9 @@ class BookController {
         // Get the filename for the Content-Disposition header
         $filename = basename($pdfPath);
         if (!empty($book['title'])) {
-            // Create a safe filename based on the book title
             $safeTitle = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $book['title']);
-            $filename = $safeTitle . $book['file_extension'];
+            $ext = isset($book['file_extension']) ? '.' . ltrim((string) $book['file_extension'], '.') : '.pdf';
+            $filename = $safeTitle . $ext;
         }
         
         // Set appropriate headers for file download
@@ -326,6 +375,7 @@ class BookController {
 
     /**
      * Get reviews for a book
+     * @param string $name
      */
     public function getReviews($bookId) {
         if (empty($bookId)) {
@@ -333,10 +383,9 @@ class BookController {
             return;
         }
         
-        $bookService = new BookService();
-        $reviews = $bookService->getBookReviews($bookId);
+        $reviews = $this->bookService->getBookReviews($bookId);
         if($reviews){ 
-            ResponseHandler::respond(true, $reviews, 200, );
+            ResponseHandler::respond(true, $reviews, 200 );
         }else { 
             ResponseHandler::respond(false, 'No reviews found', 404);
         }
@@ -352,8 +401,9 @@ class BookController {
             session_start();
         }
         
-        if (empty($_SESSION['user_id'])) {
-            return $this->response->respond(false, 'Authentication required', 401);
+        // Check if user is admin - utilizing the session data set during login
+        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+            return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
         }
         
         // Validate if files were uploaded
@@ -366,7 +416,6 @@ class BookController {
         $defaultCategories = !empty($_POST['defaultCategories']) ? json_decode($_POST['defaultCategories'], true) : [];
         $defaultStatus = $_POST['defaultStatus'] ?? 'draft';
         $defaultDownloadable = filter_var($_POST['defaultDownloadable'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
-        // Remove the debug echo that corrupts JSON response
         
         // Track upload results
         $results = [
@@ -386,11 +435,14 @@ class BookController {
                 'size' => $_FILES['books']['size'][$i],
             ];
             
-            // Skip invalid files
-            if ($file['error'] !== UPLOAD_ERR_OK || $file['type'] !== 'application/pdf') {
+            // Skip invalid files (MIME is unreliable; extension is authoritative)
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if ($file['error'] !== UPLOAD_ERR_OK || $ext !== 'pdf') {
                 $results['failed'][] = [
                     'filename' => $file['name'],
-                    'reason' => 'Invalid file or not a PDF'
+                    'reason' => $file['error'] !== UPLOAD_ERR_OK
+                        ? 'Upload error code ' . $file['error']
+                        : 'Not a PDF file',
                 ];
                 continue;
             }
@@ -419,42 +471,48 @@ class BookController {
                 $fileHelper = new FileHelper($file['tmp_name']);
                 $pdfPath = $fileHelper->storeFile($file);
                 
-                if (!$pdfPath) {
+                if (!$pdfPath || !is_array($pdfPath)) {
                     $results['failed'][] = [
                         'filename' => $file['name'],
                         'reason' => 'Failed to store PDF'
                     ];
                     continue;
                 }
+
+                $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? (dirname(__DIR__, 2) . '/public');
+                $fileHelper = new FileHelper($docRoot . $pdfPath['path']);
                 
                 // Generate thumbnail
                 $thumbnailPath = $fileHelper->getThumbnail();
                 
                 // Add the book to the database
                 $response = $this->bookService->addBook(
-                    $title, $author, $year, $description, $categories, $isbn,
-                    $pdfPath, $thumbnailPath, $downloadable
+                    $title,
+                    $author,
+                    $year,
+                    $description,
+                    $categories,
+                    $isbn,
+                    $pdfPath['path'],
+                    $thumbnailPath,
+                    $downloadable,
+                    $pdfPath['type'],
+                    $pdfPath['extension']
                 );
                 
                 if ($response) {
                     // If book was added successfully, update its status
                     if ($status !== 'draft') {
-                        // Extract the book ID from the response based on the actual format:
-                        // {"status":"success","data":{"insertedId":"681391ccee67d0f7440d8e5a"}}
+                        // Extract the book ID from the response
                         $bookId = null;
-                        
-                        // Log the exact response format for debugging
-                        error_log("Book creation response: " . (is_string($response) ? $response : json_encode($response)));
                         
                         // Handle specific response format with data.insertedId pattern
                         if (is_array($response) && isset($response['data']) && isset($response['data']['insertedId'])) {
                             $bookId = $response['data']['insertedId'];
-                            error_log("Found bookId in data.insertedId: $bookId");
                         }
-                        // Handle direct string ID (as originally expected)
+                        // Handle direct string ID
                         elseif (is_string($response)) {
                             $bookId = $response;
-                            error_log("Found bookId as direct string: $bookId");
                         }
                         // Handle _id object scenario
                         elseif (is_array($response) && isset($response['_id'])) {
@@ -463,30 +521,20 @@ class BookController {
                             } elseif (is_string($response['_id'])) {
                                 $bookId = $response['_id'];
                             }
-                            error_log("Found bookId in _id field: $bookId");
                         }
                         // Handle direct insertedId at the root level
                         elseif (is_array($response) && isset($response['insertedId'])) {
                             $bookId = $response['insertedId'];
-                            error_log("Found bookId in root insertedId: $bookId");
                         }
                         
                         // Only attempt update if we successfully extracted an ID
-                        if ($bookId) {
-                            error_log("Updating book $bookId to status: $status");
-                            
-                            $updateResult = $this->bookService->updateBook(
+                        if ($bookId) {                            
+                            $this->bookService->updateBook(
                                 $bookId, $title, $author, $year, $description, 
                                 $categories, $status, false, $isbn, $downloadable
                             );
-                            
-                            if ($updateResult) {
-                                error_log("Successfully updated book $bookId status to: $status");
-                            } else {
-                                error_log("Failed to update book $bookId status");
-                            }
                         } else {
-                            error_log("ERROR: Could not extract book ID from response: " . print_r($response, true));
+                            error_log("ERROR: Could not extract book ID from response during mass upload");
                         }
                     }
                     
@@ -556,7 +604,79 @@ class BookController {
         }
     }
 
-    
+    /**
+     * Resolve a web path stored in the DB (e.g. /assets/uploads/documents/...) to a readable absolute path.
+     * Tries DOCUMENT_ROOT, project public/, and the legacy wrong directory from an old FileHelper bug (parent/public).
+     */
+    private function resolveStoredPublicFile(string $relativeWebPath): ?string
+    {
+        $relativeWebPath = '/' . ltrim($relativeWebPath, '/');
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? (dirname(__DIR__, 2) . '/public');
+        $candidates = [
+            $docRoot . $relativeWebPath,
+            dirname(__DIR__, 2) . '/public' . $relativeWebPath,
+            dirname(__DIR__, 3) . '/public' . $relativeWebPath,
+        ];
+        foreach ($candidates as $p) {
+            $real = realpath($p);
+            if ($real !== false && is_readable($real)) {
+                return $real;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Serve cover image; uses the same filesystem resolution as PDFs (fixes legacy wrong upload dirs).
+     * Public (no JWT) — catalog thumbnails are not treated as secrets.
+     */
+    public function streamBookThumbnail($bookId = null) {
+        if (!$bookId || !preg_match('/^[0-9a-f]{24}$/', $bookId)) {
+            http_response_code(400);
+            exit;
+        }
+
+        $book = $this->bookService->getBookDetails($bookId);
+        $rel = '';
+        if ($book) {
+            $rel = $book['thumbnail'] ?? $book['thumbnail_path'] ?? '';
+        }
+        $rel = is_string($rel) ? trim($rel) : '';
+
+        if ($rel !== '' && $book) {
+            $abs = $this->resolveStoredPublicFile($rel);
+            if ($abs !== null) {
+                $this->outputImageFile($abs);
+                exit;
+            }
+        }
+
+        $placeholder = $this->resolveStoredPublicFile('/assets/uploads/thumbnails/placeholder-book.jpg');
+        if ($placeholder !== null) {
+            header('Content-Type: image/jpeg');
+            header('Cache-Control: public, max-age=86400');
+            readfile($placeholder);
+            exit;
+        }
+
+        http_response_code(404);
+        exit;
+    }
+
+    private function outputImageFile(string $absPath): void {
+        $ext = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
+        $map = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+        ];
+        header('Content-Type: ' . ($map[$ext] ?? 'image/jpeg'));
+        header('Cache-Control: public, max-age=86400');
+        readfile($absPath);
+    }
+
     /**
      * Stream book file with secure token
      * 
@@ -576,45 +696,33 @@ class BookController {
         
         // Get book details from database
         $book = $this->bookService->getBookDetails($bookId);
-        error_log("Book details: " . print_r($book, true)); 
 
-        if (!$book || empty($book['file_path'])) {
+        $relativePath = $book['file_path'] ?? $book['pdf_path'] ?? '';
+        if (!$book || $relativePath === '') {
             $this->response->respond(false, 'Book not found or has no file', 404);
             return;
         }
-        
-        // Get the absolute path to the file
-        $filePath = $_SERVER['DOCUMENT_ROOT'] . $book['file_path'];
-        
-        // Check if file exists and is readable
-        if (!file_exists($filePath) || !is_readable($filePath)) {
+
+        $filePath = $this->resolveStoredPublicFile($relativePath);
+        if ($filePath === null) {
             $this->response->respond(false, 'File not found or not accessible', 404);
             return;
         }
         
         // Determine content type based on file extension
-        $contentType = 'application/pdf'; // Default to PDF
-        $fileExtension = isset($book['file_extension']) ? strtolower($book['file_extension']) : 'pdf';
+        $contentType = 'application/pdf'; // Default and forced to PDF
+        $fileExtension = 'pdf';
         
-        switch($fileExtension) {
-            case 'pdf':
-                $contentType = 'application/pdf';
-                break;
-            case 'epub':
-                $contentType = 'application/epub+zip';
-                break;
-            case 'ppt':
-                $contentType = 'application/vnd.ms-powerpoint';
-                break;
-            case 'pptx':
-                $contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-                break;
-            case 'doc':
-                $contentType = 'application/msword';
-                break;
-            case 'docx':
-                $contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-                break;
+        // Ensure we are only serving PDFs
+        $actualExtension = isset($book['file_extension']) ? strtolower($book['file_extension']) : 'pdf';
+        if ($actualExtension !== 'pdf') {
+             // If for some reason a non-PDF is requested (legacy data), we might want to block it or try to serve it as PDF (which might fail in browser but acts as a restriction)
+             // For strict restriction:
+             // $this->response->respond(false, 'Only PDF files are supported', 400);
+             // return;
+             // But existing files might still need to be accessible if we didn't delete them. 
+             // However, the requirement is "Restrict to PDF Only", implying we drop support.
+             // Let's force it to treat everything as PDF or just default to it.
         }
         
         // Generate filename if not provided

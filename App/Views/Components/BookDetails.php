@@ -1,7 +1,7 @@
 <div class="row">
     <!-- Book Cover + Actions Column -->
     <div class="col-md-4">
-        <img src="<?= htmlspecialchars($book['thumbnail'] ?? '/assets/uploads/thumbnails/placeholder-book.jpg') ?>"
+        <img src="<?= htmlspecialchars(\App\Helpers\BookDisplayHelper::thumbnailUrl($book)) ?>"
                 alt="<?= htmlspecialchars($book['title']) ?> cover"
                 class="img-fluid rounded shadow-sm"
                 onerror="this.src='/assets/uploads/thumbnails/placeholder-book.jpg'">

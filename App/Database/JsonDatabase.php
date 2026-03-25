@@ -30,9 +30,14 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
     public function insert(string $collection, array $data): array
     {
         try {
-            // Generate a unique ID if not provided
+            // Generate a unique ID if not provided (24 hex chars to match ObjectId format)
             if (!isset($data['_id'])) {
-                $data['_id'] = uniqid('', true);
+                try {
+                    $data['_id'] = bin2hex(random_bytes(12));
+                } catch (Exception $e) {
+                    // Fallback if random_bytes fails (unlikely)
+                    $data['_id'] = substr(md5(uniqid(rand(), true)), 0, 24);
+                }
             }
             
             // Load existing collection data
@@ -203,6 +208,11 @@ class JsonDatabase extends JsonDbInteraction implements DatabaseInterface {
         }
         
         foreach ($filter as $key => $value) {
+            // Handle ObjectId comparison
+            if ($value instanceof \MongoDB\BSON\ObjectId) {
+                $value = (string)$value;
+            }
+
             // Handle nested paths with dot notation
             if (strpos($key, '.') !== false) {
                 $parts = explode('.', $key);

@@ -108,15 +108,6 @@
                                 </ul>
                             </li>
                             <li>
-                                <strong>Fallback Database (JSON):</strong>
-                                <ul>
-                                    <li>Automatic fallback when MongoDB is unavailable</li>
-                                    <li>File-based storage with JSON serialization</li>
-                                    <li>Implements same DatabaseInterface for seamless switching</li>
-                                    <li>Maintains data persistence during connection issues</li>
-                                </ul>
-                            </li>
-                            <li>
                                 <strong>Connection Factory Pattern:</strong>
                                 <ul>
                                     <li>MongoConnectionFactory for centralized connection management</li>
@@ -142,10 +133,7 @@ interface DatabaseInterface {
     public function delete(string $collection, array $filter): array;
 }
 
-// Implementation automatically falls back to JSON if MongoDB is unavailable
-$db = MongoConnectionFactory::create('mongo', [
-    'fallback' => true,  // Enable automatic fallback to JsonDatabase
-]);</code></pre>
+$db = MongoConnectionFactory::create('mongo', ['dbName' => 'LibraryDb']);</code></pre>
                     </div>
                 </div>
             </div>
