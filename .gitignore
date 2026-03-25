@@ -25,3 +25,7 @@ logs/
 *.pptx
 *.png
 /uploads/
+
+# PHP tooling
+.phpstan.result.cache
+.phpcs-cache
