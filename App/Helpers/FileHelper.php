@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-class FileHelper {
-    
+class FileHelper
+{
     private $filePath;
     private $thumbnailPath;
     private $fileType;
@@ -11,26 +11,28 @@ class FileHelper {
 
     /**
      * Constructor
-     * 
+     *
      * @param string $filePath Path to the document file
      * @param string $thumbnailPath Optional thumbnail path
      */
-    public function __construct($filePath = null, $thumbnailPath = null) {
+    public function __construct($filePath = null, $thumbnailPath = null)
+    {
         $this->filePath = $filePath;
         $this->thumbnailPath = $thumbnailPath;
-        
+
         if ($filePath) {
             $this->detectFileType($filePath);
         }
     }
-    
+
     /**
      * Detect the file type and extension from a file
      */
-    private function detectFileType($filePath) {
+    private function detectFileType($filePath)
+    {
         // Get file extension
         $this->fileExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        
+
         // Determine file type from extension
         if ($this->fileExtension === 'pdf') {
             $this->fileType = 'pdf';
@@ -42,27 +44,29 @@ class FileHelper {
     /**
      * Extracts a thumbnail image from the document
      */
-    public function extractThumbnail($filePath, $outputPath, $format = 'jpg') {
+    public function extractThumbnail($filePath, $outputPath, $format = 'jpg')
+    {
         // If we don't know the file type yet, detect it
         if (empty($this->fileType)) {
             $this->detectFileType($filePath);
         }
-        
+
         // Only support PDF
         if ($this->fileType === 'pdf') {
             return $this->extractPdfThumbnail($filePath, $outputPath, $format);
         }
-        
+
         return $this->useTypePlaceholder($outputPath, $this->fileType);
     }
-    
+
 
 
 
     /**
      * Extract thumbnail from PDF file (Imagick → pdftoppm → GD placeholder).
      */
-    private function extractPdfThumbnail($pdfPath, $outputPath, $format = 'jpg') {
+    private function extractPdfThumbnail($pdfPath, $outputPath, $format = 'jpg')
+    {
         if (!file_exists($pdfPath) || !is_readable($pdfPath)) {
             error_log("PDF file not found or not readable: $pdfPath");
             return $this->useTypePlaceholder($outputPath, 'pdf');
@@ -189,13 +193,14 @@ class FileHelper {
         }
         return false;
     }
-    
 
-    
+
+
     /**
      * Use a placeholder image for the specified file type
      */
-    private function useTypePlaceholder($outputPath, $type = 'generic') {
+    private function useTypePlaceholder($outputPath, $type = 'generic')
+    {
         try {
             // Make sure output directory exists
             $outputDir = dirname($outputPath);
@@ -203,10 +208,10 @@ class FileHelper {
                 error_log("Failed to create directory: $outputDir");
                 return false;
             }
-            
+
             // Determine which placeholder to use based on file type
             $placeholderFile = 'placeholder-book.jpg'; // Default placeholder
-            
+
             switch ($type) {
                 case 'pdf':
                     $placeholderFile = 'placeholder-pdf.jpg';
@@ -215,15 +220,15 @@ class FileHelper {
                     $placeholderFile = 'placeholder-pdf.jpg';
                     break;
             }
-            
+
             // Path to placeholder file
             $placeholderPath = __DIR__ . '/../../public/assets/uploads/thumbnails/' . $placeholderFile;
-            
+
             // If the specific placeholder doesn't exist, fall back to the generic one
             if (!file_exists($placeholderPath)) {
                 $placeholderPath = __DIR__ . '/../../public/assets/uploads/thumbnails/placeholder-book.jpg';
             }
-            
+
             // If even the generic placeholder doesn't exist, create a blank one
             if (!file_exists($placeholderPath)) {
                 // Create a blank image
@@ -231,7 +236,7 @@ class FileHelper {
                 $bgColor = imagecolorallocate($img, 240, 240, 240);
                 $textColor = imagecolorallocate($img, 50, 50, 50);
                 imagefilledrectangle($img, 0, 0, 200, 300, $bgColor);
-                
+
                 // Add text
                 $text = strtoupper($type);
                 $fontFile = __DIR__ . '/../../public/assets/fonts/roboto/Roboto-Regular.ttf';
@@ -242,28 +247,29 @@ class FileHelper {
                     // Use custom font
                     imagettftext($img, 16, 0, 50, 150, $textColor, $fontFile, $text);
                 }
-                
+
                 // Save the image to the placeholder path
                 imagejpeg($img, $placeholderPath, 90);
                 imagedestroy($img);
             }
-            
+
             // Copy the placeholder to the output path
             if (file_exists($placeholderPath)) {
                 return copy($placeholderPath, $outputPath);
             }
-            
+
             return false;
         } catch (\Exception $e) {
             error_log("Error using placeholder image: " . $e->getMessage());
             return false;
         }
     }
-    
+
     /**
      * Gets or creates a thumbnail for the document
      */
-    public function getThumbnail() {
+    public function getThumbnail()
+    {
         // Use environment detection for Docker compatibility
         if (getenv('DOCKER_ENV') === 'true') {
             $uploadDir = '/var/www/html/public';
@@ -276,7 +282,7 @@ class FileHelper {
             $thumbnailDir = $uploadDir . '/assets/uploads/thumbnails';
             $webPath = '/assets/uploads/thumbnails';
         }
-        
+
         // Create the directory if it doesn't exist
         if (!is_dir($thumbnailDir)) {
             if (!@mkdir($thumbnailDir, 0777, true)) {
@@ -286,11 +292,11 @@ class FileHelper {
             // Set permissions explicitly
             @chmod($thumbnailDir, 0777);
         }
-        
+
         // Generate a unique name for the thumbnail
         $thumbnailName = md5(basename($this->filePath)) . '.jpg';
         $thumbnailPath = $thumbnailDir . '/' . $thumbnailName;
-        
+
         // Check if thumbnail already exists
         if (!file_exists($thumbnailPath)) {
             // Extract thumbnail from document
@@ -299,45 +305,46 @@ class FileHelper {
                 return '/assets/uploads/thumbnails/placeholder-book.jpg';
             }
         }
-        
+
         return $webPath . '/' . $thumbnailName;
     }
 
     /**
      * Stores a document file with a proper name
      */
-    public function storeFile($file) {
+    public function storeFile($file)
+    {
         try {
             // Check if the upload was successful
             if ($file['error'] !== UPLOAD_ERR_OK) {
                 error_log("Upload error code: " . $file['error']);
                 return false;
             }
-            
+
             // Get file information
             $fileTmpPath = $file['tmp_name'];
             $fileName = $file['name'];
             $fileSize = $file['size'];
             $fileType = $file['type'];
-            
+
             // Extract file extension
             $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            
+
             // Set file type based on extension
             $this->fileExtension = $fileExtension;
             $this->detectFileType($fileName);
-            
+
             // Validate supported file types
             $supportedTypes = ['pdf'];
-            
+
             if (!in_array($fileExtension, $supportedTypes)) {
                 error_log("Invalid file extension: $fileExtension. Only PDF is supported.");
                 return false;
             }
-            
+
             // Generate a unique name for the file
             $newFileName = uniqid('doc_') . '.' . $fileExtension;
-            
+
             // Use environment detection for Docker compatibility
             if (getenv('DOCKER_ENV') === 'true') {
                 $uploadDir = '/var/www/html/public';
@@ -349,7 +356,7 @@ class FileHelper {
                 $uploadFileDir = $uploadDir . '/assets/uploads/documents/';
                 $webPath = '/assets/uploads/documents';
             }
-            
+
             // Create directory if it doesn't exist
             if (!is_dir($uploadFileDir)) {
                 if (!@mkdir($uploadFileDir, 0777, true)) {
@@ -359,19 +366,19 @@ class FileHelper {
                 // Set permissions explicitly
                 @chmod($uploadFileDir, 0777);
             }
-            
+
             // Destination path
             $dest_path = $uploadFileDir . $newFileName;
-            
+
             // Move the file
             if (!move_uploaded_file($fileTmpPath, $dest_path)) {
                 error_log("Failed to move file from $fileTmpPath to $dest_path");
                 return false;
             }
-            
+
             // Set the full server path for internal use
             $this->filePath = $dest_path;
-            
+
             // Return web-accessible path
             return [
                 'path' => $webPath . '/' . $newFileName,
@@ -383,5 +390,4 @@ class FileHelper {
             return false;
         }
     }
-
 }

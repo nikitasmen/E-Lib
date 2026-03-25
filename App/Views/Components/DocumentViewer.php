@@ -44,7 +44,7 @@ $bookId = $bookId ?? end($pathParts);
             </script>
             
             <!-- Viewer containers - only one will be shown based on file type -->
-            <div id="pdfViewerContainer" style="display: none;">
+            <div id="pdfViewerContainer" class="d-none flex-grow-1 flex-column overflow-hidden" style="min-height:0;">
                 <?php include __DIR__ . '/Viewers/PdfViewer.php'; ?>
             </div>
 
@@ -214,14 +214,16 @@ $bookId = $bookId ?? end($pathParts);
         
         // Show appropriate viewer
         switch (fileType) {
-            case 'pdf':
-                document.getElementById('pdfViewerContainer').style.display = 'block';
-                // PDF viewer is initialized in its own script
+            case 'pdf': {
+                const pv = document.getElementById('pdfViewerContainer');
+                pv.classList.remove('d-none');
+                pv.classList.add('d-flex');
                 if (typeof initializePdfViewer === 'function') {
                     initializePdfViewer();
                 }
                 break;
-                
+            }
+
                 
             case 'powerpoint':
             case 'epub':
@@ -304,6 +306,9 @@ $bookId = $bookId ?? end($pathParts);
         flex: 1;
         overflow: hidden;
         position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
     
     /* Responsive styles */
