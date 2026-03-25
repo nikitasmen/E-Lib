@@ -47,26 +47,7 @@ $bookId = $bookId ?? end($pathParts);
             <div id="pdfViewerContainer" style="display: none;">
                 <?php include __DIR__ . '/Viewers/PdfViewer.php'; ?>
             </div>
-            
-            <div id="powerpointViewerContainer" style="display: none;">
-                <?php include __DIR__ . '/Viewers/PowerPointViewer.php'; ?>
-            </div>
-            
-            <div id="epubViewerContainer" style="display: none;">
-                <?php include __DIR__ . '/Viewers/EpubViewer.php'; ?>
-            </div>
-            
-            <div id="kindleViewerContainer" style="display: none;">
-                <?php include __DIR__ . '/Viewers/KindleViewer.php'; ?>
-            </div>
-            
-            <div id="djvuViewerContainer" style="display: none;">
-                <?php include __DIR__ . '/Viewers/DjvuViewer.php'; ?>
-            </div>
-            
-            <div id="wordViewerContainer" style="display: none;">
-                <?php include __DIR__ . '/Viewers/WordViewer.php'; ?>
-            </div>
+
             
             <div id="unsupportedFormatContainer" class="text-center my-5" style="display: none;">
                 <div class="mb-4"><i class="fas fa-file-alt fa-5x text-muted"></i></div>
@@ -117,31 +98,10 @@ $bookId = $bookId ?? end($pathParts);
                     const extension = filePath.split('.').pop()?.toLowerCase();
                     
                     if (extension) {
-                        switch (extension) {
-                            case 'pdf':
-                                detectedFileType = 'pdf';
-                                break;
-                            case 'ppt':
-                            case 'pptx':
-                                detectedFileType = 'powerpoint';
-                                break;
-                            case 'epub':
-                                detectedFileType = 'epub';
-                                break;
-                            case 'mobi':
-                            case 'azw':
-                            case 'azw3':
-                                detectedFileType = 'kindle';
-                                break;
-                            case 'djvu':
-                                detectedFileType = 'djvu';
-                                break;
-                            case 'doc':
-                            case 'docx':
-                                detectedFileType = 'word';
-                                break;
-                            default:
-                                detectedFileType = 'unknown';
+                        if (extension === 'pdf') {
+                            detectedFileType = 'pdf';
+                        } else {
+                            detectedFileType = 'unknown';
                         }
                     }
                 }
@@ -207,10 +167,17 @@ $bookId = $bookId ?? end($pathParts);
         }
     }
     
+    function bookMongoId(book) {
+        if (!book || book._id == null) return bookId;
+        const id = book._id;
+        if (typeof id === 'string') return id;
+        if (typeof id === 'object' && id.$oid) return id.$oid;
+        return String(id);
+    }
+
     // Function to download document
     function downloadDocument(book) {
-        // Make sure we're using the book ID string, not the entire book object or ObjectId
-        let downloadId = book._id.$oid;
+        const downloadId = bookMongoId(book);
         
       
         axios({
@@ -255,44 +222,15 @@ $bookId = $bookId ?? end($pathParts);
                 }
                 break;
                 
+                
             case 'powerpoint':
-                document.getElementById('powerpointViewerContainer').style.display = 'block';
-                // PowerPoint viewer is initialized in its own script
-                if (typeof initializePowerpointViewer === 'function') {
-                    initializePowerpointViewer();
-                }
-                break;
-                
             case 'epub':
-                document.getElementById('epubViewerContainer').style.display = 'block';
-                // EPUB viewer is initialized in its own script
-                if (typeof initializeEpubViewer === 'function') {
-                    initializeEpubViewer();
-                }
-                break;
-                
             case 'kindle':
-                document.getElementById('kindleViewerContainer').style.display = 'block';
-                // Kindle viewer is initialized in its own script
-                if (typeof initializeKindleViewer === 'function') {
-                    initializeKindleViewer();
-                }
-                break;
-                
             case 'djvu':
-                document.getElementById('djvuViewerContainer').style.display = 'block';
-                // DJVU viewer is initialized in its own script
-                if (typeof initializeDjvuViewer === 'function') {
-                    initializeDjvuViewer();
-                }
-                break;
-                
             case 'word':
-                document.getElementById('wordViewerContainer').style.display = 'block';
-                // Word viewer is initialized in its own script
-                if (typeof initializeWordViewer === 'function') {
-                    initializeWordViewer();
-                }
+                // Other formats are no longer supported directly
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('unsupportedFormatContainer').style.display = 'block';
                 break;
                 
             default:
@@ -328,16 +266,6 @@ $bookId = $bookId ?? end($pathParts);
         switch (fileType) {
             case 'pdf':
                 return 'file-pdf';
-            case 'powerpoint':
-                return 'file-powerpoint';
-            case 'epub':
-                return 'book';
-            case 'kindle':
-                return 'tablet';
-            case 'djvu':
-                return 'file-image';
-            case 'word':
-                return 'file-word';
             default:
                 return 'file-alt';
         }

@@ -56,9 +56,9 @@
             <div class="mb-3">
                 <label for="bookFile" class="form-label">Book File</label>
                 <input type="file" class="form-control" id="bookFile" name="bookFile" 
-                       accept=".pdf,.pptx,.ppt,.epub,.mobi,.azw,.azw3,.djvu,.doc,.docx" required>
+                       accept=".pdf" required>
                 <small class="form-text text-muted">
-                    Supported formats: PDF, PowerPoint (PPT/PPTX), E-books (EPUB, MOBI, AZW), DJVU, and Word documents (DOC/DOCX)
+                    Supported formats: PDF only
                 </small>
             </div>
             
@@ -276,6 +276,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const bookPdf = document.getElementById("bookFile").files[0];
         const downloadable = document.querySelector('input[name="downloadable"]:checked').value;
         const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+
+        if (!bookPdf) {
+            alert("Please choose a PDF file.");
+            return;
+        }
         
         // Validate ISBN before submission
         const isbnError = validateISBN(isbn);
@@ -291,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("year", year);
         formData.append("isbn", isbn); 
         formData.append("description", description);
-        formData.append("bookFile", bookFile);
+        formData.append("bookFile", bookPdf);
         formData.append("downloadable", downloadable);
 
         axios.post("/api/v1/books", formData, {
