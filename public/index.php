@@ -144,7 +144,6 @@ $router->addMiddleware(new JwtAuthMiddleware([
     ['path' => '/api/v1/save-book', 'method' => 'POST'],
     ['path' => '/api/v1/saved-books', 'method' => 'GET'],
     ['path' => '/api/v1/reviews', 'method' => 'POST'],
-    ['path' => '/api/v1/books/([0-9a-f]{24})/file', 'method' => 'GET'],
     ['path' => '/api/v1/books/([0-9a-f]{24})/download', 'method' => 'GET'],
     ['path' => '/api/v1/admin/logs', 'method' => 'GET'],
     ['path' => '/api/v1/update-profile', 'method' => 'POST'],

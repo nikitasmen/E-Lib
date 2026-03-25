@@ -29,9 +29,9 @@ class JwtAuthMiddleware implements MiddlewareInterface
                 $protectedPath = $protected;
                 $protectedMethod = null;
             }
-            // Match exact path and method if specified
+            // Match path (prefix or full regex when pattern contains metacharacters) and method
             if (
-                (strpos($path, $protectedPath) === 0) &&
+                $this->pathMatches($path, $protectedPath) &&
                 ($protectedMethod === null || $protectedMethod === $method)
             ) {
                 // Validate the JWT token
@@ -69,5 +69,20 @@ class JwtAuthMiddleware implements MiddlewareInterface
         }
 
         return $next($request);
+    }
+
+    /**
+     * Paths like /api/v1/books/([0-9a-f]{24})/download are regex; plain paths use prefix match.
+     */
+    private function pathMatches(string $path, string $protectedPath): bool
+    {
+        if ($protectedPath === '') {
+            return false;
+        }
+        if (strpbrk($protectedPath, '[]()^$?*+{}|') !== false) {
+            return @preg_match('#^' . $protectedPath . '$#', $path) === 1;
+        }
+
+        return strpos($path, $protectedPath) === 0;
     }
 }
