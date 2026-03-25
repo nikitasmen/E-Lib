@@ -1,11 +1,13 @@
 <?php
+
 namespace App\Includes;
 
 /**
  * Class ResponseHandler
  * Handles API responses and redirects
  */
-class ResponseHandler {
+class ResponseHandler
+{
     /**
      * Send a formatted API response
      *
@@ -14,30 +16,31 @@ class ResponseHandler {
      * @param bool $status Success or failure status
      * @return array|void Array for internal use or sends JSON response
      */
-    public static function respond($status, $data, $statusCode = null) {
+    public static function respond($status, $data, $statusCode = null)
+    {
         $response = [];
-        
+
         if ($status) {
             $response = [
                 'status' => 'success',
                 'data' => $data
             ];
-            
+
             $statusCode = $statusCode ?? 200;
         } else {
             $response = [
                 'status' => 'error',
                 'message' => $data
             ];
-            
+
             $statusCode = $statusCode ?? 400;
         }
-        
+
         // Set appropriate HTTP status code if headers haven't been sent yet
         if (!headers_sent()) {
             http_response_code($statusCode);
         }
-        
+
         // Check if this is an API call that needs JSON response
         if (self::isApiRequest()) {
             if (!headers_sent()) {
@@ -47,7 +50,7 @@ class ResponseHandler {
             echo json_encode($response);
             exit();
         }
-        
+
         return $response;
     }
 
@@ -60,7 +63,8 @@ class ResponseHandler {
      * @param string|null $filename Custom filename for download
      * @return void
      */
-    public static function respondWithFile($filePath, $contentType, $download = false, $filename = null) {
+    public static function respondWithFile($filePath, $contentType, $download = false, $filename = null)
+    {
         if (!file_exists($filePath) || !is_readable($filePath)) {
             self::respond(false, 'File not found or not readable', 404);
             return;
@@ -75,16 +79,16 @@ class ResponseHandler {
         if (!headers_sent()) {
             // Content type header
             header("Content-Type: $contentType");
-            
+
             // Get file size
             $fileSize = filesize($filePath);
             header("Content-Length: $fileSize");
-            
+
             // Set filename for download or reference
             $filename = $filename ?? basename($filePath);
             $disposition = $download ? 'attachment' : 'inline';
             header('Content-Disposition: ' . $disposition . '; filename="' . $filename . '"');
-            
+
             // Cache control headers
             header('Cache-Control: private, max-age=300, must-revalidate');
             header('Pragma: public');
@@ -103,11 +107,12 @@ class ResponseHandler {
      * @param int $statusCode HTTP status code for redirect
      * @return void
      */
-    public static function redirect($url, $statusCode = 303) {
+    public static function redirect($url, $statusCode = 303)
+    {
         if (!filter_var($url, FILTER_VALIDATE_URL) && !str_starts_with($url, '/')) {
             throw new \InvalidArgumentException("Invalid URL for redirection");
         }
-        
+
         // Only set headers if possible
         if (!headers_sent()) {
             header('Location: ' . $url, true, $statusCode);
@@ -120,29 +125,32 @@ class ResponseHandler {
             exit();
         }
     }
-    
+
     /**
      * Check if the current request is an API request
      *
      * @return bool
      */
-    private static function isApiRequest() {
+    private static function isApiRequest()
+    {
         // Check for AJAX request
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if (
+            !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
+        ) {
             return true;
         }
-        
+
         // Check for API endpoints in URL or Accept header
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
         $acceptHeader = $_SERVER['HTTP_ACCEPT'] ?? '';
-        
+
         return (
-            strpos($requestUri, '/api/v1/') !== false || 
+            strpos($requestUri, '/api/v1/') !== false ||
             strpos($acceptHeader, 'application/json') !== false
         );
     }
-    
+
     /**
      * Render a view with the given data
      *
@@ -151,30 +159,31 @@ class ResponseHandler {
      * @param int $statusCode HTTP status code
      * @return void
      */
-    public static function renderView($view, $data = [], $statusCode = 200) {
+    public static function renderView($view, $data = [], $statusCode = 200)
+    {
         // Set HTTP status code and content type if headers haven't been sent yet
         if (!headers_sent()) {
             http_response_code($statusCode);
             // Set content type for HTML
             header('Content-Type: text/html; charset=UTF-8');
         }
-        
+
         // Extract data to make variables available to the view
         if (!empty($data)) {
             extract($data);
         }
-        
+
         // Ensure the view file exists
         $viewPath = realpath($view);
         if (!$viewPath || !file_exists($viewPath)) {
             throw new \RuntimeException("View file not found: $view");
         }
-        
+
         // Include the view file
         ob_start();
         include $viewPath;
         $content = ob_get_clean();
-        
+
         echo $content;
         exit();
     }

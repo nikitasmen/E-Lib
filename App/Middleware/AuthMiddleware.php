@@ -1,29 +1,33 @@
 <?php
+
 // filepath: /Users/hub/Documents/Personal/GenCode/E-Lib/App/Middleware/AuthMiddleware.php
 namespace App\Middleware;
 
 use App\Includes\SessionManager;
 use App\Includes\ResponseHandler;
 
-class AuthMiddleware implements MiddlewareInterface {
+class AuthMiddleware implements MiddlewareInterface
+{
     private $protectedPaths = [];
-    
+
     /**
      * Create auth middleware with protected paths
      *
      * @param array $protectedPaths Paths requiring authentication
      */
-    public function __construct(array $protectedPaths = []) {
+    public function __construct(array $protectedPaths = [])
+    {
         $this->protectedPaths = $protectedPaths;
     }
-    
+
     /**
      * Process the request and check authentication
      */
-    public function process(array $request, callable $next) {
+    public function process(array $request, callable $next)
+    {
         $path = $request['path'];
         $method = $request['method'] ?? $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        
+
         // Check if the path and method require authentication
         foreach ($this->protectedPaths as $protected) {
             // Allow both string and array definitions for protected paths
@@ -34,7 +38,7 @@ class AuthMiddleware implements MiddlewareInterface {
                 $protectedPath = $protected;
                 $protectedMethod = null;
             }
-            
+
             // Match exact path and method if specified
             if (
                 (strpos($path, $protectedPath) === 0) &&
@@ -42,7 +46,7 @@ class AuthMiddleware implements MiddlewareInterface {
             ) {
                 // Initialize session if needed
                 SessionManager::initialize();
-                
+
                 // Check if user is authenticated
                 if (!SessionManager::getCurrentUserId()) {
                     if ($request['isApi']) {
@@ -55,7 +59,7 @@ class AuthMiddleware implements MiddlewareInterface {
                 }
             }
         }
-        
+
         // Call the next middleware
         return $next($request);
     }

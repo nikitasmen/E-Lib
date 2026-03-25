@@ -1,13 +1,15 @@
 <?php
+
 /**
  * MongoDB Certificate Setup Script
- * 
+ *
  * This script downloads the MongoDB Atlas root certificate
  * and saves it in the proper location for your application.
  */
 
 // Make it work both from CLI and web
-function output($message) {
+function output($message)
+{
     if (php_sapi_name() === 'cli') {
         echo $message . PHP_EOL;
     } else {

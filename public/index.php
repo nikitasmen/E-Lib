@@ -1,4 +1,5 @@
 <?php
+
 ini_set('error_log', dirname(__DIR__) . '/storage/logs/php_errors.log');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -12,7 +13,8 @@ if (!$projectRoot) {
 }
 
 // Function to safely include a file with proper error handling
-function safeRequire($path) {
+function safeRequire($path)
+{
     if (file_exists($path)) {
         require_once $path;
         return true;
@@ -82,12 +84,12 @@ if (!empty($missingFiles)) {
         echo "<li>$file</li>";
     }
     echo "</ul>";
-    
+
     echo "<h2>Debug Information</h2>";
     echo "<p>Project Root: $projectRoot</p>";
     echo "<p>Current Directory: " . getcwd() . "</p>";
     echo "<p>Is GitHub Actions: " . ($isGithubActions ? 'Yes' : 'No') . "</p>";
-    
+
     if ($isGithubActions) {
         echo "<h2>GitHub Actions Environment</h2>";
         echo "<p>Directory Listing:</p><pre>";
@@ -96,7 +98,7 @@ if (!empty($missingFiles)) {
         echo shell_exec("ls -la $projectRoot/App");
         echo "</pre>";
     }
-    
+
     die();
 }
 

@@ -1,13 +1,14 @@
 <?php
+
 /**
  * E-Lib System Check Script
- * 
+ *
  * This script performs various checks to ensure the E-Lib application
  * is properly configured and all dependencies are available.
- * 
+ *
  * Usage:
  *   php check-system.php [options]
- * 
+ *
  * Options:
  *   --verbose  Show detailed information for each check
  *   --fix      Attempt to fix some common issues automatically
@@ -57,7 +58,7 @@ foreach ($requiredExtensions as $ext) {
     } else {
         $results['failed'][] = "Extension: $ext (missing)";
         $allPassed = false;
-        
+
         if ($fix && $ext == 'openssl') {
             echo YELLOW . "Attempting to enable openssl extension...\n" . RESET;
             if (PHP_OS === 'Linux') {
@@ -76,18 +77,18 @@ foreach ($requiredExtensions as $ext) {
 // Check Composer dependencies
 if (file_exists('vendor/autoload.php')) {
     $results['passed'][] = "Composer dependencies installed";
-    
+
     // Load autoloader
     require_once 'vendor/autoload.php';
-    
+
     // Check composer.json vs composer.lock
     if (file_exists('composer.json') && file_exists('composer.lock')) {
         $composerJson = json_decode(file_get_contents('composer.json'), true);
         $composerLock = json_decode(file_get_contents('composer.lock'), true);
-        
+
         if (isset($composerJson['require']['mongodb/mongodb'])) {
             $requiredVersion = $composerJson['require']['mongodb/mongodb'];
-            
+
             $installedVersion = null;
             foreach ($composerLock['packages'] as $package) {
                 if ($package['name'] === 'mongodb/mongodb') {
@@ -95,7 +96,7 @@ if (file_exists('vendor/autoload.php')) {
                     break;
                 }
             }
-            
+
             if ($installedVersion) {
                 $results['passed'][] = "MongoDB package: version $installedVersion";
             } else {
@@ -106,7 +107,7 @@ if (file_exists('vendor/autoload.php')) {
 } else {
     $results['failed'][] = "Composer dependencies not installed";
     $allPassed = false;
-    
+
     if ($fix) {
         echo YELLOW . "Attempting to install dependencies...\n" . RESET;
         echo "Run the following command to install dependencies:\n";
@@ -114,7 +115,7 @@ if (file_exists('vendor/autoload.php')) {
     }
 }
 
-// load environment variables 
+// load environment variables
 if (file_exists('.env')) {
     try {
         App\Includes\Environment::load();
@@ -157,11 +158,11 @@ foreach ($requiredFiles as $file) {
 // Check database connection
 try {
     $dbConnectionSuccess = false;
-    
+
     // Check if our MongoConnectionFactory class exists
     if (class_exists('App\Integration\Database\MongoConnectionFactory')) {
         echo YELLOW . "Testing MongoDB connection...\n" . RESET;
-        
+
         try {
             App\Integration\Database\MongoConnectionFactory::create('mongo', ['dbName' => 'LibraryDb']);
             $results['passed'][] = "MongoDB connection: successful";

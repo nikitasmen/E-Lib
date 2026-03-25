@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use App\Factory\DatabaseFactory;
@@ -9,20 +10,22 @@ use InvalidArgumentException;
  * BaseModel provides common functionality for all models
  * and ensures consistent data access patterns
  */
-abstract class BaseModel {
+abstract class BaseModel
+{
     protected $db;
     protected $collection;
-    
+
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = DatabaseFactory::getDatabase();
     }
-    
+
     /**
      * Validate data according to model rules
-     * 
+     *
      * @param array $data The data to validate
      * @return array Any validation errors
      */
@@ -30,12 +33,13 @@ abstract class BaseModel {
 
     /**
      * Ensure the ID is a valid MongoDB ObjectId
-     * 
+     *
      * @param string $id
      * @return \MongoDB\BSON\ObjectId
      * @throws InvalidArgumentException
      */
-    protected function ensureId(string $id) {
+    protected function ensureId(string $id)
+    {
         if (!preg_match('/^[0-9a-f]{24}$/', $id)) {
             throw new InvalidArgumentException('Invalid ID format');
         }
@@ -44,34 +48,37 @@ abstract class BaseModel {
 
     /**
      * Find all documents matching filter
-     * 
+     *
      * @param array $filter
      * @param array $options
      * @return array
      */
-    public function findAll(array $filter = [], array $options = []): array {
+    public function findAll(array $filter = [], array $options = []): array
+    {
         return $this->db->find($this->collection, $filter, $options);
     }
 
     /**
      * Find document by ID
-     * 
+     *
      * @param string $id
      * @return array|null
      * @throws InvalidArgumentException
      */
-    public function findById(string $id) {
+    public function findById(string $id)
+    {
         return $this->db->findOne($this->collection, ['_id' => $this->ensureId($id)]);
     }
 
     /**
      * Create a new document
-     * 
+     *
      * @param array $data
      * @return array
      * @throws InvalidArgumentException
      */
-    public function create(array $data): array {
+    public function create(array $data): array
+    {
         $errors = $this->validate($data);
         if (!empty($errors)) {
             throw new InvalidArgumentException(json_encode($errors));
@@ -81,13 +88,14 @@ abstract class BaseModel {
 
     /**
      * Update document by ID
-     * 
+     *
      * @param string $id
      * @param array $data
      * @return array|false
      * @throws InvalidArgumentException
      */
-    public function updateById(string $id, array $data) {
+    public function updateById(string $id, array $data)
+    {
         return $this->db->update(
             $this->collection,
             ['_id' => $this->ensureId($id)],
@@ -97,12 +105,13 @@ abstract class BaseModel {
 
     /**
      * Delete document by ID
-     * 
+     *
      * @param string $id
      * @return array
      * @throws InvalidArgumentException
      */
-    public function deleteById(string $id): array {
+    public function deleteById(string $id): array
+    {
         return $this->db->delete($this->collection, ['_id' => $this->ensureId($id)]);
     }
 }

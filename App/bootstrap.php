@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Application Bootstrap
- * 
+ *
  * This file initializes output buffering to prevent "headers already sent" errors
  * and configures basic application settings.
  */
@@ -48,7 +49,7 @@ if (!$jwtKey) {
 }
 
 // Initialize error handling to catch fatal errors
-register_shutdown_function(function() {
+register_shutdown_function(function () {
     $error = error_get_last();
     if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
         error_log(sprintf(

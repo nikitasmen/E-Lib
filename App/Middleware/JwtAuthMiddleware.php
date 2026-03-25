@@ -6,14 +6,17 @@ use App\Includes\JwtHelper;
 use App\Includes\ResponseHandler;
 use App\Middleware\MiddlewareInterface;
 
-class JwtAuthMiddleware implements MiddlewareInterface {
+class JwtAuthMiddleware implements MiddlewareInterface
+{
     private $protectedPaths;
 
-    public function __construct(array $protectedPaths = []) {
+    public function __construct(array $protectedPaths = [])
+    {
         $this->protectedPaths = $protectedPaths;
     }
 
-    public function process(array $request, callable $next) {
+    public function process(array $request, callable $next)
+    {
         $path = isset($request['path']) ? $request['path'] : '/';
         $method = isset($request['method']) ? strtoupper($request['method']) : (isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET');
 
@@ -47,13 +50,13 @@ class JwtAuthMiddleware implements MiddlewareInterface {
                     // For debugging, get detailed error information
                     $tokenError = JwtHelper::getTokenValidationError($token);
                     $errorMessage = 'Invalid or expired token';
-                    
+
                     // Log the specific error for debugging
                     if (isset($tokenError['error'])) {
                         $errorMessage = isset($tokenError['message']) ? $tokenError['message'] : 'No details';
                         error_log("JWT Validation Error: {$tokenError['error']} - {$errorMessage}");
                     }
-                    
+
                     ResponseHandler::respond(false, $errorMessage, 401);
                     exit();
                 }

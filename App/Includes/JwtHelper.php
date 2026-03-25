@@ -11,18 +11,20 @@ use UnexpectedValueException;
 use DomainException;
 use InvalidArgumentException;
 
-class JwtHelper {
+class JwtHelper
+{
     /**
      * Generate a JWT token with the provided payload
-     * 
+     *
      * @param array $payload Data to include in the token
      * @return string The generated JWT token
      */
-    public static function generateToken($payload) {
+    public static function generateToken($payload)
+    {
         if (!defined('JWT_SECRET_KEY')) {
             throw new \RuntimeException('JWT_SECRET_KEY is not defined');
         }
-        
+
         $key = JWT_SECRET_KEY;
         $payload['iat'] = time(); // Issued at
         $payload['exp'] = time() + 3600; // Expiration time (1 hour)
@@ -31,15 +33,16 @@ class JwtHelper {
 
     /**
      * Validate a JWT token and return the decoded payload
-     * 
+     *
      * @param string $token The JWT token to validate
      * @return object|null The decoded payload or null if the token is invalid
      */
-    public static function validateToken($token) {
+    public static function validateToken($token)
+    {
         if (!defined('JWT_SECRET_KEY')) {
             throw new \RuntimeException('JWT_SECRET_KEY is not defined');
         }
-        
+
         try {
             $key = JWT_SECRET_KEY;
             $decoded = JWT::decode($token, new Key($key, 'HS256'));
@@ -66,18 +69,19 @@ class JwtHelper {
     /**
      * Get specific error information when token validation fails
      * Useful for debugging
-     * 
+     *
      * @param string $token The JWT token to validate
      * @return array with success status and error message if failed
      */
-    public static function getTokenValidationError($token) {
+    public static function getTokenValidationError($token)
+    {
         if (!defined('JWT_SECRET_KEY')) {
             return [
                 'success' => false,
                 'error' => 'JWT_SECRET_KEY is not defined'
             ];
         }
-        
+
         try {
             $key = JWT_SECRET_KEY;
             $decoded = JWT::decode($token, new Key($key, 'HS256'));
@@ -112,4 +116,3 @@ class JwtHelper {
         }
     }
 }
-
