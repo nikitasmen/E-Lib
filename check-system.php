@@ -163,21 +163,12 @@ try {
         echo YELLOW . "Testing MongoDB connection...\n" . RESET;
         
         try {
-            $factory = new App\Integration\Database\MongoConnectionFactory();
-            $db = $factory->create('mongo', ['fallback' => false]);
+            App\Integration\Database\MongoConnectionFactory::create('mongo', ['dbName' => 'LibraryDb']);
             $results['passed'][] = "MongoDB connection: successful";
             $dbConnectionSuccess = true;
         } catch (Exception $e) {
             $results['failed'][] = "MongoDB connection: " . $e->getMessage();
             $allPassed = false;
-            
-            // Try with fallback
-            try {
-                $db = $factory->create('mongo', ['fallback' => true]);
-                $results['warnings'][] = "MongoDB fallback: using JSON database";
-            } catch (Exception $e2) {
-                $results['failed'][] = "MongoDB fallback: " . $e2->getMessage();
-            }
         }
     } else {
         $results['warnings'][] = "MongoDB connection: MongoConnectionFactory class not found";

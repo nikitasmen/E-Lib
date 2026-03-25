@@ -18,12 +18,9 @@ class MongoDatabase extends MongoConnectionFactory implements DatabaseInterface 
      */
     public function __construct()
     {
-        $this->db = self::create('mongo', [
-            'dbName' => 'LibraryDb',
-            'fallback' => true
-        ]);
-    }
-    
+        $this->db = self::create('mongo', ['dbName' => 'LibraryDb']);
+    }  
+
     public function insert(string $collection, array $data): array {
         try {
             $result = $this->db->selectCollection($collection)->insertOne($data);
@@ -33,6 +30,7 @@ class MongoDatabase extends MongoConnectionFactory implements DatabaseInterface 
             return ['error' => $e->getMessage()];
         }
     }
+
 
     public function find(string $collection, array $filter = [], array $options = []): array {
         try {
@@ -64,8 +62,8 @@ class MongoDatabase extends MongoConnectionFactory implements DatabaseInterface 
             $document = $this->db->selectCollection($collection)->findOne($filter);
             return $document ? (array)$document : null;
         } catch (Exception $e) {
-            echo("MongoDB FindOne Error: " . $e->getMessage());
-            return null;
+            error_log('MongoDB findOne [' . $collection . ']: ' . $e->getMessage());
+            throw $e;
         }
     }
 

@@ -2,227 +2,118 @@
 
 namespace App\Integration\Database;
 
-use App\Database\JsonDatabase;
 use App\Includes\Environment;
-use MongoDB\Driver\ServerApi;
 use MongoDB\Client;
+use MongoDB\Driver\ServerApi;
 
-class MongoConnectionFactory{
-    
+class MongoConnectionFactory
+{
     private static $mongoClient = null;
 
     /**
-     * Create a database connection with fallback options
-     * 
-     * @param string $type The type of database to connect to (mongo, json)
-     * @param array $options Connection options
-     * @return mixed connection with mongo object or json object
+     * @return \MongoDB\Database
      */
     public static function create($type = 'mongo', $options = [])
     {
-        // Set default options
-        $defaults = [
-            'dbName' => 'LibraryDb'
-        ];
-        
+        $defaults = ['dbName' => 'LibraryDb'];
         $config = array_merge($defaults, $options);
-        
-        if ($type === 'mongo') {
-            try {
-                // Get MongoDB connection
-                $mongoDb = self::getMongoConnection($config['dbName'], []);
-                return $mongoDb;
-            } catch (\MongoDB\Driver\Exception\ConnectionTimeoutException $e) {
-                echo("MongoDB connection failed: " . $e->getMessage());
-                
-                // Fall back to JsonDatabase if requested
-                if (!empty($options['fallback']) && $options['fallback'] === true) {
-                    echo("Falling back to JsonDatabase");
-                    return new JsonDatabase();
-                }
-                
-                // Re-throw if no fallback requested
-                throw $e;
-            } catch (\Exception $e) {
-                echo("Database error: " . $e->getMessage());
-                
-                // Fall back to JsonDatabase if requested
-                if (!empty($options['fallback']) && $options['fallback'] === true) {
-                    echo("Falling back to JsonDatabase due to error");
-                    return new JsonDatabase();
-                }
-                
-                // Re-throw if no fallback requested
-                throw $e;
-            }
-        } elseif ($type === 'json') {
-            return new JsonDatabase();
+
+        if ($type !== 'mongo') {
+            throw new \InvalidArgumentException("Unsupported database type: $type");
         }
-        
-        throw new \InvalidArgumentException("Unsupported database type: $type");
+
+        return self::getMongoConnection($config['dbName']);
     }
 
     /**
-     * Get a MongoDB database connection
-     * 
-     * @param string $dbName Database name
-     * @param array $options Connection options
+     * URI options. Atlas works with the OS trust store — do not set tlsCAFile unless you must
+     * (e.g. corporate proxy). MONGO_CERT_FILE is ignored here on purpose; use MONGO_TLS_CA_FILE only if needed.
+     */
+    private static function uriOptionsFromEnv(): array
+    {
+        $projectRoot = dirname(__DIR__, 3);
+        $uriOptions = [
+            'authSource' => 'admin',
+            'serverSelectionTimeoutMS' => 45000,
+            'connectTimeoutMS' => 20000,
+        ];
+
+        $ca = Environment::get('MONGO_TLS_CA_FILE', '');
+        if ($ca !== '' && $ca !== false) {
+            $path = (string) $ca;
+            if (!str_starts_with($path, '/') && !preg_match('#^[A-Za-z]:[\\\\/]#', $path)) {
+                $path = $projectRoot . '/' . ltrim(str_replace('\\', '/', $path), '/');
+            }
+            if (is_file($path)) {
+                $uriOptions['tlsCAFile'] = $path;
+            }
+        }
+
+        return $uriOptions;
+    }
+
+    /**
      * @return \MongoDB\Database
      */
-    private static function getMongoConnection($dbName, $options = [])
+    private static function getMongoConnection(string $dbName)
     {
-        // Get MongoDB connection string from environment variables or use default
-        $connectionString = Environment::get('MONGO_URI', getenv('MONGO_URI'));
-       
-        $mongoPassword = Environment::get('MONGO_PASSWORD', getenv('MONGO_PASSWORD'));
-        if ($mongoPassword && strpos($connectionString, '<db_password>') !== false) {
-            $connectionString = str_replace('<db_password>', $mongoPassword, $connectionString);
+        $uri = Environment::get('MONGO_URI', '');
+        if ($uri === false || $uri === null) {
+            $uri = '';
         }
-        
-        // Initialize options array if not already
-        if (!isset($options['mongoOptions'])) {
-            $options['mongoOptions'] = [];
+        $uri = trim((string) $uri);
+
+        $password = Environment::get('MONGO_PASSWORD', '');
+        if ($password !== '' && $password !== false) {
+            $encoded = rawurlencode((string) $password);
+            if (str_contains($uri, '${MONGO_PASSWORD}')) {
+                $uri = str_replace('${MONGO_PASSWORD}', $encoded, $uri);
+            }
+            if (str_contains($uri, '<db_password>')) {
+                $uri = str_replace('<db_password>', $encoded, $uri);
+            }
         }
-        
-        $useSsl = true;
-        
-        // TLS configuration for MongoDB Atlas
-        if (extension_loaded('openssl')) {
-            // Default directory for certificates
-            $certDir = __DIR__ . '/../../../certificates';
-            if (!is_dir($certDir)) {
-                mkdir($certDir, 0755, true);
-            }
-            
-            $certFile = getenv('MONGO_CERT_FILE') ?: $certDir . '/mongodb-ca.pem';
-            
-            // If certificate doesn't exist, try to download it
-            if (!file_exists($certFile)) {
-                self::downloadMongoCertificate($certFile);
-            }
-            
-            // Configure TLS options for MongoDB Atlas
-            if (file_exists($certFile)) {
-                // MongoDB Atlas requires these specific TLS options
-                $options['mongoOptions']['tls'] = true;
-                $options['mongoOptions']['tlsCAFile'] = $certFile;
-                $options['mongoOptions']['tlsAllowInvalidHostnames'] = false;
-                $options['mongoOptions']['tlsAllowInvalidCertificates'] = false;
-            } else {
-                // Try with system CA bundle if specific cert not found
-                $options['mongoOptions']['tls'] = true;
-                echo("Using system CA bundle for MongoDB TLS connection");
-            }
-        } else {
-            echo("Warning: OpenSSL extension not loaded. SSL/TLS connections will not work properly.");
-            $useSsl = false;
+
+        if ($uri === '' || !preg_match('#^mongodb(\+srv)?://#i', $uri)) {
+            throw new \InvalidArgumentException(
+                'MONGO_URI must be set to a mongodb:// or mongodb+srv:// connection string.'
+            );
         }
-        
-        // Create client if it doesn't exist
+
+        $uriOptions = self::uriOptionsFromEnv();
+
         if (self::$mongoClient === null) {
-            try {
-                $apiVersion = new ServerApi(ServerApi::V1);
-                
-           
-                self::$mongoClient = new Client($connectionString, ["authSource" => 'admin'], ['serverApi' => $apiVersion]);
-          
-                // Get the database and verify connection by running a ping command
-                $db = self::$mongoClient->selectDatabase($dbName);
-                $db->command(['ping' => 1]);
-                return $db;
-            } catch (\Exception $e) {
-                echo("MongoDB connection error: " . $e->getMessage());
-                throw $e;
+            $driverOpts = [];
+            // Stable API is optional; some driver/Atlas combos mis-handshake with hello — opt-in only
+            if (Environment::get('MONGO_SERVER_API', '') === '1') {
+                $driverOpts['serverApi'] = new ServerApi(ServerApi::V1);
             }
+
+            // Do NOT assign self::$mongoClient until ping succeeds. Otherwise php -S reuses the
+            // process and a failed first ping leaves a broken client for every later request.
+            $client = new Client($uri, $uriOptions, $driverOpts);
+            $db = $client->selectDatabase($dbName);
+            $db->command(['ping' => 1]);
+            self::$mongoClient = $client;
+
+            return $db;
         }
-        // If client already exists, just return the database
+
         return self::$mongoClient->selectDatabase($dbName);
-    }        
-    
-    /**
-     * Download MongoDB CA certificate
-     * 
-     * @param string $savePath Path where to save the certificate
-     * @return bool True if successful, false otherwise
-     */
-    private static function downloadMongoCertificate($savePath)
-    {
-        try {
-            // First attempt - standard file_get_contents
-            $certUrl = 'https://truststore.pki.mongodb.com/atlas-root-ca.pem';
-            echo("Downloading MongoDB certificate from {$certUrl}...");
-            $certContent = @file_get_contents($certUrl);
-            
-            // Second attempt - with stream context if first attempt fails
-            if ($certContent === false) {
-                echo("First download attempt failed, trying with modified SSL context...");
-                $context = stream_context_create([
-                    'ssl' => [
-                        'verify_peer' => false,
-                        'verify_peer_name' => false,
-                    ],
-                    'http' => [
-                        'timeout' => 15,  // Increase timeout
-                        'user_agent' => 'Mozilla/5.0 (E-Lib Certificate Downloader)',
-                    ]
-                ]);
-                
-                $certContent = @file_get_contents($certUrl, false, $context);
-            }
-            
-            // Third attempt - using cURL as a last resort
-            if ($certContent === false && function_exists('curl_init')) {
-                echo("Stream attempts failed, trying with cURL...");
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $certUrl);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-                $certContent = curl_exec($ch);
-                
-                if (curl_errno($ch)) {
-                    echo("cURL error: " . curl_error($ch));
-                }
-                
-                curl_close($ch);
-            }
-            
-            // Last resort - use a default certificate or fail 
-            if ($certContent === false || empty($certContent)) {
-                echo("All download attempts failed, cannot proceed without certificate.");
-                return false;
-            }
-            
-            // Save the certificate to disk
-            if (file_put_contents($savePath, $certContent) === false) {
-                echo("Failed to save MongoDB certificate to {$savePath}");
-                return false;
-            }
-            
-            // Verify the file exists and has content
-            if (!file_exists($savePath) || filesize($savePath) < 100) {
-                echo("Certificate file is invalid or too small");
-                return false;
-            }
-            
-            echo("Successfully saved MongoDB certificate to {$savePath}");
-            return true;
-        } catch (\Exception $e) {
-            echo("Error downloading certificate: " . $e->getMessage());
-            return false;
-        }
     }
-    
+
     /**
-     * Get the MongoDB client instance
-     * 
-     * @return \MongoDB\Client
+     * Clear cached client (e.g. after connection drops). Next create() will reconnect.
      */
-    public static function getClient()
+    public static function resetClient(): void
+    {
+        self::$mongoClient = null;
+    }
+
+    public static function getClient(): Client
     {
         if (self::$mongoClient === null) {
-            throw new \RuntimeException("MongoDB client not initialized");
+            throw new \RuntimeException('MongoDB client not initialized');
         }
         return self::$mongoClient;
     }
