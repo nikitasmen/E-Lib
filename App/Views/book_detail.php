@@ -62,28 +62,21 @@
                 `;
             }
             
-            // Check if user is logged in
             const isLoggedIn = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            
-            // Action buttons based on login state
+
+            // Online preview is available to everyone; save/download require login
             let actionButtons = `
-                <button id="shareBtn" class="btn btn-outline-secondary action-btn">
-                    <i class="fas fa-share-alt me-1"></i> Share
-                </button>
-            `;
-            
-            if (isLoggedIn) {
-                // Add save, preview, and download buttons for logged-in users
-                actionButtons = `
-                    <button id="saveBtn" class="btn btn-outline-primary me-2 action-btn">
-                        <i class="fas fa-bookmark me-1"></i> Save to Reading List
-                    </button>
-                    
                     <button id="previewBtn" class="btn btn-info me-2 action-btn">
                         <i class="fas fa-eye me-1"></i> Online Preview
                     </button>
-                    
-                    ${(book.downloadable !== false) ? 
+            `;
+
+            if (isLoggedIn) {
+                actionButtons += `
+                    <button id="saveBtn" class="btn btn-outline-primary me-2 action-btn">
+                        <i class="fas fa-bookmark me-1"></i> Save to Reading List
+                    </button>
+                    ${(book.downloadable !== false) ?
                       `<button id="downloadBtn" class="btn btn-success me-2 action-btn">
                           <i class="fas fa-download me-1"></i> Download PDF
                        </button>` :
@@ -91,10 +84,14 @@
                           <i class="fas fa-ban me-1"></i> Download Disabled
                        </button>`
                     }
-                    
-                    ${actionButtons}
                 `;
             }
+
+            actionButtons += `
+                <button id="shareBtn" class="btn btn-outline-secondary action-btn">
+                    <i class="fas fa-share-alt me-1"></i> Share
+                </button>
+            `;
             
             // Create book details HTML
             const html = `
@@ -290,13 +287,13 @@
         // Fetch book data from the API
         async function fetchBookData() {
             const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
-            
+            const cfg = {};
+            if (token) {
+                cfg.headers = { 'Authorization': `Bearer ${token}` };
+            }
+
             try {
-                const response = await axios.get(`/api/v1/books/${bookId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await axios.get(`/api/v1/books/${bookId}`, cfg);
                 
                 if (response.data && response.data.status === 'success' && response.data.data) {
                     renderBookDetails(response.data.data);

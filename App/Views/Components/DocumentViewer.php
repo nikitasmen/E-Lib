@@ -80,11 +80,11 @@ $bookId = $bookId ?? end($pathParts);
         document.getElementById('loadingText').textContent = "Fetching document information...";
         
         // Fetch book data from API
-        axios.get(`/api/v1/books/${bookId}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        })
+        const bookReqCfg = {};
+        if (authToken) {
+            bookReqCfg.headers = { 'Authorization': `Bearer ${authToken}` };
+        }
+        axios.get(`/api/v1/books/${bookId}`, bookReqCfg)
         .then(response => {
             if (response.data?.status === 'success' && response.data?.data) {
                 book = response.data.data;
@@ -148,8 +148,8 @@ $bookId = $bookId ?? end($pathParts);
         // Update controls
         const controls = header.querySelector('.document-controls');
         
-        // Add download button if the book is downloadable
-        if (book.downloadable !== false) {
+        // Download requires login (JWT); preview is public
+        if (book.downloadable !== false && authToken) {
             const downloadBtn = document.createElement('a');
             downloadBtn.href = '#';
             downloadBtn.className = 'btn btn-sm btn-outline-light me-2';
@@ -177,9 +177,12 @@ $bookId = $bookId ?? end($pathParts);
 
     // Function to download document
     function downloadDocument(book) {
+        if (!authToken) {
+            alert('Please log in to download this file.');
+            return;
+        }
         const downloadId = bookMongoId(book);
-        
-      
+
         axios({
             method: 'get',
             url: `/api/v1/books/${downloadId}/download`,
@@ -244,7 +247,7 @@ $bookId = $bookId ?? end($pathParts);
                 // Set up download button for unsupported formats
                 const downloadBtn = document.getElementById('unsupportedDownloadBtn');
                 
-                if (book.downloadable === false) {
+                if (book.downloadable === false || !authToken) {
                     downloadBtn.style.display = 'none';
                 } else {
                     downloadBtn.addEventListener('click', function(e) {

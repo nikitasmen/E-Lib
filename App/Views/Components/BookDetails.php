@@ -8,15 +8,17 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons mt-4">
+            <input type="hidden" id="bookId" value="<?= htmlspecialchars(\App\Helpers\BookDisplayHelper::bookIdString($book)) ?>">
+
+            <button id="previewBtn" class="btn btn-info me-2 action-btn">
+                <i class="fas fa-eye me-1"></i> Online Preview
+            </button>
+
             <?php if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])): ?>
                 <button id="saveBtn" class="btn btn-outline-primary me-2 action-btn">
                     <i class="fas fa-bookmark me-1"></i> Save to Reading List
                 </button>
-                
-                <button id="previewBtn" class="btn btn-info me-2 action-btn">
-                    <i class="fas fa-eye me-1"></i> Online Preview
-                </button>
-                
+
                 <?php if (!isset($book['downloadable']) || $book['downloadable'] === true): ?>
                     <button id="downloadBtn" class="btn btn-success me-2 action-btn">
                         <i class="fas fa-download me-1"></i> Download PDF
@@ -27,7 +29,7 @@
                     </button>
                 <?php endif; ?>
             <?php endif; ?>
-            
+
             <button id="shareBtn" class="btn btn-outline-secondary action-btn">
                 <i class="fas fa-share-alt me-1"></i> Share
             </button>

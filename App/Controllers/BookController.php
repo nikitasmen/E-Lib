@@ -717,7 +717,7 @@ class BookController
     }
 
     /**
-     * Stream book file with secure token
+     * Stream book PDF for in-browser preview (public; no JWT required).
      *
      * @param string $bookId MongoDB ID of the book to stream
      */
@@ -729,7 +729,6 @@ class BookController
             return;
         }
 
-        // Check if user is authenticated (already checked by middleware)
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
