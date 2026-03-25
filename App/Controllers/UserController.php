@@ -7,6 +7,7 @@ use App\Services\BookService;
 use App\Services\EmailService;
 use App\Includes\ResponseHandler;
 use App\Includes\JwtHelper;
+use App\Helpers\BookDisplayHelper;
 
 class UserController {
     private $userService;
@@ -34,7 +35,21 @@ class UserController {
             $password = $_POST['password'] ?? null;
         }
 
-        $user = $this->userService->getUserByEmail($email);
+        try {
+            $user = $this->userService->getUserByEmail($email);
+        } catch (\InvalidArgumentException $e) {
+            ResponseHandler::respond(false, $e->getMessage(), 400);
+            return;
+        } catch (\Throwable $e) {
+            error_log('Login database error: ' . $e->getMessage());
+            ResponseHandler::respond(
+                false,
+                'Cannot reach the database. Check your network, MongoDB Atlas IP access list, and MONGO_URI / credentials.',
+                503
+            );
+            return;
+        }
+
         if ($user && password_verify($password, $user['password'])) {
             $payload = [
                 'user_id' => $user['_id'],
@@ -82,7 +97,7 @@ class UserController {
             $input = json_decode($inputJSON, true);
             
             if ($input) {
-                $userName = $input['username'] ?? null;
+                $userName = $input['username'] ?? $input['name'] ?? null;
                 $email = $input['email'] ?? null; 
                 $password = $input['password'] ?? null;
             } else {
@@ -90,8 +105,8 @@ class UserController {
                 return;
             }
         } else {
-            // Get from POST (for form submissions)
-            $userName = $_POST['username'] ?? null;
+            // Get from POST (SignUpForm uses name="name" for the username field)
+            $userName = $_POST['username'] ?? $_POST['name'] ?? null;
             $email = $_POST['email'] ?? null;
             $password = $_POST['password'] ?? null;
         }
@@ -112,7 +127,17 @@ class UserController {
             ResponseHandler::respond(false, 'Invalid email format', 400);
             return;
         }
-        if ($this->userService->registerUser($userName, $email, $password)) {
+        try {
+            $result = $this->userService->registerUser($userName, $email, $password);
+        } catch (\InvalidArgumentException $e) {
+            $decoded = json_decode($e->getMessage(), true);
+            $msg = is_array($decoded)
+                ? implode(' ', $decoded)
+                : $e->getMessage();
+            ResponseHandler::respond(false, $msg, 400);
+            return;
+        }
+        if ($result) {
             ResponseHandler::respond(true, 'User created successfully', 200);
         } else {
             ResponseHandler::respond(false, 'User creation failed', 400);
@@ -178,6 +203,7 @@ class UserController {
             foreach ($bookIds as $bookId) {
                 $book = $this->bookService->getBookDetails($bookId);
                 if ($book) {
+                    BookDisplayHelper::applyThumbnailForApi($book);
                     $books[] = $book;
                 }
             }
