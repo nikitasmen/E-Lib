@@ -122,14 +122,14 @@ class UserController
             return;
         }
 
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            ResponseHandler::respond(false, 'Invalid email format', 400);
+            return;
+        }
+
         $existingUser = $this->userService->getUserByEmail($email);
         if ($existingUser) {
             ResponseHandler::respond(false, 'Email already exists', 400);
-            return;
-        }
-        // Validate the input data
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            ResponseHandler::respond(false, 'Invalid email format', 400);
             return;
         }
         try {

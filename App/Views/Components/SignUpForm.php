@@ -126,26 +126,31 @@
                         window.location.href = '/?showLogin=1&redirect=';
                     }, 1500);
                 } else {
-                    // This handles the error case
                     console.error("Signup failed:", response);
-                    errorMessage.textContent = response.message || 'Signup failed. Please check your information.';
+                    errorMessage.textContent = response.data.message || 'Signup failed. Please check your information.';
+                    errorMessage.classList.remove('alert-success');
+                    errorMessage.classList.add('alert-danger');
                     errorMessage.classList.remove('d-none');
                 }
             })
             .catch(error => {
                 console.error("Signup error:", error);
-                submitBtn.textContent = originalBtnText;
-                submitBtn.disabled = false;
                 
-                // More detailed error handling
                 let errorText = 'An error occurred while trying to create your account. Please try again later.';
-                if (error.response && error.response.data && error.response.data.message) {
-                    errorText = error.response.data.message;
+                if (error.response && error.response.data) {
+                    const d = error.response.data;
+                    if (typeof d.message === 'string') {
+                        errorText = d.message;
+                    } else if (d.message && typeof d.message === 'object') {
+                        errorText = Object.values(d.message).flat().join(' ');
+                    }
                 } else if (error.message) {
                     errorText = error.message;
                 }
                 
                 errorMessage.textContent = errorText;
+                errorMessage.classList.remove('alert-success');
+                errorMessage.classList.add('alert-danger');
                 errorMessage.classList.remove('d-none');
             });
         }
