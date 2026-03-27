@@ -7,7 +7,7 @@
  */
 
 $formAction = $formAction ?? '/api/v1/login';
-$casUrl = $casUrl ?? 'https://auth.hmu.gr/cas/login?service=https://your-callback-url';
+$casUrl = $casUrl ?? 'https://auth.hmu.gr/cas/login?service=https://epictetus.hmu.gr';
 $redirect = $_GET['redirect'] ?? '/'; // Default to home page if no redirect is provided
 ?>
 
