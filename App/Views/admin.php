@@ -13,12 +13,13 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
+    <?php include 'Partials/Header.php'; ?>
+    <!-- Load Bootstrap once, before dashboard scripts (duplicate bundles break navbar dropdowns) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <?php
-        include 'Partials/Header.php';
         include 'Components/ViewBooks.php';
         include 'Partials/Footer.php';
     ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
