@@ -8,6 +8,7 @@ use App\Services\BookService;
 use App\Services\EmailService;
 use App\Includes\ResponseHandler;
 use App\Includes\JwtHelper;
+use App\Includes\AuthenticatedUser;
 use App\Helpers\BookDisplayHelper;
 
 class UserController
@@ -21,6 +22,14 @@ class UserController
         $this->userService = new UserService();
         $this->bookService = new BookService();
         $this->emailService = new EmailService();
+    }
+
+    /**
+     * User id from PHP session or Bearer JWT (SPA login often has token without session cookie).
+     */
+    private function getAuthenticatedUserId(): ?string
+    {
+        return AuthenticatedUser::id();
     }
 
     public function handleLogin()
@@ -159,13 +168,43 @@ class UserController
         }
     }
 
-    public function saveBook()
+    /**
+     * Current user's profile for GET /api/v1/user/profile (JWT or session).
+     */
+    public function getProfile(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
+            ResponseHandler::respond(false, 'User not authenticated', 401);
+            return;
         }
 
-        if (empty($_SESSION['user_id'])) {
+        $user = $this->userService->getUserById($userId);
+        if (!$user) {
+            ResponseHandler::respond(false, 'User not found', 404);
+            return;
+        }
+
+        unset($user['password'], $user['token']);
+        if (isset($user['_id'])) {
+            $user['_id'] = (string) $user['_id'];
+        }
+        if (isset($user['createdAt'])) {
+            $ca = $user['createdAt'];
+            if ($ca instanceof \MongoDB\BSON\UTCDateTime) {
+                $user['createdAt'] = $ca->toDateTime()->format(DATE_ATOM);
+            } elseif (is_object($ca) && method_exists($ca, 'toDateTime')) {
+                $user['createdAt'] = $ca->toDateTime()->format(DATE_ATOM);
+            }
+        }
+
+        ResponseHandler::respond(true, $user, 200);
+    }
+
+    public function saveBook()
+    {
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
             ResponseHandler::respond(false, 'User not authenticated', 401);
             return;
         }
@@ -182,8 +221,6 @@ class UserController
             ResponseHandler::respond(false, 'Book ID is required', 400);
             return;
         }
-
-        $userId = $_SESSION['user_id'] ?? null;
 
         if ($this->userService->saveBook($userId, $bookId)) {
             ResponseHandler::respond(true, 'Book saved successfully', 200);
@@ -194,42 +231,50 @@ class UserController
 
     public function getSavedBooks()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id'])) {
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
             ResponseHandler::respond(false, 'User not authenticated', 401);
             return;
         }
 
-        $userId = $_SESSION['user_id'] ?? null;
         $bookIds = $this->userService->getSavedBooks($userId);
-
-        if (!empty($bookIds)) {
-            $books = [];
-            foreach ($bookIds as $bookId) {
-                $book = $this->bookService->getBookDetails($bookId);
-                if ($book) {
-                    BookDisplayHelper::applyThumbnailForApi($book);
-                    $books[] = $book;
-                }
-            }
-
-            if (!empty($books)) {
-                ResponseHandler::respond(true, $books, 200);
+        $books = [];
+        foreach ($bookIds as $bookId) {
+            $book = $this->bookService->getBookDetails($bookId);
+            if ($book) {
+                BookDisplayHelper::applyThumbnailForApi($book);
+                $books[] = $book;
             }
         }
-        ResponseHandler::respond(true, 'No saved books found', 404);
+
+        ResponseHandler::respond(true, $books, 200);
+    }
+
+    public function getDownloadedBooks()
+    {
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
+            ResponseHandler::respond(false, 'User not authenticated', 401);
+            return;
+        }
+
+        $bookIds = $this->userService->getDownloadedBookIds($userId);
+        $books = [];
+        foreach ($bookIds as $bookId) {
+            $book = $this->bookService->getBookDetails($bookId);
+            if ($book) {
+                BookDisplayHelper::applyThumbnailForApi($book);
+                $books[] = $book;
+            }
+        }
+
+        ResponseHandler::respond(true, $books, 200);
     }
 
     public function removeBook()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id'])) {
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
             ResponseHandler::respond(false, 'User not authenticated', 401);
             return;
         }
@@ -246,8 +291,6 @@ class UserController
             ResponseHandler::respond(false, 'Book ID is required', 400);
             return;
         }
-
-        $userId = $_SESSION['user_id'] ?? null;
 
         if ($this->userService->removeBook($userId, $bookId)) {
             ResponseHandler::respond(true, 'Book removed successfully', 200);
@@ -352,11 +395,8 @@ class UserController
      */
     public function updateProfile()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id'])) {
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
             ResponseHandler::respond(false, 'User not authenticated', 401);
             return;
         }
@@ -369,8 +409,6 @@ class UserController
             ResponseHandler::respond(false, 'No data received', 400);
             return;
         }
-
-        $userId = $_SESSION['user_id'];
         $updates = [];
 
         // Handle username update
@@ -409,6 +447,59 @@ class UserController
             ResponseHandler::respond(true, 'Profile updated successfully', 200);
         } else {
             ResponseHandler::respond(false, 'Failed to update profile', 500);
+        }
+    }
+
+    /**
+     * Change password (requires current password). JSON: current_password, new_password
+     */
+    public function changePassword(): void
+    {
+        $userId = $this->getAuthenticatedUserId();
+        if ($userId === null) {
+            ResponseHandler::respond(false, 'User not authenticated', 401);
+            return;
+        }
+
+        $inputJSON = file_get_contents('php://input');
+        $input = json_decode($inputJSON, true);
+        if (!is_array($input)) {
+            ResponseHandler::respond(false, 'Invalid request body', 400);
+            return;
+        }
+
+        $current = (string) ($input['current_password'] ?? '');
+        $new = (string) ($input['new_password'] ?? '');
+
+        if ($current === '' || $new === '') {
+            ResponseHandler::respond(false, 'Current password and new password are required', 400);
+            return;
+        }
+
+        if (strlen($new) < 8) {
+            ResponseHandler::respond(false, 'New password must be at least 8 characters', 400);
+            return;
+        }
+
+        $user = $this->userService->getUserById($userId);
+        if (!$user || empty($user['password'])) {
+            ResponseHandler::respond(false, 'Unable to update password', 500);
+            return;
+        }
+
+        if (!password_verify($current, $user['password'])) {
+            ResponseHandler::respond(false, 'Current password is incorrect', 403);
+            return;
+        }
+
+        $ok = $this->userService->updateUser($userId, [
+            'password' => password_hash($new, PASSWORD_BCRYPT),
+        ]);
+
+        if ($ok) {
+            ResponseHandler::respond(true, 'Password updated successfully', 200);
+        } else {
+            ResponseHandler::respond(false, 'Failed to update password', 500);
         }
     }
 

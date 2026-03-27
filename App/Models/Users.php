@@ -188,6 +188,36 @@ class Users extends BaseModel
     }
 
     /**
+     * Record a successful book download for a user (unique book ids, newest last).
+     */
+    public function recordDownload(string $userId, string $bookId)
+    {
+        $user = $this->getUserById($userId);
+        if (!$user) {
+            return false;
+        }
+
+        $original = $user['downloadedBooks'] ?? [];
+        $list = is_object($original) && method_exists($original, 'getArrayCopy')
+            ? $original->getArrayCopy()
+            : (array) $original;
+
+        $ids = array_map('strval', $list);
+        $bid = (string) $bookId;
+        if (!in_array($bid, $ids, true)) {
+            $list[] = $bid;
+            try {
+                return $this->updateById($userId, ['downloadedBooks' => array_values($list)]);
+            } catch (\Exception $e) {
+                error_log('Error recording download: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Update user profile
      *
      * @param string $userId User ID

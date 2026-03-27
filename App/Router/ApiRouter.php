@@ -43,12 +43,15 @@ class ApiRouter
             ['method' => 'POST', 'path' => '/api/v1/login', 'handler' => [new UserController(), 'handleLogin']],
             ['method' => 'GET', 'path' => '/api/v1/logout', 'handler' => [new UserController(), 'handleLogout']],
 
+            ['method' => 'GET', 'path' => '/api/v1/user/profile', 'handler' => [new UserController(), 'getProfile']],
             ['method' => 'GET', 'path' => '/api/v1/user', 'handler' => [new UserController(), 'getUser']],
             ['method' => 'POST', 'path' => '/api/v1/save-book', 'handler' => [new UserController(), 'saveBook']],
             ['method' => 'POST', 'path' => '/api/v1/remove-book', 'handler' => [new UserController(), 'removeBook']],
             ['method' => 'GET', 'path' => '/api/v1/saved-books', 'handler' => [new UserController(), 'getSavedBooks']],
+            ['method' => 'GET', 'path' => '/api/v1/downloaded-books', 'handler' => [new UserController(), 'getDownloadedBooks']],
             ['method' => 'GET', 'path' => '/api/v1/admin/logs', 'handler' => [new UserController(), 'viewLogs']],
             ['method' => 'POST', 'path' => '/api/v1/update-profile', 'handler' => [new UserController(), 'updateProfile']],
+            ['method' => 'POST', 'path' => '/api/v1/change-password', 'handler' => [new UserController(), 'changePassword']],
             ['method' => 'POST', 'path' => '/api/v1/support', 'handler' => [new UserController(), 'support']]
         ];
     }

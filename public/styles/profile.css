@@ -1,8 +1,8 @@
 .profile-header {
     background-color: #f8f9fa;
-    border-radius: 12px;
-    padding: 30px;
-    margin-bottom: 30px;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
 }
 .profile-avatar {
     width: 120px;
@@ -16,6 +16,12 @@
     color: white;
     font-weight: bold;
     margin: 0 auto 20px;
+}
+.profile-avatar.profile-avatar-sm {
+    width: 72px;
+    height: 72px;
+    font-size: 1.75rem;
+    margin: 0;
 }
 .book-bookFile {
     height: 180px;

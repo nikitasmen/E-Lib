@@ -36,7 +36,8 @@ class PageRouter
             ['path' => '/search_results', 'handler' => [new PageController(), 'searchBooks']],
             ['path' => '/error', 'handler' => [new PageController(), 'error']],
             ['path' => '/dashboard', 'handler' => [new PageController(), 'dashboard']],
-            ['path' => '/signup', 'handler' => [new PageController(), 'home', ['showSignup' => true]]],
+            ['path' => '/signup', 'handler' => [new PageController(), 'signup']],
+            ['path' => '/login', 'handler' => [new PageController(), 'login']],
             ['path' => '/admin/logs', 'handler' => [new PageController(), 'viewLogs']],
             ['path' => '/docs', 'handler' => [new PageController(), 'docs']],
         ];

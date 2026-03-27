@@ -40,7 +40,7 @@
         <!-- Message for guests -->
         <div id="guestReviewMessage" class="alert alert-info" style="display: none;">
             <i class="fas fa-info-circle me-2"></i>
-            Please <a href="/login" class="alert-link">login</a> to leave a review.
+            Please <a href="/login?redirect=<?= rawurlencode($_SERVER['REQUEST_URI'] ?? '/') ?>" class="alert-link">login</a> to leave a review.
         </div>
     </div>
 </div>

@@ -11,9 +11,10 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
     <?php 
+        $activePage = $activePage ?? '';
         include 'Partials/Header.php';
     ?> 
-    <div class="container mt-5">
+    <div class="container book-detail-page-container mt-5">
         <div id="book-container">
             <!-- Loading indicator -->
             <div class="text-center py-5" id="loading-indicator">
@@ -223,11 +224,18 @@
             if (saveBtn) {
                 saveBtn.addEventListener('click', async () => {
                     const bookId = document.getElementById('bookId').value;
-                    
+                    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+                    if (!token) {
+                        alert('Please log in to save books to your list.');
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    }
                     try {
-                        const response = await axios.post('/api/v1/save-book', {
-                            book_id: bookId
-                        });
+                        const response = await axios.post(
+                            '/api/v1/save-book',
+                            { book_id: bookId },
+                            { headers: { Authorization: 'Bearer ' + token } }
+                        );
                         
                         if (response.data.status === 'success') {
                             saveBtn.textContent = 'Saved to List';
@@ -237,7 +245,7 @@
                         }
                     } catch (error) {
                         console.error('Error saving book:', error);
-                        alert('An error occurred while saving the book');
+                        alert(error.response?.data?.message || 'An error occurred while saving the book');
                     }
                 });
             }

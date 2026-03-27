@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Services\BookService;
+use App\Services\UserService;
+use App\Includes\AuthenticatedUser;
 use App\Includes\ResponseHandler;
 use App\Helpers\FileHelper;
 use App\Helpers\BookDisplayHelper;
@@ -284,21 +286,16 @@ class BookController
      */
     public function downloadBook($bookId = null)
     {
-        // Check if user is authenticated
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id'])) {
-            header('Location: /?showLogin=true&redirect=' . urlencode($_SERVER['REQUEST_URI']));
-            exit;
+        $userId = AuthenticatedUser::id();
+        if ($userId === null) {
+            ResponseHandler::respond(false, 'Authentication required', 401);
+            return;
         }
 
         // Validate book ID
         if (!$bookId || !preg_match('/^[0-9a-f]{24}$/', $bookId)) {
-            header('HTTP/1.0 400 Bad Request');
-            echo "Invalid book ID";
-            exit;
+            ResponseHandler::respond(false, 'Invalid book ID', 400);
+            return;
         }
 
         // Get book details from database
@@ -307,27 +304,30 @@ class BookController
 
         $rel = $book['file_path'] ?? $book['pdf_path'] ?? '';
         if (!$book || $rel === '') {
-            header('HTTP/1.0 404 Not Found');
-            echo "Book not found or has no PDF";
-            exit;
+            ResponseHandler::respond(false, 'Book not found or has no PDF', 404);
+            return;
         }
 
         // Check if the book is downloadable
         if (isset($book['downloadable']) && $book['downloadable'] === false) {
-            header('HTTP/1.0 403 Forbidden');
-            echo "This book is not available for download";
-            exit;
+            ResponseHandler::respond(false, 'This book is not available for download', 403);
+            return;
         }
 
         $pdfPath = $this->resolveStoredPublicFile($rel);
         if ($pdfPath === null) {
-            header('HTTP/1.0 404 Not Found');
-            echo "PDF file not found or not readable";
-            exit;
+            ResponseHandler::respond(false, 'PDF file not found or not readable', 404);
+            return;
         }
 
-        // Log the download
-        error_log("User {$_SESSION['user_id']} downloaded book {$bookId}");
+        try {
+            $userService = new UserService();
+            $userService->recordDownload($userId, $bookId);
+        } catch (\Throwable $e) {
+            error_log('recordDownload failed: ' . $e->getMessage());
+        }
+
+        error_log("User {$userId} downloaded book {$bookId}");
 
         // Get the filename for the Content-Disposition header
         $filename = basename($pdfPath);

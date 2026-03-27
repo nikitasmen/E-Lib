@@ -6,40 +6,31 @@
  */
 ?>
 
-<div class="container my-5">
-    <!-- Profile Header -->
-    <div class="profile-header shadow-sm p-4 mb-4 bg-light rounded">
-        <div class="row align-items-center">
-            <div class="col-md-3 text-center">
-                <div class="profile-avatar" id="profile-avatar">
-                    <!-- Will be set via JavaScript -->
-                </div>
+<div class="container my-4">
+    <!-- Profile Header (compact) -->
+    <div class="profile-header shadow-sm p-3 mb-3 bg-light rounded">
+        <div class="row align-items-center g-3">
+            <div class="col-auto">
+                <div class="profile-avatar profile-avatar-sm" id="profile-avatar"></div>
             </div>
-            <div class="col-md-9">
-                <div class="d-flex align-items-center mb-3">
-                    <!-- Username with edit functionality -->
-                    <div id="username-display">
-                        <h1 id="current-username" class="mb-0 me-2">Loading...</h1>
-                        <button id="edit-username-btn" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-edit"></i> Edit
+            <div class="col">
+                <div id="username-display" class="d-flex align-items-center flex-wrap gap-2">
+                    <h1 id="current-username" class="h4 mb-0">Loading...</h1>
+                    <div class="profile-menu-wrap position-relative" id="profile-menu-wrap">
+                        <button type="button" class="btn btn-sm btn-light border profile-menu-trigger" id="profile-menu-trigger" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+                            <i class="fas fa-bars" aria-hidden="true"></i>
                         </button>
-                    </div>
-                    
-                    <!-- Username edit form (initially hidden) -->
-                    <div id="username-edit-form" class="d-none">
-                        <div class="input-group">
-                            <input type="text" id="new-username" class="form-control" value="">
-                            <button id="save-username-btn" class="btn btn-primary">Save</button>
-                            <button id="cancel-edit-btn" class="btn btn-outline-secondary">Cancel</button>
+                        <div class="profile-menu-panel border rounded-2 bg-white shadow-sm py-1" role="menu" aria-hidden="true">
+                            <button type="button" class="profile-menu-item" id="menu-edit-username" role="menuitem">Edit username</button>
+                            <button type="button" class="profile-menu-item" id="menu-change-password" role="menuitem">Change password</button>
                         </div>
-                        <small id="username-error" class="text-danger d-none">Error message will appear here</small>
                     </div>
                 </div>
-                <p class="text-muted mb-2">
-                    <i class="fas fa-envelope me-2"></i><span id="user-email">Loading...</span>
+                <p class="text-muted small mb-1 mt-2 mb-0">
+                    <i class="fas fa-envelope me-1"></i><span id="user-email">Loading...</span>
                 </p>
-                <p class="text-muted">
-                    <i class="fas fa-clock me-2"></i>Member since: <span id="member-since">Loading...</span>
+                <p class="text-muted small mb-0">
+                    <i class="fas fa-clock me-1"></i>Member since <span id="member-since">Loading...</span>
                 </p>
             </div>
         </div>
@@ -50,6 +41,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="saved-tab" data-bs-toggle="pill" data-bs-target="#saved" type="button">
                 <i class="fas fa-bookmark me-2"></i>Saved Books
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="downloaded-tab" data-bs-toggle="pill" data-bs-target="#downloaded" type="button">
+                <i class="fas fa-download me-2"></i>Downloaded
             </button>
         </li>
     </ul>
@@ -64,7 +60,69 @@
                 </div>
                 <p class="mt-3">Loading your saved books...</p>
             </div>
-        </div>    
+        </div>
+        <div class="tab-pane fade" id="downloaded" role="tabpanel" aria-labelledby="downloaded-tab">
+            <div class="text-center py-4 text-muted" id="downloaded-books-placeholder">
+                <p class="mb-0 small">Open this tab to see books you have downloaded.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit username -->
+<div class="modal fade" id="editUsernameModal" tabindex="-1" aria-labelledby="editUsernameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="editUsernameModalLabel">Edit username</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="edit-username-form" novalidate>
+                    <div class="mb-3">
+                        <label for="new-username" class="form-label small">Username</label>
+                        <input type="text" id="new-username" class="form-control form-control-sm" value="" autocomplete="username" minlength="3" required>
+                        <div class="form-text small">At least 3 characters.</div>
+                    </div>
+                    <small id="username-error" class="text-danger d-none d-block mb-2" role="alert"></small>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" id="cancel-edit-btn">Cancel</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="save-username-btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change password (modal keeps the page compact) -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <form id="change-password-form" novalidate>
+                    <div class="mb-3">
+                        <label for="current-password" class="form-label small">Current password</label>
+                        <input type="password" class="form-control form-control-sm" id="current-password" name="current_password" autocomplete="current-password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-password" class="form-label small">New password</label>
+                        <input type="password" class="form-control form-control-sm" id="new-password" name="new_password" autocomplete="new-password" minlength="8" required>
+                        <div class="form-text small">At least 8 characters.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm-new-password" class="form-label small">Confirm new password</label>
+                        <input type="password" class="form-control form-control-sm" id="confirm-new-password" name="confirm_new_password" autocomplete="new-password" minlength="8" required>
+                    </div>
+                    <p id="change-password-feedback" class="small mb-2 d-none" role="alert"></p>
+                    <button type="submit" class="btn btn-primary btn-sm" id="change-password-submit">Update password</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -73,14 +131,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Username edit functionality
-    const usernameDisplay = document.getElementById('username-display');
-    const usernameEditForm = document.getElementById('username-edit-form');
     const currentUsername = document.getElementById('current-username');
-    const editUsernameBtn = document.getElementById('edit-username-btn');
+    const profileMenuWrap = document.getElementById('profile-menu-wrap');
+    const menuEditUsername = document.getElementById('menu-edit-username');
+    const menuChangePassword = document.getElementById('menu-change-password');
+    const editUsernameModalEl = document.getElementById('editUsernameModal');
+    const changePasswordModalEl = document.getElementById('changePasswordModal');
     const newUsernameInput = document.getElementById('new-username');
     const saveUsernameBtn = document.getElementById('save-username-btn');
-    const cancelEditBtn = document.getElementById('cancel-edit-btn');
     const usernameError = document.getElementById('username-error');
     const profileAvatar = document.querySelector('.profile-avatar');
     const userEmail = document.getElementById('user-email');
@@ -149,31 +207,89 @@ document.addEventListener('DOMContentLoaded', function () {
         alert(message);
     }
     
-    // Edit button click handler
-    editUsernameBtn.addEventListener('click', function() {
-        usernameDisplay.classList.add('d-none');
-        usernameEditForm.classList.remove('d-none');
-        newUsernameInput.focus();
-        newUsernameInput.select();
-    });
-    
-    // Cancel button click handler
-    cancelEditBtn.addEventListener('click', function() {
-        usernameDisplay.classList.remove('d-none');
-        usernameEditForm.classList.add('d-none');
-        newUsernameInput.value = currentUsername.textContent;
-        usernameError.classList.add('d-none');
-    });
-    
-    // Save button click handler
-    saveUsernameBtn.addEventListener('click', updateUsername);
-    
-    // Enter key press handler for the input field
-    newUsernameInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            updateUsername();
+    function closeProfileMenu() {
+        if (profileMenuWrap) {
+            profileMenuWrap.classList.remove('show-menu');
         }
-    });
+    }
+
+    if (profileMenuWrap && document.getElementById('profile-menu-trigger')) {
+        document.getElementById('profile-menu-trigger').addEventListener('click', function (e) {
+            e.stopPropagation();
+            profileMenuWrap.classList.toggle('show-menu');
+        });
+        document.addEventListener('click', function () {
+            closeProfileMenu();
+        });
+        profileMenuWrap.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
+
+    if (editUsernameModalEl && typeof bootstrap !== 'undefined') {
+        editUsernameModalEl.addEventListener('hidden.bs.modal', function () {
+            if (usernameError) {
+                usernameError.classList.add('d-none');
+                usernameError.textContent = '';
+            }
+            if (newUsernameInput && currentUsername) {
+                newUsernameInput.value = currentUsername.textContent.trim();
+            }
+        });
+    }
+
+    if (menuEditUsername && editUsernameModalEl && typeof bootstrap !== 'undefined') {
+        menuEditUsername.addEventListener('click', function () {
+            closeProfileMenu();
+            if (usernameError) {
+                usernameError.classList.add('d-none');
+                usernameError.textContent = '';
+            }
+            newUsernameInput.value = currentUsername.textContent.trim();
+            bootstrap.Modal.getOrCreateInstance(editUsernameModalEl).show();
+            setTimeout(function () {
+                newUsernameInput.focus();
+                newUsernameInput.select();
+            }, 300);
+        });
+    }
+
+    if (menuChangePassword && changePasswordModalEl && typeof bootstrap !== 'undefined') {
+        menuChangePassword.addEventListener('click', function () {
+            closeProfileMenu();
+            const feedback = document.getElementById('change-password-feedback');
+            if (feedback) {
+                feedback.classList.add('d-none');
+                feedback.textContent = '';
+            }
+            const form = document.getElementById('change-password-form');
+            if (form) {
+                form.reset();
+            }
+            bootstrap.Modal.getOrCreateInstance(changePasswordModalEl).show();
+        });
+    }
+    
+    // Save button (modal)
+    if (saveUsernameBtn) {
+        saveUsernameBtn.addEventListener('click', updateUsername);
+    }
+    const editUsernameForm = document.getElementById('edit-username-form');
+    if (editUsernameForm) {
+        editUsernameForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            updateUsername();
+        });
+    }
+
+    if (newUsernameInput) {
+        newUsernameInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                updateUsername();
+            }
+        });
+    }
     
     function updateUsername() {
         const newUsername = newUsernameInput.value.trim();
@@ -189,9 +305,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         
-        if (newUsername === currentUsername.textContent) {
-            // No change, just cancel the edit
-            cancelEditBtn.click();
+        if (newUsername === currentUsername.textContent.trim()) {
+            if (editUsernameModalEl && typeof bootstrap !== 'undefined') {
+                var um = bootstrap.Modal.getInstance(editUsernameModalEl);
+                if (um) {
+                    um.hide();
+                }
+            }
             return;
         }
         
@@ -209,18 +329,15 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(function(response) {
             if (response.data.success || response.data.status === 'success') {
-                // Update the UI
                 currentUsername.textContent = newUsername;
                 profileAvatar.textContent = newUsername.charAt(0);
-                
-                // Exit edit mode
-                usernameDisplay.classList.remove('d-none');
-                usernameEditForm.classList.add('d-none');
-                
-                // Show success notification
+                if (editUsernameModalEl && typeof bootstrap !== 'undefined') {
+                    var um = bootstrap.Modal.getInstance(editUsernameModalEl);
+                    if (um) {
+                        um.hide();
+                    }
+                }
                 showNotification('Username updated successfully', 'success');
-                
-                // Also update the session if needed
                 if (typeof updateSessionValue === 'function') {
                     updateSessionValue('username', newUsername);
                 }
@@ -278,15 +395,93 @@ document.addEventListener('DOMContentLoaded', function () {
             toastElement.remove();
         });
     }
+
+    const changePasswordForm = document.getElementById('change-password-form');
+    const changePasswordFeedback = document.getElementById('change-password-feedback');
+    const changePasswordSubmit = document.getElementById('change-password-submit');
+
+    function setPasswordFeedback(message, isError) {
+        if (!changePasswordFeedback) return;
+        changePasswordFeedback.textContent = message;
+        changePasswordFeedback.classList.remove('d-none', 'text-danger', 'text-success');
+        changePasswordFeedback.classList.add(isError ? 'text-danger' : 'text-success');
+    }
+
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const current = document.getElementById('current-password').value;
+            const newPass = document.getElementById('new-password').value;
+            const confirm = document.getElementById('confirm-new-password').value;
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
+
+            if (!token) {
+                alert('Please log in again.');
+                window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
+            if (newPass !== confirm) {
+                setPasswordFeedback('New password and confirmation do not match.', true);
+                return;
+            }
+            if (newPass.length < 8) {
+                setPasswordFeedback('New password must be at least 8 characters.', true);
+                return;
+            }
+
+            setPasswordFeedback('', false);
+            changePasswordFeedback.classList.add('d-none');
+            changePasswordSubmit.disabled = true;
+            changePasswordSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Updating…';
+
+            axios.post('/api/v1/change-password', {
+                current_password: current,
+                new_password: newPass
+            }, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function (response) {
+                if (response.data && response.data.status === 'success') {
+                    changePasswordForm.reset();
+                    setPasswordFeedback('Password updated successfully.', false);
+                    showNotification('Password updated successfully', 'success');
+                    if (changePasswordModalEl && typeof bootstrap !== 'undefined') {
+                        var pwdModal = bootstrap.Modal.getInstance(changePasswordModalEl);
+                        if (pwdModal) {
+                            pwdModal.hide();
+                        }
+                    }
+                } else {
+                    setPasswordFeedback(response.data.message || 'Could not update password.', true);
+                }
+            })
+            .catch(function (error) {
+                const msg = error.response?.data?.message || 'Could not update password. Please try again.';
+                setPasswordFeedback(msg, true);
+            })
+            .finally(function () {
+                changePasswordSubmit.disabled = false;
+                changePasswordSubmit.innerHTML = '<i class="fas fa-save me-1"></i>Update password';
+            });
+        });
+    }
     
     // Existing saved books functionality
     const savedTab = document.getElementById('saved-tab');
     const savedBooksContainer = document.getElementById('saved');
+    const downloadedTab = document.getElementById('downloaded-tab');
+    const downloadedBooksContainer = document.getElementById('downloaded');
     loadSavedBooks();
-    
+
     savedTab.addEventListener('click', function () {
         loadSavedBooks();
     });
+
+    if (downloadedTab && downloadedBooksContainer) {
+        downloadedTab.addEventListener('shown.bs.tab', function () {
+            loadDownloadedBooks();
+        });
+    }
 
     function loadSavedBooks() {
         savedBooksContainer.innerHTML = `
@@ -360,9 +555,69 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    function loadDownloadedBooks() {
+        if (!downloadedBooksContainer) {
+            return;
+        }
+        downloadedBooksContainer.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading your downloaded books...</p>
+            </div>
+        `;
+
+        axios.get('/api/v1/downloaded-books', {
+            headers: {
+                'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '')
+            }
+        })
+        .then(function (response) {
+            const books = response.data.data;
+            if (books && books.length > 0) {
+                try {
+                    let booksHTML = '<div class="row">';
+                    books.forEach(function (book) {
+                        booksHTML += generateBookCardHTML(book, false);
+                    });
+                    booksHTML += '</div>';
+                    downloadedBooksContainer.innerHTML = booksHTML;
+                } catch (err) {
+                    console.error('Error rendering downloaded books:', err);
+                    showNoDownloadedBooksMessage();
+                }
+            } else {
+                showNoDownloadedBooksMessage();
+            }
+        })
+        .catch(function (error) {
+            console.error('Error loading downloaded books:', error);
+            downloadedBooksContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h4>Error loading books</h4>
+                    <p class="text-muted">${error.response?.data?.message || 'There was a problem loading your downloaded books.'}</p>
+                    <button type="button" class="btn btn-primary" id="downloaded-books-retry">Retry</button>
+                </div>
+            `;
+            const retryBtn = document.getElementById('downloaded-books-retry');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', function () {
+                    loadDownloadedBooks();
+                });
+            }
+        });
+    }
+
+    window.loadDownloadedBooks = loadDownloadedBooks;
     
     // Function to generate HTML for a book card based on BookCard.php structure
-    function generateBookCardHTML(book) {
+    function generateBookCardHTML(book, includeRemove) {
+        if (includeRemove === undefined) {
+            includeRemove = true;
+        }
         const title = book.title || 'Unknown Title';
         const author = book.author || 'Unknown Author';
         const bookId = book._id.$oid || book._id || '';
@@ -428,13 +683,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         <!-- Average Rating -->
                         ${ratingHTML}
                         <!-- Action Buttons -->
-                        <div class="mt-auto d-flex justify-content-between">
+                        <div class="mt-auto d-flex ${includeRemove ? 'justify-content-between' : 'justify-content-center'}">
                             <a href="/book/${bookId}" class="btn btn-sm btn-primary">
                                 View Details
                             </a>
+                            ${includeRemove ? `
                             <button class="btn btn-sm btn-outline-danger remove-saved-book" data-book-id="${bookId}">
                                 <i class="fas fa-times"></i> Remove
-                            </button>
+                            </button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -448,6 +704,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
                 <h4>No saved books</h4>
                 <p class="text-muted">You haven't saved any books to your list yet.</p>
+                <a href="/search" class="btn btn-primary">Browse Books</a>
+            </div>
+        `;
+    }
+
+    function showNoDownloadedBooksMessage() {
+        if (!downloadedBooksContainer) {
+            return;
+        }
+        downloadedBooksContainer.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-download fa-3x text-muted mb-3"></i>
+                <h4>No downloads yet</h4>
+                <p class="text-muted">Books you download will appear here.</p>
                 <a href="/search" class="btn btn-primary">Browse Books</a>
             </div>
         `;
@@ -515,32 +785,36 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<!-- Add styles for the profile avatar and edit functionality -->
 <style>
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        background-color: #007bff;
-        color: white;
-        font-size: 3rem;
-        font-weight: bold;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 50%;
-        margin: 0 auto;
+    .profile-menu-wrap .profile-menu-panel {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 12rem;
+        z-index: 1080;
+        margin-top: 2px;
     }
-    
-    #username-display {
-        display: flex;
-        align-items: center;
+    .profile-menu-wrap:hover .profile-menu-panel,
+    .profile-menu-wrap:focus-within .profile-menu-panel,
+    .profile-menu-wrap.show-menu .profile-menu-panel {
+        display: block;
     }
-    
-    #edit-username-btn {
-        margin-left: 10px;
+    .profile-menu-item {
+        display: block;
+        width: 100%;
+        padding: 0.45rem 0.9rem;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: #212529;
     }
-    
-    #username-edit-form .input-group {
-        max-width: 400px;
+    .profile-menu-item:hover {
+        background: #f8f9fa;
+    }
+    .profile-menu-item + .profile-menu-item {
+        border-top: 1px solid #e9ecef;
     }
 </style>
