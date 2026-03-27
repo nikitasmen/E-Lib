@@ -43,10 +43,39 @@ class UserService
     public function getSavedBooks($userId)
     {
         $user = $this->getUserById($userId);
-        if (!empty($user['savedBooks'])) {
-            return $user['savedBooks'];
+        if (empty($user['savedBooks'])) {
+            return [];
         }
-        return null;
+        $raw = $user['savedBooks'];
+        $arr = is_object($raw) && method_exists($raw, 'getArrayCopy')
+            ? $raw->getArrayCopy()
+            : (array) $raw;
+
+        return array_values(array_map('strval', $arr));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getDownloadedBookIds($userId): array
+    {
+        $user = $this->getUserById($userId);
+        if (empty($user['downloadedBooks'])) {
+            return [];
+        }
+        $raw = $user['downloadedBooks'];
+        $arr = is_object($raw) && method_exists($raw, 'getArrayCopy')
+            ? $raw->getArrayCopy()
+            : (array) $raw;
+
+        return array_values(array_map('strval', $arr));
+    }
+
+    public function recordDownload(string $userId, string $bookId): bool
+    {
+        $result = $this->user->recordDownload($userId, $bookId);
+
+        return $result !== false;
     }
 
     public function removeBook($userId, $bookId)
