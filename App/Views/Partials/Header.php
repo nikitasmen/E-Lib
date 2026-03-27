@@ -28,7 +28,14 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['username'])) {
             </span>
             <span>Epictetus Library</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <?php if (empty($_SESSION['user_id'])): ?>
+            <!-- Always visible on small screens (auth was only inside collapse, so it was easy to miss) -->
+            <div class="d-flex d-lg-none align-items-center gap-2 ms-auto me-2 navbar-guest-toolbar">
+                <button type="button" class="btn btn-sm btn-light fw-semibold js-navbar-auth-btn" onclick="openPopup('loginPopup')" id="navbarBtnLoginMobile">Log in</button>
+                <button type="button" class="btn btn-sm btn-primary fw-semibold js-navbar-auth-btn" onclick="openPopup('signupPopup')" id="navbarBtnSignupMobile">Sign up</button>
+            </div>
+        <?php endif; ?>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -72,10 +79,10 @@ if (!empty($_SESSION['user_id']) && !empty($_SESSION['username'])) {
                     </ul>
                 </div>
             <?php else: ?>
-                <!-- User is not logged in -->
-                <div class="d-flex">
-                    <button id="userAction" class="btn btn-outline-light me-2" onclick="openPopup('loginPopup')">Login</button>
-                    <button id="userAction" class="btn btn-primary" onclick="openPopup('signupPopup')">Sign Up</button>
+                <!-- User is not logged in (desktop: inside collapse; lg+ navbar is expanded) -->
+                <div class="d-none d-lg-flex align-items-center gap-2 ms-lg-2 navbar-guest-desktop">
+                    <button type="button" id="navbarBtnLogin" class="btn btn-outline-light js-navbar-auth-btn" onclick="openPopup('loginPopup')">Log in</button>
+                    <button type="button" id="navbarBtnSignup" class="btn btn-primary js-navbar-auth-btn" onclick="openPopup('signupPopup')">Sign up</button>
                 </div>
             <?php endif; ?>
         </div>
@@ -133,44 +140,53 @@ document.addEventListener('DOMContentLoaded', function () {
     const isAdmin = localStorage.getItem('isAdmin') || sessionStorage.getItem('isAdmin');
     const username = localStorage.getItem('username') || sessionStorage.getItem('username');
 
-    const loginButtons = document.querySelectorAll('#userAction');
+    const guestAuthButtons = document.querySelectorAll('.js-navbar-auth-btn');
+    const guestToolbar = document.querySelector('.navbar-guest-toolbar');
+    const guestDesktop = document.querySelector('.navbar-guest-desktop');
     const userDropdown = document.querySelector('#profileDropdown');
 
-    if (authToken) {
-        // User is logged in
-        if (loginButtons) {
-            loginButtons.forEach(button => button.style.display = 'none');
+    function setGuestAuthVisible(visible) {
+        guestAuthButtons.forEach(function (btn) {
+            btn.style.display = visible ? '' : 'none';
+        });
+        if (guestToolbar) {
+            guestToolbar.style.display = visible ? '' : 'none';
         }
-        if (userDropdown) {
-            userDropdown.style.display = 'block';
-            
-            // Update the username in the dropdown if available in client storage
-            if (username) {
-                const avatarDiv = userDropdown.querySelector('.user-avatar');
-                const nameSpan = userDropdown.querySelector('.d-none.d-md-inline');
-                
-                if (avatarDiv) {
-                    avatarDiv.textContent = username.substring(0, 1).toUpperCase();
-                }
-                
-                if (nameSpan) {
-                    nameSpan.textContent = username;
-                }
+        if (guestDesktop) {
+            guestDesktop.style.display = visible ? '' : 'none';
+        }
+    }
+
+    if (authToken && userDropdown) {
+        // Logged in: server rendered profile menu + client token
+        setGuestAuthVisible(false);
+        userDropdown.style.display = 'block';
+
+        if (username) {
+            const avatarDiv = userDropdown.querySelector('.user-avatar');
+            const nameSpan = userDropdown.querySelector('.d-none.d-md-inline');
+            if (avatarDiv) {
+                avatarDiv.textContent = username.substring(0, 1).toUpperCase();
+            }
+            if (nameSpan) {
+                nameSpan.textContent = username;
             }
         }
 
-        // Check if user is admin
         if (isAdmin === 'true') {
-            const dashboardLink = document.createElement('li');
-            dashboardLink.innerHTML = '<a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>';
             const dropdownMenu = userDropdown.querySelector('.dropdown-menu');
-            dropdownMenu.insertBefore(dashboardLink, dropdownMenu.firstChild);
+            if (dropdownMenu && !dropdownMenu.querySelector('a[href="/dashboard"]')) {
+                const dashboardLink = document.createElement('li');
+                dashboardLink.innerHTML = '<a class="dropdown-item" href="/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>';
+                dropdownMenu.insertBefore(dashboardLink, dropdownMenu.firstChild);
+            }
         }
+    } else if (authToken && !userDropdown) {
+        // Stale client token without PHP session: keep Log in / Sign up visible
+        setGuestAuthVisible(true);
     } else {
-        // User is not logged in
-        if (loginButtons) {
-            loginButtons.forEach(button => button.style.display = 'block');
-        }
+        // Guest
+        setGuestAuthVisible(true);
         if (userDropdown) {
             userDropdown.style.display = 'none';
         }

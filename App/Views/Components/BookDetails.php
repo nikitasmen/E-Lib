@@ -168,16 +168,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (saveBtn) {
         saveBtn.addEventListener('click', async () => {
             const bookId = document.getElementById('bookId').value;
-            
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            if (!token) {
+                alert('Please log in to save books to your list.');
+                window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                return;
+            }
             try {
-                const response = await axios.post('/api/v1/save-book', {
-                    book_id: bookId
-                
-                }, {headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken') || sessionStorage.getItem('authToken')}`  ;
-                    
-                }}
-            );
+                const response = await axios.post(
+                    '/api/v1/save-book',
+                    { book_id: bookId },
+                    { headers: { Authorization: 'Bearer ' + token } }
+                );
                 
                 if (response.data.status === 'success') {
                     saveBtn.textContent = 'Saved to List';
@@ -187,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Error saving book:', error);
-                alert('An error occurred while saving the book');
+                alert(error.response?.data?.message || 'An error occurred while saving the book');
             }
         });
     }
