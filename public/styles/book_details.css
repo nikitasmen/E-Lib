@@ -8,7 +8,9 @@
 .book-details {
     margin-top: 20px;
 }
-.container {
+
+/* Scope layout width to main content only — do not target .navbar .container */
+.book-detail-page-container {
     max-width: 900px;
 }
 .badge {

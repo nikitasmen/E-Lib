@@ -42,7 +42,10 @@ class PageController
                 return;
             }
             // Just render the page shell, client will fetch the data
-            $this->response->renderView(__DIR__ . '/../Views/book_detail.php', ['bookId' => $id]);
+            $this->response->renderView(__DIR__ . '/../Views/book_detail.php', [
+                'bookId' => $id,
+                'activePage' => 'books',
+            ]);
         } catch (Exception $e) {
             // Log the error but don't echo it (causes header issues)
             error_log("Book View Error: " . $e->getMessage());
@@ -84,12 +87,33 @@ class PageController
         $this->response->renderView(__DIR__ . '/../Views/docs.php');
     }
 
+    public function signup()
+    {
+        $this->response->renderView(__DIR__ . '/../Views/signup.php');
+    }
+
+    /**
+     * Dedicated /login URL used by links (e.g. book reviews). Redirects to home with login popup.
+     */
+    public function login()
+    {
+        $redirect = $_GET['redirect'] ?? '/';
+        if (!is_string($redirect) || $redirect === '') {
+            $redirect = '/';
+        }
+        if ($redirect[0] !== '/' || str_starts_with($redirect, '//')) {
+            $redirect = '/';
+        }
+        header('Location: /?showLogin=1&redirect=' . rawurlencode($redirect));
+        exit;
+    }
+
     public function profile()
     {
         // Check if the user is logged in
         if (!SessionManager::isLoggedIn()) {
             // Redirect to home with parameter to show login popup
-            header('Location: /?showLogin=1&redirect=' + urlencode($_SERVER['REQUEST_URI']));
+            header('Location: /?showLogin=1&redirect=' . urlencode($_SERVER['REQUEST_URI'] ?? '/'));
             exit;
         }
 
