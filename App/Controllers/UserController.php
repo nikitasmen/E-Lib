@@ -319,7 +319,7 @@ class UserController
         }
 
         // Even with valid token, check if user is admin in session
-        if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        if (!AuthenticatedUser::isAdmin()) {
             ResponseHandler::respond(false, 'Unauthorized: Admin privileges required', 403);
             return;
         }

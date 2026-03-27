@@ -31,4 +31,15 @@ class AuthenticatedUser
 
         return null;
     }
+
+    /**
+     * Check if the current user session has admin privileges.
+     */
+    public static function isAdmin(): bool
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        return !empty($_SESSION['user_id']) && !empty($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true;
+    }
 }

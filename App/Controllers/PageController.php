@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Includes\ResponseHandler;
 use App\Includes\SessionManager;
+use App\Includes\AuthenticatedUser;
 use Exception;
 
 class PageController
@@ -149,7 +150,7 @@ class PageController
         }
 
         // Check if user is admin
-        if (empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        if (!AuthenticatedUser::isAdmin()) {
             // Redirect to home page with unauthorized message
             header('Location: /?error=' . urlencode('You do not have permission to access this page.'));
             exit;

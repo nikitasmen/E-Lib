@@ -45,23 +45,10 @@
             <?php if (!empty($book['categories'])): ?>
                 <?php 
                 // Handle MongoDB BSON arrays properly
-                $categories = $book['categories'];
-                if ($categories instanceof \MongoDB\Model\BSONArray) {
-                    // Convert BSON array to PHP array
-                    $categories = $categories->getArrayCopy();
-                    foreach ($categories as $category): ?>
-                        <span class="badge bg-info me-1 mb-1"><?= htmlspecialchars((string)$category) ?></span>
-                    <?php endforeach;
-                } elseif (is_array($categories)) {
-                    // Regular PHP array
-                    foreach ($categories as $category): ?>
-                        <span class="badge bg-info me-1 mb-1"><?= htmlspecialchars((string)$category) ?></span>
-                    <?php endforeach;
-                } else {
-                    // Single category as string
-                    ?>
-                    <span class="badge bg-info"><?= htmlspecialchars((string)$categories) ?></span>
-                <?php } ?>
+                $categories = \App\Helpers\Database\MongoHelper::toArray($book['categories']);
+                foreach ($categories as $category): ?>
+                    <span class="badge bg-info me-1 mb-1"><?= htmlspecialchars((string)$category) ?></span>
+                <?php endforeach; ?>
             <?php else: ?>
                 <span class="badge bg-secondary">Uncategorized</span>
             <?php endif; ?>

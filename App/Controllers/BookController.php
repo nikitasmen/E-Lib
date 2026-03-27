@@ -8,6 +8,7 @@ use App\Includes\AuthenticatedUser;
 use App\Includes\ResponseHandler;
 use App\Helpers\FileHelper;
 use App\Helpers\BookDisplayHelper;
+use App\Helpers\Database\MongoHelper;
 
 class BookController
 {
@@ -39,11 +40,7 @@ class BookController
     public function deleteBook($id)
     {
         // Check if user is admin
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        if (!AuthenticatedUser::isAdmin()) {
             return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
         }
 
@@ -58,11 +55,7 @@ class BookController
     public function updateBook($id)
     {
         // Check if user is admin
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        if (!AuthenticatedUser::isAdmin()) {
             return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
         }
 
@@ -107,11 +100,7 @@ class BookController
             }
         } elseif (isset($currentBook['categories'])) {
             // Use existing categories if not provided in request
-            if ($currentBook['categories'] instanceof \MongoDB\Model\BSONArray) {
-                $categories = $currentBook['categories']->getArrayCopy();
-            } elseif (is_array($currentBook['categories'])) {
-                $categories = $currentBook['categories'];
-            }
+            $categories = MongoHelper::toArray($currentBook['categories']);
         }
 
         // Update the book in the database
@@ -193,11 +182,7 @@ class BookController
     public function addBook()
     {
         // Check if user is admin
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        if (!AuthenticatedUser::isAdmin()) {
             return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
         }
 
@@ -434,7 +419,7 @@ class BookController
         }
 
         // Check if user is admin - utilizing the session data set during login
-        if (empty($_SESSION['user_id']) || empty($_SESSION['isAdmin']) || $_SESSION['isAdmin'] !== true) {
+        if (!AuthenticatedUser::isAdmin()) {
             return $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
         }
 

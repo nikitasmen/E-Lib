@@ -133,11 +133,7 @@ class Users extends BaseModel
 
         // Convert MongoDB BSONArray to PHP array if needed
         $savedBooksOriginal = $user['savedBooks'] ?? [];
-
-        // Convert to PHP array if it's a MongoDB\Model\BSONArray
-        $savedBooks = is_object($savedBooksOriginal) && method_exists($savedBooksOriginal, 'getArrayCopy')
-            ? $savedBooksOriginal->getArrayCopy()
-            : (array)$savedBooksOriginal;
+        $savedBooks = MongoHelper::toArray($savedBooksOriginal);
 
         if (!in_array($bookId, $savedBooks)) {
             $savedBooks[] = $bookId;
@@ -168,11 +164,7 @@ class Users extends BaseModel
 
         // Convert MongoDB BSONArray to PHP array if needed
         $savedBooksOriginal = $user['savedBooks'] ?? [];
-
-        // Convert to PHP array if it's a MongoDB\Model\BSONArray
-        $savedBooks = is_object($savedBooksOriginal) && method_exists($savedBooksOriginal, 'getArrayCopy')
-            ? $savedBooksOriginal->getArrayCopy()
-            : (array)$savedBooksOriginal;
+        $savedBooks = MongoHelper::toArray($savedBooksOriginal);
 
         if (in_array($bookId, $savedBooks)) {
             $savedBooks = array_diff($savedBooks, [$bookId]);
@@ -198,11 +190,9 @@ class Users extends BaseModel
         }
 
         $original = $user['downloadedBooks'] ?? [];
-        $list = is_object($original) && method_exists($original, 'getArrayCopy')
-            ? $original->getArrayCopy()
-            : (array) $original;
+        $list = MongoHelper::toArray($original);
 
-        $ids = array_map('strval', $list);
+        $ids = $list;
         $bid = (string) $bookId;
         if (!in_array($bid, $ids, true)) {
             $list[] = $bid;

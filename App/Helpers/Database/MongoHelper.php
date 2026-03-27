@@ -68,4 +68,19 @@ class MongoHelper
         }
         return $milliseconds;
     }
+
+    /**
+     * Safely convert a BSON Array or Object to a PHP array
+     *
+     * @param mixed $bsonArray The BSON Array or Object
+     * @return array The PHP array
+     */
+    public static function toArray($bsonArray): array
+    {
+        $arr = is_object($bsonArray) && method_exists($bsonArray, 'getArrayCopy')
+            ? $bsonArray->getArrayCopy()
+            : (array) $bsonArray;
+
+        return array_values(array_map('strval', $arr));
+    }
 }

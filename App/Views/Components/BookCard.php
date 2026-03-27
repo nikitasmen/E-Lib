@@ -23,9 +23,7 @@
                 <?php if (!empty($book['categories'])): ?>
                     <div class="mb-2">
                         <?php
-                        $categoriesArray = is_object($book['categories']) && method_exists($book['categories'], 'getArrayCopy')
-                            ? $book['categories']->getArrayCopy()
-                            : (array) $book['categories'];
+                        $categoriesArray = \App\Helpers\Database\MongoHelper::toArray($book['categories']);
                         $categoriesToShow = array_slice($categoriesArray, 0, 2);
                         foreach ($categoriesToShow as $category): ?>
                             <span class="badge bg-secondary me-1"><?= htmlspecialchars($category) ?></span>

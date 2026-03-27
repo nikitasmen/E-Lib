@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Users;
+use App\Helpers\Database\MongoHelper;
 
 class UserService
 {
@@ -47,11 +48,7 @@ class UserService
             return [];
         }
         $raw = $user['savedBooks'];
-        $arr = is_object($raw) && method_exists($raw, 'getArrayCopy')
-            ? $raw->getArrayCopy()
-            : (array) $raw;
-
-        return array_values(array_map('strval', $arr));
+        return MongoHelper::toArray($raw);
     }
 
     /**
@@ -64,11 +61,7 @@ class UserService
             return [];
         }
         $raw = $user['downloadedBooks'];
-        $arr = is_object($raw) && method_exists($raw, 'getArrayCopy')
-            ? $raw->getArrayCopy()
-            : (array) $raw;
-
-        return array_values(array_map('strval', $arr));
+        return MongoHelper::toArray($raw);
     }
 
     public function recordDownload(string $userId, string $bookId): bool
