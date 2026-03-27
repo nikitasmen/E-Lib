@@ -29,3 +29,11 @@ logs/
 # PHP tooling
 .phpstan.result.cache
 .phpcs-cache
+
+# Node / frontend tooling
+node_modules/
+
+# Playwright (local E2E runs)
+playwright-report/
+test-results/
+playwright/.cache/
