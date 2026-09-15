@@ -30,6 +30,7 @@ logs/
 # PHP tooling
 .phpstan.result.cache
 .phpcs-cache
+.phpunit.cache/
 
 # Node / frontend tooling
 node_modules/
