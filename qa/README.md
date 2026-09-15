@@ -1,6 +1,29 @@
 # E-Lib E2E Tests
 
-Playwright + TypeScript end-to-end tests for E-Lib. Tests live in `qa/tests`.
+Playwright + TypeScript end-to-end tests for E-Lib, using the Page Object Model.
+
+**This suite only ever talks to the app's UI and HTTP API — never the database.**
+Where a test needs state the UI/API can't produce (an admin account), that's
+provisioned out-of-band by ops tooling under `scripts/`, and the suite just
+consumes it via environment variables. See "Admin-gated tests" below.
+
+## Layout
+
+```
+qa/
+  tests/            # *.spec.ts files, grouped by feature (auth/, books/, profile/, navigation/)
+  pages/            # Page Objects — one class per page/component, DOM details live here only
+  fixtures/         # Custom Playwright fixtures (registeredUser, adminCredentials,
+                     # authenticatedPage, adminPage, seededBook) — test setup/teardown
+  support/          # testData.ts (unique data generators), api.ts (thin wrappers around
+                     # the app's real HTTP endpoints for setup/teardown), env.ts
+  fixtures/files/   # binary fixtures (sample.pdf) used by upload tests
+playwright.config.ts   # repo root; testDir points at qa/tests
+```
+
+Specs only import from `pages/`, `fixtures/`, and `support/` — never assert on raw
+selectors inline. If a test needs a new element, add it to the relevant Page Object
+first.
 
 ## Setup
 
@@ -44,10 +67,53 @@ By default tests target `http://localhost:8000`. Point them elsewhere with:
 PLAYWRIGHT_BASE_URL=http://localhost:8081 npm run test:e2e
 ```
 
-## Layout
+### Admin-gated tests
 
+A few specs (dashboard, add-book) need to act as an admin. The app has no
+self-service way to become one (`AuthenticatedUser::isAdmin()` only trusts the
+`isAdmin` flag on the Users document, set at login from the database — there's
+no signup-as-admin or promote-yourself flow, by design). So the suite doesn't
+attempt to create one either; provision one with the app's own ops tooling
+first:
+
+```bash
+composer admin:create -- <email> <password>
 ```
-qa/
-  tests/          # *.spec.ts test files
-playwright.config.ts   # config (repo root, testDir points at qa/tests)
+
+Then point the suite at it:
+
+```bash
+QA_ADMIN_EMAIL=<email> QA_ADMIN_PASSWORD=<password> npm run test:e2e
 ```
+
+Without these set, admin-gated tests fail fast with a message pointing back
+here, rather than a confusing downstream error.
+
+### Test data cleanup
+
+- Books created via `support/api.ts` (the `seededBook` fixture, and the
+  add/view-books specs) are deleted afterwards through the real
+  `DELETE /api/v1/books/:id` endpoint.
+- Users created via signup (`registeredUser`, and the signup specs) are **not**
+  deleted — there's no self-service "delete my account" API. They're tagged
+  with the `e2e.e-lib.test` email domain (see `support/testData.ts`) so
+  they're easy to identify if a database owner ever wants to purge them
+  separately; the suite itself doesn't touch the database to do so.
+
+## Known-failing tests (by design)
+
+Two specs assert the *documented, intended* behavior of a feature that's
+currently broken in the app, and are marked `test.fail()` so the suite stays
+green while tracking the regression — if either bug gets fixed, that test will
+start passing and Playwright will flag it as an unexpected pass (a signal to
+remove the `.fail()` annotation):
+
+- `qa/tests/auth/signup.spec.ts` — the standalone `/signup` page renders a
+  second, hidden copy of `#signupForm` (via the shared header's popup) plus its
+  own visible one with the same id; both inline scripts bind their submit
+  handler to the first (hidden) node, so the page's own form silently falls
+  back to an unhandled native POST.
+- `qa/tests/books/search.spec.ts` — `search_results.php` calls
+  `GET /api/v1/search?title=...`, but the only registered route is
+  `GET /api/v1/search/(\w+)` (a single path segment). The two never match, so
+  site search always errors.
