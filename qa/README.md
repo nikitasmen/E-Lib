@@ -16,8 +16,9 @@ qa/
   fixtures/         # Custom Playwright fixtures (registeredUser, adminCredentials,
                      # authenticatedPage, adminPage, seededBook) — test setup/teardown
   support/          # testData.ts (unique data generators), api.ts (thin wrappers around
-                     # the app's real HTTP endpoints for setup/teardown), env.ts
-  fixtures/files/   # binary fixtures (sample.pdf) used by upload tests
+                     # the app's real HTTP endpoints for setup/teardown), samplePdf.ts
+                     # (generates a dummy PDF in memory — no binary fixture is
+                     # committed, since .gitignore blanket-ignores *.pdf), env.ts
 playwright.config.ts   # repo root; testDir points at qa/tests
 ```
 

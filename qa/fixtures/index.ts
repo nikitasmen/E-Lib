@@ -1,11 +1,9 @@
-import path from 'node:path';
 import { test as base, expect, type APIRequestContext, type Page } from '@playwright/test';
 import { createBookViaApi, deleteBookViaApi, loginAsAdmin, setBookVisibility } from '../support/api';
 import { requireEnv } from '../support/env';
+import { buildSamplePdf } from '../support/samplePdf';
 import { buildTestUser, uniqueBookTitle, type TestUser } from '../support/testData';
 import { HomePage } from '../pages/HomePage';
-
-const SAMPLE_PDF = path.join(__dirname, '..', 'fixtures', 'files', 'sample.pdf');
 
 /**
  * Signs up a user through the real API (not the UI — the signup *flow* itself
@@ -87,7 +85,7 @@ export const test = base.extend<Fixtures>({
   seededBook: async ({ request, adminCredentials }, use) => {
     const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
     const title = uniqueBookTitle();
-    const id = await createBookViaApi(request, token, { title, pdfPath: SAMPLE_PDF });
+    const id = await createBookViaApi(request, token, { title, pdf: buildSamplePdf(title) });
     await setBookVisibility(request, token, id, { status: 'public', featured: true });
 
     await use({ id, title });

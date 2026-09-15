@@ -26,6 +26,8 @@
         <exclude-pattern>docker-entrypoint.php</exclude-pattern>
         <exclude-pattern>check-system.php</exclude-pattern>
         <exclude-pattern>scripts/db-setup.php</exclude-pattern>
+        <exclude-pattern>scripts/seed-sample-books.php</exclude-pattern>
+        <exclude-pattern>scripts/create-admin.php</exclude-pattern>
     </rule>
 
     <rule ref="Generic.Files.LineLength">

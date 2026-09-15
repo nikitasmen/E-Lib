@@ -26,12 +26,16 @@ export class AddBookPage extends BasePage {
     await this.goto('/add-book');
   }
 
-  async fillAndSubmit(input: { title: string; author?: string; pdfPath: string }): Promise<void> {
+  async fillAndSubmit(input: { title: string; author?: string; pdf: Buffer }): Promise<void> {
     await this.title.fill(input.title);
     if (input.author) {
       await this.author.fill(input.author);
     }
-    await this.fileInput.setInputFiles(input.pdfPath);
+    await this.fileInput.setInputFiles({
+      name: 'sample.pdf',
+      mimeType: 'application/pdf',
+      buffer: input.pdf,
+    });
     await this.submitButton.click();
   }
 }

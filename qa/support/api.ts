@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import type { APIRequestContext } from '@playwright/test';
 
 /**
@@ -61,7 +60,7 @@ interface CreateBookResponse {
 export async function createBookViaApi(
   request: APIRequestContext,
   adminToken: string,
-  input: { title: string; author?: string; pdfPath: string },
+  input: { title: string; author?: string; pdf: Buffer },
 ): Promise<string> {
   const response = await request.post('/api/v1/books', {
     headers: { Authorization: `Bearer ${adminToken}` },
@@ -73,7 +72,7 @@ export async function createBookViaApi(
       bookFile: {
         name: 'sample.pdf',
         mimeType: 'application/pdf',
-        buffer: readFileSync(input.pdfPath),
+        buffer: input.pdf,
       },
     },
   });

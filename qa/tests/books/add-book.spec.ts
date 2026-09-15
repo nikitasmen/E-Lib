@@ -1,17 +1,16 @@
-import path from 'node:path';
 import { deleteBookViaApi, findBookIdByTitle, loginAsAdmin } from '../../support/api';
+import { buildSamplePdf } from '../../support/samplePdf';
 import { uniqueBookTitle } from '../../support/testData';
 import { expect, test } from '../../fixtures';
 import { AddBookPage } from '../../pages/AddBookPage';
-
-const SAMPLE_PDF = path.join(__dirname, '..', '..', 'fixtures', 'files', 'sample.pdf');
 
 test.describe('Add book', () => {
   test('a logged-in non-admin cannot add a book', async ({ authenticatedPage }) => {
     const addBook = new AddBookPage(authenticatedPage);
     await addBook.open();
+    const title = uniqueBookTitle();
 
-    await addBook.fillAndSubmit({ title: uniqueBookTitle(), pdfPath: SAMPLE_PDF });
+    await addBook.fillAndSubmit({ title, pdf: buildSamplePdf(title) });
 
     await expect(addBook.formAlert).toContainText(/admin/i);
   });
@@ -21,7 +20,7 @@ test.describe('Add book', () => {
     await addBook.open();
     const title = uniqueBookTitle();
 
-    await addBook.fillAndSubmit({ title, author: 'QA Author', pdfPath: SAMPLE_PDF });
+    await addBook.fillAndSubmit({ title, author: 'QA Author', pdf: buildSamplePdf(title) });
 
     await expect(addBook.formAlert).toContainText('added successfully');
 

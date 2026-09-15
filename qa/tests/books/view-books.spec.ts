@@ -1,10 +1,8 @@
-import path from 'node:path';
 import { createBookViaApi, deleteBookViaApi, loginAsAdmin } from '../../support/api';
+import { buildSamplePdf } from '../../support/samplePdf';
 import { uniqueBookTitle } from '../../support/testData';
 import { expect, test } from '../../fixtures';
 import { ViewBooksPage } from '../../pages/ViewBooksPage';
-
-const SAMPLE_PDF = path.join(__dirname, '..', '..', 'fixtures', 'files', 'sample.pdf');
 
 // No dedicated "empty state" test: Books is shared, global state across the whole
 // suite (there's no per-test DB), and other specs seed books concurrently — an
@@ -26,7 +24,7 @@ test.describe('Book browsing (/view-books)', () => {
     // POST /api/v1/books always creates as draft — no need to touch status explicitly.
     const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
     const title = uniqueBookTitle();
-    const id = await createBookViaApi(request, token, { title, pdfPath: SAMPLE_PDF });
+    const id = await createBookViaApi(request, token, { title, pdf: buildSamplePdf(title) });
 
     const viewBooks = new ViewBooksPage(page);
     await viewBooks.open();
