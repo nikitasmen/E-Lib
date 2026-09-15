@@ -31,7 +31,7 @@ class MongoHelper
      *
      * @param string $pattern The regex pattern
      * @param string $flags Regex flags (e.g., 'i' for case-insensitive)
-     * @return \MongoDB\BSON\Regex|array A MongoDB Regex object or an array simulating one
+     * @return \MongoDB\BSON\Regex|array<string, string> A MongoDB Regex object or an array simulating one
      */
     public static function createRegex($pattern, $flags = '')
     {
@@ -73,7 +73,7 @@ class MongoHelper
      * Safely convert a BSON Array or Object to a PHP array
      *
      * @param mixed $bsonArray The BSON Array or Object
-     * @return array The PHP array
+     * @return array<int, string> The PHP array
      */
     public static function toArray($bsonArray): array
     {

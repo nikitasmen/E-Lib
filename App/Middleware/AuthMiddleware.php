@@ -8,12 +8,15 @@ use App\Includes\ResponseHandler;
 
 class AuthMiddleware implements MiddlewareInterface
 {
-    private $protectedPaths = [];
+    /**
+     * @var array<int, array<string, string>|string>
+     */
+    private array $protectedPaths = [];
 
     /**
      * Create auth middleware with protected paths
      *
-     * @param array $protectedPaths Paths requiring authentication
+     * @param array<int, array<string, string>|string> $protectedPaths Paths requiring authentication
      */
     public function __construct(array $protectedPaths = [])
     {
@@ -22,6 +25,8 @@ class AuthMiddleware implements MiddlewareInterface
 
     /**
      * Process the request and check authentication
+     *
+     * @param array<string, mixed> $request
      */
     public function process(array $request, callable $next)
     {

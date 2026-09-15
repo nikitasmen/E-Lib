@@ -7,45 +7,61 @@ use MongoDB\BSON\UTCDateTime;
 
 class BookService
 {
-    private $book;
+    private Books $book;
 
     public function __construct()
     {
         $this->book = new Books();
     }
 
-    public function getAllBooks()
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getAllBooks(): array
     {
         return $this->book->getAllBooks();
     }
 
-    public function getFeaturedBooks()
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getFeaturedBooks(): array
     {
         return $this->book->getFeaturedBooks();
     }
 
-    public function deleteBook($id)
+    /**
+     * @return array<string, mixed>
+     */
+    public function deleteBook(string $id): array
     {
         return $this->book->deleteBook($id);
     }
 
-    public function getPublicBooks()
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getPublicBooks(): array
     {
         return $this->book->getPublicBooks();
     }
 
+    /**
+     * @param array<int, string> $categories
+     * @return array<string, mixed>|false
+     */
     public function updateBook(
-        $id,
+        string $id,
         string $title,
         string $author,
         string $year,
         string $description,
         array $categories,
         string $status,
-        $featured,
+        mixed $featured,
         string $isbn,
         bool $downloadable = true
-    ) {
+    ): array|false {
         // Add validation here
 
         // Properly handle featured parameter conversion to boolean
@@ -70,11 +86,18 @@ class BookService
         return $this->book->updateBook($id, $book);
     }
 
-    public function getBookDetails($id)
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getBookDetails(string $id): ?array
     {
         return $this->book->getBookDetails($id);
     }
 
+    /**
+     * @param array<int, string> $categories
+     * @return array<string, mixed>
+     */
     public function addBook(
         string $title,
         string $author,
@@ -82,12 +105,12 @@ class BookService
         string $description,
         array $categories,
         string $isbn,
-        $filePath = null,
-        $thumbnailPath = null,
+        ?string $filePath = null,
+        ?string $thumbnailPath = null,
         bool $downloadable = true,
         string $fileType = 'pdf',
         string $fileExtension = 'pdf'
-    ) {
+    ): array {
         // Add validation here
 
         $book = [
@@ -116,8 +139,11 @@ class BookService
 
     /**
      * Search for books based on multiple criteria
+     *
+     * @param array<string, mixed>|string $params
+     * @return list<array<string, mixed>>
      */
-    public function searchBooks($params)
+    public function searchBooks(array|string $params): array
     {
         // If only a string is passed, treat it as a title search (backwards compatibility)
         if (is_string($params)) {
@@ -140,18 +166,18 @@ class BookService
         }
 
         try {
-            $books = $this->book->searchBooks($query);
-            if (is_array($books)) {
-                return $books; // Ensure all matching books are returned
-            }
-            return []; // Return an empty array if no matches are found
+            return $this->book->searchBooks($query);
         } catch (\Exception $e) {
             error_log("Search error: " . $e->getMessage());
             return [];
         }
     }
 
-    public function addReview($bookId, $review, $rating = null)
+    /**
+     * @param array<string, mixed> $review
+     * @return array<string, mixed>|false
+     */
+    public function addReview(string $bookId, array $review, mixed $rating = null): array|false
     {
         // Make sure rating is included
         if (isset($rating) && !isset($review['rating'])) {
@@ -174,15 +200,20 @@ class BookService
         return $result;
     }
 
-    public function getBookByTitle($title)
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getBookByTitle(string $title): ?array
     {
         return $this->book->getBookByTitle($title);
     }
 
     /**
      * Update book's average rating based on all reviews
+     *
+     * @return array<string, mixed>|false
      */
-    private function updateBookRating($bookId)
+    private function updateBookRating(string $bookId): array|false
     {
         $book = $this->getBookDetails($bookId);
         if (!$book || empty($book['reviews'])) {
@@ -205,7 +236,10 @@ class BookService
         return $this->book->updateBookRating($bookId, $averageRating, $count);
     }
 
-    public function getBookReviews($bookId)
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function getBookReviews(string $bookId): array
     {
         $book = $this->book->getBookDetails($bookId);
         if ($book) {

@@ -16,7 +16,7 @@ class JwtHelper
     /**
      * Generate a JWT token with the provided payload
      *
-     * @param array $payload Data to include in the token
+     * @param array<string, mixed> $payload Data to include in the token
      * @return string The generated JWT token
      */
     public static function generateToken($payload)
@@ -71,7 +71,7 @@ class JwtHelper
      * Useful for debugging
      *
      * @param string $token The JWT token to validate
-     * @return array with success status and error message if failed
+     * @return array<string, mixed> with success status and error message if failed
      */
     public static function getTokenValidationError($token)
     {

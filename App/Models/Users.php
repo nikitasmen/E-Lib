@@ -11,7 +11,7 @@ use InvalidArgumentException;
  */
 class Users extends BaseModel
 {
-    protected $collection = 'Users';
+    protected string $collection = 'Users';
 
     /**
      * Required fields for user registration
@@ -22,7 +22,7 @@ class Users extends BaseModel
      * Get a user by their email address
      *
      * @param string $email User's email
-     * @return array|null User data or null if not found
+     * @return array<string, mixed>|null User data or null if not found
      * @throws InvalidArgumentException If email is invalid
      */
     public function getUserByEmail(string $email)
@@ -37,8 +37,8 @@ class Users extends BaseModel
     /**
      * Register a new user
      *
-     * @param array $user User data
-     * @return array Insert operation result
+     * @param array<string, mixed> $user User data
+     * @return array<string, mixed> Insert operation result
      * @throws InvalidArgumentException If validation fails
      */
     public function registerUser(array $user): array
@@ -51,7 +51,7 @@ class Users extends BaseModel
      *
      * @param string $email User's email
      * @param string $password User's password
-     * @return array|false User data if authentication succeeds, false otherwise
+     * @return array<string, mixed>|false User data if authentication succeeds, false otherwise
      */
     public function login(string $email, string $password)
     {
@@ -66,7 +66,7 @@ class Users extends BaseModel
      * Get a user by their ID
      *
      * @param string $id User ID
-     * @return array|null User data or null if not found
+     * @return array<string, mixed>|null User data or null if not found
      */
     public function getUserById(string $id)
     {
@@ -82,8 +82,8 @@ class Users extends BaseModel
     /**
      * Validate user data
      *
-     * @param array $data User data to validate
-     * @return array Validation errors
+     * @param array<string, mixed> $data User data to validate
+     * @return array<string, string> Validation errors
      */
     public function validate(array $data): array
     {
@@ -122,7 +122,7 @@ class Users extends BaseModel
      *
      * @param string $userId User ID
      * @param string $bookId Book ID
-     * @return array|bool Update result or false if user not found or book already saved
+     * @return array<string, mixed>|bool Update result or false if user not found or book already saved
      */
     public function saveBook(string $userId, string $bookId)
     {
@@ -153,7 +153,7 @@ class Users extends BaseModel
      *
      * @param string $userId User ID
      * @param string $bookId Book ID
-     * @return array|bool Update result or false if user not found
+     * @return array<string, mixed>|bool Update result or false if user not found
      */
     public function removeBook(string $userId, string $bookId)
     {
@@ -181,8 +181,10 @@ class Users extends BaseModel
 
     /**
      * Record a successful book download for a user (unique book ids, newest last).
+     *
+     * @return array<string, mixed>|bool
      */
-    public function recordDownload(string $userId, string $bookId)
+    public function recordDownload(string $userId, string $bookId): array|bool
     {
         $user = $this->getUserById($userId);
         if (!$user) {
@@ -211,8 +213,8 @@ class Users extends BaseModel
      * Update user profile
      *
      * @param string $userId User ID
-     * @param array $userData Updated user data
-     * @return array|false Update result or false if validation fails
+     * @param array<string, mixed> $userData Updated user data
+     * @return array<string, mixed>|false Update result or false if validation fails
      * @throws InvalidArgumentException If validation fails
      */
     public function updateProfile(string $userId, array $userData)
@@ -233,8 +235,8 @@ class Users extends BaseModel
     /**
      * Validate profile update data
      *
-     * @param array $data Profile data to validate
-     * @return array Validation errors
+     * @param array<string, mixed> $data Profile data to validate
+     * @return array<string, string> Validation errors
      */
     private function validateProfileUpdate(array $data): array
     {
@@ -253,7 +255,7 @@ class Users extends BaseModel
      * Update user profile information
      *
      * @param string $userId The ID of the user to update
-     * @param array $updates Associative array of fields to update
+     * @param array<string, mixed> $updates Associative array of fields to update
      * @return bool True on success, false on failure
      */
     public function updateUser($userId, array $updates)

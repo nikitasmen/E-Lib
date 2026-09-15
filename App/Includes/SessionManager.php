@@ -5,7 +5,7 @@ namespace App\Includes;
 
 class SessionManager
 {
-    public static function initialize()
+    public static function initialize(): bool
     {
         // Start the session if not already started and if headers haven't been sent
         if (session_status() === PHP_SESSION_NONE) {
@@ -29,17 +29,23 @@ class SessionManager
         return $isLoggedIn;
     }
 
+    /**
+     * @return mixed
+     */
     public static function getCurrentUser()
     {
         return $_SESSION['user'] ?? null;
     }
 
+    /**
+     * @return mixed
+     */
     public static function getCurrentUserId()
     {
         return $_SESSION['user_id'] ?? null;
     }
 
-    public static function isLoggedIn()
+    public static function isLoggedIn(): bool
     {
         return isset($_SESSION['user_id']);
     }

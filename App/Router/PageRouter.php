@@ -13,8 +13,11 @@ use App\Services\CasService;
 
 class PageRouter
 {
-    private $routes = [];
-    private $casService;
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    private array $routes = [];
+    private CasService $casService;
 
     public function __construct()
     {
@@ -23,7 +26,7 @@ class PageRouter
         // Remove the setSecurityHeaders call from constructor - will call it at the right time
     }
 
-    private function defineRoutes()
+    private function defineRoutes(): void
     {
         $this->routes = [
             ['path' => '/index', 'handler' => [new PageController(), 'home']],
@@ -43,7 +46,7 @@ class PageRouter
         ];
     }
 
-    public function handleRequest($path)
+    public function handleRequest(string $path): void
     {
         // Set security headers at the beginning of request handling
         // but only if no output has been sent yet
@@ -88,7 +91,7 @@ class PageRouter
         $pageController->error();
     }
 
-    private function setSecurityHeaders()
+    private function setSecurityHeaders(): void
     {
         // Security headers
         header('X-Content-Type-Options: nosniff');

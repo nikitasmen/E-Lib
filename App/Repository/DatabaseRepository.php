@@ -12,8 +12,8 @@ use App\Database\MongoDatabase;
  */
 class DatabaseRepository
 {
-    private static $instance = null;
-    private $database;
+    private static ?self $instance = null;
+    private DatabaseInterface $database;
 
     /**
      * Private constructor to enforce Singleton pattern
@@ -50,8 +50,8 @@ class DatabaseRepository
      * Insert a new document into a collection
      *
      * @param string $collection The collection name
-     * @param array $data The data to insert
-     * @return array The operation result
+     * @param array<string, mixed> $data The data to insert
+     * @return array<string, mixed> The operation result
      */
     public function insert(string $collection, array $data): array
     {
@@ -62,8 +62,8 @@ class DatabaseRepository
      * Find documents in a collection
      *
      * @param string $collection The collection name
-     * @param array $filter The filter criteria
-     * @return array The matching documents
+     * @param array<string, mixed> $filter The filter criteria
+     * @return list<array<string, mixed>> The matching documents
      */
     public function find(string $collection, array $filter = []): array
     {
@@ -74,8 +74,8 @@ class DatabaseRepository
      * Find a single document in a collection
      *
      * @param string $collection The collection name
-     * @param array $filter The filter criteria
-     * @return array|null The matching document or null
+     * @param array<string, mixed> $filter The filter criteria
+     * @return array<string, mixed>|null The matching document or null
      */
     public function findOne(string $collection, array $filter = [])
     {
@@ -86,9 +86,9 @@ class DatabaseRepository
      * Update documents in a collection
      *
      * @param string $collection The collection name
-     * @param array $filter The filter criteria
-     * @param array $update The update operations
-     * @return array The operation result
+     * @param array<string, mixed> $filter The filter criteria
+     * @param array<string, mixed> $update The update operations
+     * @return array<string, mixed> The operation result
      */
     public function update(string $collection, array $filter, array $update): array
     {
@@ -99,8 +99,8 @@ class DatabaseRepository
      * Delete documents from a collection
      *
      * @param string $collection The collection name
-     * @param array $filter The filter criteria
-     * @return array The operation result
+     * @param array<string, mixed> $filter The filter criteria
+     * @return array<string, mixed> The operation result
      */
     public function delete(string $collection, array $filter): array
     {
@@ -111,8 +111,8 @@ class DatabaseRepository
      * Perform an aggregation pipeline on a collection
      *
      * @param string $collection The collection name
-     * @param array $pipeline The aggregation pipeline
-     * @return array The aggregation results
+     * @param array<int, array<string, mixed>> $pipeline The aggregation pipeline
+     * @return array<int, mixed> The aggregation results
      */
     public function aggregate(string $collection, array $pipeline): array
     {
@@ -123,8 +123,8 @@ class DatabaseRepository
      * Get featured books using the aggregation pipeline
      *
      * @param string $collection The collection name
-     * @param array $pipeline The aggregation pipeline
-     * @return array The featured books
+     * @param array<int, array<string, mixed>> $pipeline The aggregation pipeline
+     * @return array<int, mixed> The featured books
      */
     public function getFeatured(string $collection, array $pipeline): array
     {

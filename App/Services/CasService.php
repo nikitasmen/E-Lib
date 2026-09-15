@@ -7,8 +7,8 @@ use App\Includes\Environment;
 
 class CasService
 {
-    private $casServerUrl;
-    private $httpClient;
+    private string $casServerUrl;
+    private ?\GuzzleHttp\Client $httpClient = null;
 
     public function __construct()
     {
@@ -20,7 +20,7 @@ class CasService
         }
     }
 
-    public function authenticate($ticket, $serviceUrl)
+    public function authenticate(string $ticket, string $serviceUrl): bool
     {
         try {
             if ($this->httpClient) {

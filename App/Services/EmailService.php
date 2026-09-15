@@ -8,7 +8,7 @@ use App\Includes\Environment;
 
 class EmailService
 {
-    private $mailer;
+    private PHPMailer $mailer;
 
     public function __construct()
     {
@@ -35,7 +35,7 @@ class EmailService
      * @param string $fromEmail Sender email
      * @param string $fromName Sender name
      * @param string $message Email message content
-     * @param array $attachments Optional array of file attachments
+     * @param array<int, array<string, mixed>> $attachments Optional array of file attachments
      * @param string $subject Email subject
      * @return bool True if email was sent successfully, false otherwise
      */

@@ -11,7 +11,7 @@ use InvalidArgumentException;
  */
 class Books extends BaseModel
 {
-    protected $collection = 'Books';
+    protected string $collection = 'Books';
 
     /**
      * Required fields for a valid book
@@ -21,7 +21,7 @@ class Books extends BaseModel
     /**
      * Get all books in the database
      *
-     * @return array Array of all books
+     * @return list<array<string, mixed>> Array of all books
      */
     public function getAllBooks(): array
     {
@@ -31,7 +31,7 @@ class Books extends BaseModel
     /**
      * Get only public books
      *
-     * @return array Array of public books
+     * @return list<array<string, mixed>> Array of public books
      */
     public function getPublicBooks(): array
     {
@@ -42,7 +42,7 @@ class Books extends BaseModel
      * Get a specific book by ID
      *
      * @param string $id The book ID
-     * @return array|null The book data or null if not found
+     * @return array<string, mixed>|null The book data or null if not found
      * @throws InvalidArgumentException If the ID format is invalid
      */
     public function getBookDetails(string $id)
@@ -54,7 +54,7 @@ class Books extends BaseModel
      * Get featured books
      *
      * @param int $limit Maximum number of books to return
-     * @return array Featured books
+     * @return list<array<string, mixed>> Featured books
      */
     public function getFeaturedBooks(int $limit = 20): array
     {
@@ -68,8 +68,8 @@ class Books extends BaseModel
     /**
      * Add a new book
      *
-     * @param array $book Book data
-     * @return array Insert operation result
+     * @param array<string, mixed> $book Book data
+     * @return array<string, mixed> Insert operation result
      * @throws InvalidArgumentException If validation fails
      */
     public function addBook(array $book): array
@@ -80,8 +80,8 @@ class Books extends BaseModel
     /**
      * Search books by criteria
      *
-     * @param array $searchQuery Search criteria
-     * @return array Matching books
+     * @param array<string, mixed> $searchQuery Search criteria
+     * @return list<array<string, mixed>> Matching books
      */
     public function searchBooks(array $searchQuery): array
     {
@@ -92,8 +92,8 @@ class Books extends BaseModel
      * Add a review to a book
      *
      * @param string $bookId Book ID
-     * @param array $review Review data
-     * @return array|false Update result or false on error
+     * @param array<string, mixed> $review Review data
+     * @return array<string, mixed>|false Update result or false on error
      * @throws InvalidArgumentException If the ID format is invalid
      */
     public function addReview(string $bookId, array $review)
@@ -115,7 +115,7 @@ class Books extends BaseModel
      * Find a book by title (case-insensitive)
      *
      * @param string $title Book title
-     * @return array|null Book data or null if not found
+     * @return array<string, mixed>|null Book data or null if not found
      */
     public function getBookByTitle(string $title)
     {
@@ -129,7 +129,7 @@ class Books extends BaseModel
      * @param string $bookId Book ID
      * @param float $rating New average rating
      * @param int $reviewCount New review count
-     * @return array|false Update result or false on error
+     * @return array<string, mixed>|false Update result or false on error
      * @throws InvalidArgumentException If the ID format is invalid
      */
     public function updateBookRating(string $bookId, float $rating, int $reviewCount)
@@ -155,7 +155,7 @@ class Books extends BaseModel
      * Delete a book
      *
      * @param string $id Book ID
-     * @return array Delete operation result
+     * @return array<string, mixed> Delete operation result
      * @throws InvalidArgumentException If the ID format is invalid
      */
     public function deleteBook(string $id): array
@@ -167,8 +167,8 @@ class Books extends BaseModel
      * Update a book
      *
      * @param string $id Book ID
-     * @param array $book Updated book data
-     * @return array|false Update result or false if no fields to update
+     * @param array<string, mixed> $book Updated book data
+     * @return array<string, mixed>|false Update result or false if no fields to update
      * @throws InvalidArgumentException If the ID format is invalid
      */
     public function updateBook(string $id, array $book)
@@ -187,8 +187,8 @@ class Books extends BaseModel
     /**
      * Validate book data
      *
-     * @param array $data Book data to validate
-     * @return array Validation errors
+     * @param array<string, mixed> $data Book data to validate
+     * @return array<string, string> Validation errors
      */
     public function validate(array $data): array
     {

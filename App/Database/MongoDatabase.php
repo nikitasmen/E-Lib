@@ -100,8 +100,12 @@ class MongoDatabase extends MongoConnectionFactory implements DatabaseInterface
     /**
      * New method to iterate through large result sets efficiently
      * Returns a generator that yields documents one at a time
+     *
+     * @param array<string, mixed> $filter
+     * @param array<string, mixed> $options
+     * @return iterable<int, array<string, mixed>>
      */
-    public function findIterate(string $collection, array $filter = [], array $options = [])
+    public function findIterate(string $collection, array $filter = [], array $options = []): iterable
     {
         try {
             $cursor = $this->db->selectCollection($collection)->find($filter, $options);

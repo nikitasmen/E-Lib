@@ -4,14 +4,14 @@ namespace App\Helpers;
 
 class FileHelper
 {
-    private $filePath;
-    private $fileType;
-    private $fileExtension;
+    private ?string $filePath;
+    private ?string $fileType = null;
+    private ?string $fileExtension = null;
 
     /**
      * Constructor
      *
-     * @param string $filePath Path to the document file
+     * @param string|null $filePath Path to the document file
      */
     public function __construct($filePath = null)
     {
@@ -25,7 +25,7 @@ class FileHelper
     /**
      * Detect the file type and extension from a file
      */
-    private function detectFileType($filePath)
+    private function detectFileType(string $filePath): void
     {
         // Get file extension
         $this->fileExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
@@ -41,7 +41,7 @@ class FileHelper
     /**
      * Extracts a thumbnail image from the document
      */
-    public function extractThumbnail($filePath, $outputPath, $format = 'jpg')
+    public function extractThumbnail(string $filePath, string $outputPath, string $format = 'jpg'): bool
     {
         // If we don't know the file type yet, detect it
         if (empty($this->fileType)) {
@@ -62,7 +62,7 @@ class FileHelper
     /**
      * Extract thumbnail from PDF file (Imagick → pdftoppm → GD placeholder).
      */
-    private function extractPdfThumbnail($pdfPath, $outputPath, $format = 'jpg')
+    private function extractPdfThumbnail(string $pdfPath, string $outputPath, string $format = 'jpg'): bool
     {
         if (!file_exists($pdfPath) || !is_readable($pdfPath)) {
             error_log("PDF file not found or not readable: $pdfPath");
@@ -196,7 +196,7 @@ class FileHelper
     /**
      * Use a placeholder image for the specified file type
      */
-    private function useTypePlaceholder($outputPath, $type = 'generic')
+    private function useTypePlaceholder(string $outputPath, string $type = 'generic'): bool
     {
         try {
             // Make sure output directory exists
@@ -265,7 +265,7 @@ class FileHelper
     /**
      * Gets or creates a thumbnail for the document
      */
-    public function getThumbnail()
+    public function getThumbnail(): string
     {
         // Use environment detection for Docker compatibility
         if (getenv('DOCKER_ENV') === 'true') {
@@ -308,6 +308,9 @@ class FileHelper
 
     /**
      * Stores a document file with a proper name
+     *
+     * @param array<string, mixed> $file
+     * @return array<string, mixed>|false
      */
     public function storeFile($file)
     {

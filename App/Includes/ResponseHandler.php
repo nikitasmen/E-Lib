@@ -14,7 +14,7 @@ class ResponseHandler
      * @param int $statusCode HTTP status code
      * @param mixed $data Data to return or error message
      * @param bool $status Success or failure status
-     * @return array|void Array for internal use or sends JSON response
+     * @return array<string, mixed>|void Array for internal use or sends JSON response
      */
     public static function respond($status, $data, $statusCode = null)
     {
@@ -155,7 +155,7 @@ class ResponseHandler
      * Render a view with the given data
      *
      * @param string $view Path to the view file
-     * @param array $data Data to pass to the view
+     * @param array<string, mixed> $data Data to pass to the view
      * @param int $statusCode HTTP status code
      * @return void
      */

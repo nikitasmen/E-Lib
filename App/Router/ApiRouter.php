@@ -9,14 +9,17 @@ use App\Includes\ResponseHandler;
 
 class ApiRouter
 {
-    private $routes = [];
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    private array $routes = [];
 
     public function __construct()
     {
         $this->defineRequests();
     }
 
-    private function defineRequests()
+    private function defineRequests(): void
     {
         $this->routes = [
             ['method' => 'GET', 'path' => '/api/v1/books', 'handler' => [new BookController(), 'getAllBooks']],
@@ -60,7 +63,7 @@ class ApiRouter
         ];
     }
 
-    public function handleRequest($method, $path)
+    public function handleRequest(string $method, string $path): void
     {
 
         foreach ($this->routes as $route) {

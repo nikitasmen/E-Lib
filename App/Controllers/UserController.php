@@ -13,9 +13,9 @@ use App\Helpers\BookDisplayHelper;
 
 class UserController
 {
-    private $userService;
-    private $bookService;
-    private $emailService;
+    private UserService $userService;
+    private BookService $bookService;
+    private EmailService $emailService;
 
     public function __construct()
     {
@@ -32,7 +32,7 @@ class UserController
         return AuthenticatedUser::id();
     }
 
-    public function handleLogin()
+    public function handleLogin(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -89,7 +89,7 @@ class UserController
         }
     }
 
-    public function handleLogout()
+    public function handleLogout(): void
     {
         // Logout logic here...
         if (!isset($_SESSION['user_id'])) {
@@ -101,7 +101,7 @@ class UserController
         ResponseHandler::respond(true, 'Logout successful');
     }
 
-    public function handleSignup()
+    public function handleSignup(): void
     {
 
         if (empty($_POST)) {
@@ -158,7 +158,7 @@ class UserController
         }
     }
 
-    public function getUser($id)
+    public function getUser(string $id): void
     {
         $user = $this->userService->getUserById($id);
         if ($user) {
@@ -201,7 +201,7 @@ class UserController
         ResponseHandler::respond(true, $user, 200);
     }
 
-    public function saveBook()
+    public function saveBook(): void
     {
         $userId = $this->getAuthenticatedUserId();
         if ($userId === null) {
@@ -229,7 +229,7 @@ class UserController
         }
     }
 
-    public function getSavedBooks()
+    public function getSavedBooks(): void
     {
         $userId = $this->getAuthenticatedUserId();
         if ($userId === null) {
@@ -250,7 +250,7 @@ class UserController
         ResponseHandler::respond(true, $books, 200);
     }
 
-    public function getDownloadedBooks()
+    public function getDownloadedBooks(): void
     {
         $userId = $this->getAuthenticatedUserId();
         if ($userId === null) {
@@ -271,7 +271,7 @@ class UserController
         ResponseHandler::respond(true, $books, 200);
     }
 
-    public function removeBook()
+    public function removeBook(): void
     {
         $userId = $this->getAuthenticatedUserId();
         if ($userId === null) {
@@ -302,7 +302,7 @@ class UserController
     /**
      * View error logs (admin only)
      */
-    public function viewLogs()
+    public function viewLogs(): void
     {
         // Check if user is admin
         if (session_status() === PHP_SESSION_NONE) {
@@ -352,8 +352,10 @@ class UserController
 
     /**
      * Helper method to get the last N lines of a file
+     *
+     * @return array<int, string|false>
      */
-    private function getTailOfFile($filePath, $lines = 100)
+    private function getTailOfFile(string $filePath, int $lines = 100): array
     {
         $handle = fopen($filePath, "r");
         $linecounter = $lines;
@@ -393,7 +395,7 @@ class UserController
      * Update user profile information
      * Currently supports updating username
      */
-    public function updateProfile()
+    public function updateProfile(): void
     {
         $userId = $this->getAuthenticatedUserId();
         if ($userId === null) {
@@ -503,7 +505,7 @@ class UserController
         }
     }
 
-    public function support()
+    public function support(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();

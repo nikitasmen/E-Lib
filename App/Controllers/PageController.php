@@ -9,7 +9,7 @@ use Exception;
 
 class PageController
 {
-    private $response;
+    private ResponseHandler $response;
 
     public function __construct()
     {
@@ -17,7 +17,7 @@ class PageController
         $this->response = new ResponseHandler();
     }
 
-    public function home()
+    public function home(): void
     {
         // Only pass minimal data, client will fetch what it needs via API
         $this->response->renderView(__DIR__ . '/../Views/home.php', [
@@ -25,7 +25,7 @@ class PageController
         ]);
     }
 
-    public function dashboard()
+    public function dashboard(): void
     {
         // Admin dashboard - client will fetch data via API
         $this->response->renderView(__DIR__ . '/../Views/admin.php');
@@ -34,7 +34,7 @@ class PageController
     /**
      * Book detail page - data will be fetched client-side via API
      */
-    public function viewBook($path = null, $id = null)
+    public function viewBook(?string $path = null, ?string $id = null): void
     {
         try {
             // Check if ID is valid but don't fetch the book data here
@@ -54,14 +54,14 @@ class PageController
         }
     }
 
-    public function addBookForm()
+    public function addBookForm(): void
     {
         $this->response->renderView(__DIR__ . '/../Views/add_book.php', [
             'activePage' => 'add',
         ]);
     }
 
-    public function readBook($path = null, $id = null)
+    public function readBook(?string $path = null, ?string $id = null): void
     {
         try {
             if (is_null($id) || !preg_match('/^[0-9a-f]{24}$/', $id)) {
@@ -77,18 +77,18 @@ class PageController
         }
     }
 
-    public function searchBooks()
+    public function searchBooks(): void
     {
         // Just render the search results page, client will fetch results
         $this->response->renderView(__DIR__ . '/../Views/search_results.php');
     }
 
-    public function docs()
+    public function docs(): void
     {
         $this->response->renderView(__DIR__ . '/../Views/docs.php');
     }
 
-    public function signup()
+    public function signup(): void
     {
         $this->response->renderView(__DIR__ . '/../Views/signup.php');
     }
@@ -96,7 +96,7 @@ class PageController
     /**
      * Dedicated /login URL used by links (e.g. book reviews). Redirects to home with login popup.
      */
-    public function login()
+    public function login(): void
     {
         $redirect = $_GET['redirect'] ?? '/';
         if (!is_string($redirect) || $redirect === '') {
@@ -109,7 +109,7 @@ class PageController
         exit;
     }
 
-    public function profile()
+    public function profile(): void
     {
         // Check if the user is logged in
         if (!SessionManager::isLoggedIn()) {
@@ -122,12 +122,12 @@ class PageController
         $this->response->renderView(__DIR__ . '/../Views/profile.php');
     }
 
-    public function error()
+    public function error(): void
     {
         $this->response->renderView(__DIR__ . '/../Views/error.php', [], 404);
     }
 
-    public function viewBooks()
+    public function viewBooks(): void
     {
         // Just render the view books page, client will fetch book data
         $this->response->renderView(__DIR__ . '/../Views/view_books.php');
@@ -136,7 +136,7 @@ class PageController
     /**
      * View system logs (admin-only page)
      */
-    public function viewLogs()
+    public function viewLogs(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
