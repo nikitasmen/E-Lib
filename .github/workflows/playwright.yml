@@ -72,12 +72,6 @@ jobs:
           QA_ADMIN_PASSWORD=password
           EOL
 
-      # There's no self-service way to become an admin (by design — see
-      # AuthenticatedUser::isAdmin()), so admin-gated specs need one
-      # provisioned ahead of time. See qa/README.md.
-      - name: Provision admin test account
-        run: php scripts/create-admin.php ci-admin@e2e.e-lib.test 'Ci-admin-Pass9!' ci_admin
-
       - name: Prepare storage directories
         run: mkdir -p storage/logs uploads
 
