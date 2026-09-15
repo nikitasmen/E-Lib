@@ -1,0 +1,114 @@
+name: Playwright E2E
+
+on: [push, pull_request]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:4.4
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          extensions: mbstring, mongodb, imagick
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      # Cache browser binaries across runs, keyed on the exact Playwright
+      # version — bump the lockfile, get fresh browsers automatically.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      # System deps (fonts, codecs, etc.) still need installing even on a cache hit.
+      - name: Install Playwright OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox webkit
+
+      - name: Create .env
+        run: |
+          cat > .env << 'EOL'
+          APP_ENV=development
+          APP_DEBUG=true
+          APP_URL=http://localhost:8000
+          API_BASE_URL=http://localhost:8000/
+          MONGO_URI=mongodb://localhost:27017
+          DATABASE_NAME=LibraryDb
+          JWT_SECRET_KEY=ci-e2e-secret
+          CAS_SERVER_URL=https://auth.example.com/cas
+          QA_ADMIN_EMAIL=admin@example.com
+          QA_ADMIN_PASSWORD=password
+          EOL
+
+      # There's no self-service way to become an admin (by design — see
+      # AuthenticatedUser::isAdmin()), so admin-gated specs need one
+      # provisioned ahead of time. See qa/README.md.
+      - name: Provision admin test account
+        run: php scripts/create-admin.php ci-admin@e2e.e-lib.test 'Ci-admin-Pass9!' ci_admin
+
+      - name: Prepare storage directories
+        run: mkdir -p storage/logs uploads
+
+      - name: Start PHP built-in server
+        run: php -S 127.0.0.1:8000 -t public &
+
+      - name: Wait for server
+        run: |
+          attempt=0
+          max_attempts=15
+          until curl -sf http://127.0.0.1:8000/ -o /dev/null; do
+            attempt=$((attempt + 1))
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "Server did not become available in time"
+              cat storage/logs/php_errors.log 2>/dev/null || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Run Playwright tests
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
+          QA_ADMIN_EMAIL: ci-admin@e2e.e-lib.test
+          QA_ADMIN_PASSWORD: Ci-admin-Pass9!
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
