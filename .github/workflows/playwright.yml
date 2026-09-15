@@ -73,8 +73,16 @@ jobs:
       # There's no self-service way to become an admin (by design — see
       # AuthenticatedUser::isAdmin()), so admin-gated specs need one
       # provisioned ahead of time. See qa/README.md.
+      #
+      # Credentials come from repo secrets (Settings > Secrets and
+      # variables > Actions). They only ever reach the ephemeral
+      # `mongodb` service container for this single job run, which is
+      # destroyed when the job ends.
       - name: Provision admin test account
-        run: php scripts/create-admin.php ci-admin@e2e.e-lib.test 'Ci-admin-Pass9!' ci_admin
+        env:
+          QA_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
+          QA_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
+        run: php scripts/create-admin.php "$QA_ADMIN_EMAIL" "$QA_ADMIN_PASSWORD" ci_admin
 
       # GET /api/v1/books returns 404 when the Books collection is empty
       # (BookController::getAllBooks() treats an empty result as an error,
@@ -107,11 +115,13 @@ jobs:
             sleep 2
           done
 
+      # QA_ADMIN_EMAIL / QA_ADMIN_PASSWORD must match the account
+      # provisioned above — see the comment on "Provision admin test account".
       - name: Run Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
-          QA_ADMIN_EMAIL: ci-admin@e2e.e-lib.test
-          QA_ADMIN_PASSWORD: Ci-admin-Pass9!
+          QA_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
+          QA_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
         run: npx playwright test
 
       - name: Upload Playwright report
