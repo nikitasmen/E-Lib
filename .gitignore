@@ -1,5 +1,6 @@
 # Environment file with sensitive information
 .env
+.env.production
 
 # IDE files
 .vscode/
