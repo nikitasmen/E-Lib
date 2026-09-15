@@ -146,13 +146,13 @@ npm run build
 
 - **Book Management**: Add, edit, search, and remove books from the library
 - **Online PDF Reader**: Read documents directly in the browser
-- **Multi-format Support**: Support for PDF, EPUB, Word, PowerPoint, MOBI, AZW, and DJVU formats
-- **Document Thumbnails**: Automatic thumbnail generation for document listings
+- **PDF Uploads**: Upload validation and thumbnail generation are PDF-only; other formats are rejected
+- **Document Thumbnails**: Automatic thumbnail generation for PDF listings
 - **Book Collections**: Save books to personal reading lists
 - **User Reviews**: Rate and review books
 - **Admin Dashboard**: Comprehensive administrative tools
 - **Responsive Design**: Works on desktop and mobile devices
-- **MongoDB Integration**: Primary storage with JSON fallback
+- **MongoDB Integration**: MongoDB is the sole datastore (no fallback)
 - **Security Features**: JWT authentication, secure file handling, and more
 - **Email System**: PHPMailer integration for email notifications and support
 - **Support System**: Built-in help center with image upload support
@@ -222,15 +222,13 @@ The project is organized into several directories and files:
 ## Tech Stack
 
 - **Backend**: PHP 8.2, Custom MVC framework
-- **Database**: MongoDB with JSON fallback
+- **Database**: MongoDB (sole datastore, no fallback)
 - **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
 - **Authentication**: JWT tokens, Session-based auth, CAS integration
 - **Containerization**: Docker, docker-compose
 - **Web Server**: Apache
 - **Document Processing**:
-  - ImageMagick for PDF thumbnail generation
-  - LibreOffice for document conversion
-  - ZipArchive for EPUB handling
+  - ImageMagick (or `pdftoppm`) for PDF thumbnail generation
 - **Email**: PHPMailer with SMTP support
 - **Dependencies**: Guzzle HTTP client, Firebase JWT
 
@@ -349,31 +347,24 @@ Comprehensive documentation is available within the application at `/docs`. This
 
 ## Document Processing
 
-E-Lib includes robust document handling capabilities:
+E-Lib currently handles PDF documents only:
 
 ### Supported File Types
 - **PDF**: Full support with thumbnail generation and online reading
-- **Word Documents**: .doc and .docx files with conversion to PDF for preview
-- **PowerPoint**: .ppt and .pptx files with thumbnail generation
-- **EPUB**: Electronic publication format with cover extraction
-- **MOBI/AZW**: Kindle formats with basic support
-- **DJVU**: Document format optimized for scanned documents
+
+Uploads with any other extension are rejected at validation time (`FileHelper::$supportedTypes = ['pdf']`). Word, PowerPoint, EPUB, MOBI/AZW, and DJVU are not currently supported — there is no conversion or cover-extraction path for them in the codebase.
 
 ### Document Processing Features
-- **Automatic Thumbnail Generation**: Creates thumbnails for documents using:
-  - ImageMagick for PDF files
-  - LibreOffice for Word document conversion
-  - ZipArchive for EPUB cover extraction
-  - Default placeholder images for unsupported formats
-- **Format Detection**: Automatic detection of file types
+- **Automatic Thumbnail Generation**: Creates thumbnails for PDF files using ImageMagick (`Imagick`) or `pdftoppm` (Poppler) as a fallback
+- **Format Detection**: Extension-based detection, restricted to `.pdf`
 - **Secure Storage**: Documents are stored with randomized filenames
 - **Permission Control**: Admin-configurable download permissions
 
 ### Implementation Details
 The document processing is handled primarily by the `FileHelper` class which:
-- Detects file types based on extensions
-- Extracts thumbnails using the appropriate method for each file type
-- Handles file uploads with proper validation
+- Detects file type based on extension (PDF only)
+- Extracts thumbnails via ImageMagick or `pdftoppm`
+- Handles file uploads with extension-allowlist validation
 - Manages file storage with optimized paths for both Docker and local environments
 
 ## Document Viewers
@@ -390,32 +381,17 @@ E-Lib includes specialized viewers for different document formats to provide a s
   - JWT authentication for secure document access
   - High-quality rendering with adjustable scale
 
-### Word Document Viewer
-- Built with Mammoth.js for DOCX parsing
-- Features:
-  - Renders Word documents directly in the browser
-  - Preserves document formatting and styles
-  - Fallback to download option when rendering is not possible
-  - Compatible with .doc and .docx formats
-
-### Generic Document Handler
-- For other document formats (PowerPoint, EPUB, DJVU, etc.)
-- Provides download options when browser viewing is not available
-- Clear format-specific messaging and icons
-
 ### Implementation
 The document viewing system is implemented through:
 
 - **DocumentViewer.php**: A central component that:
-  - Detects the document type
-  - Loads the appropriate viewer component
+  - Loads the PDF viewer component
   - Handles authentication and permissions
-  - Manages the UI framework for all viewers
+  - Manages the UI framework for the viewer
 
 - **Format-specific viewers**:
   - PdfViewer.php: Handles PDF documents
-  - WordViewer.php: Handles Word documents
-  - Additional viewers can be added for other formats
+  - Additional viewers could be added for other formats in the future, but none exist today
 
 ### Document Security
 - JWT token-based authentication for document access
