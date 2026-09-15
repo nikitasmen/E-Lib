@@ -68,9 +68,13 @@ jobs:
           DATABASE_NAME=LibraryDb
           JWT_SECRET_KEY=ci-e2e-secret
           CAS_SERVER_URL=https://auth.example.com/cas
-          QA_ADMIN_EMAIL=admin@example.com
-          QA_ADMIN_PASSWORD=password
           EOL
+
+      # There's no self-service way to become an admin (by design — see
+      # AuthenticatedUser::isAdmin()), so admin-gated specs need one
+      # provisioned ahead of time. See qa/README.md.
+      - name: Provision admin test account
+        run: php scripts/create-admin.php ci-admin@e2e.e-lib.test 'Ci-admin-Pass9!' ci_admin
 
       - name: Prepare storage directories
         run: mkdir -p storage/logs uploads
