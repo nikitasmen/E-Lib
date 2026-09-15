@@ -76,6 +76,17 @@ jobs:
       - name: Provision admin test account
         run: php scripts/create-admin.php ci-admin@e2e.e-lib.test 'Ci-admin-Pass9!' ci_admin
 
+      # GET /api/v1/books returns 404 when the Books collection is empty
+      # (BookController::getAllBooks() treats an empty result as an error,
+      # not an empty list — a real app bug, tracked separately). Individual
+      # tests create and clean up their own book fixtures via the API, so
+      # under CI's single-worker sequential run the collection can be
+      # genuinely empty between tests. Seed a persistent baseline that
+      # outlives every test's own fixture so that endpoint always has
+      # something to return.
+      - name: Seed baseline books
+        run: php scripts/seed-sample-books.php
+
       - name: Prepare storage directories
         run: mkdir -p storage/logs uploads
 
