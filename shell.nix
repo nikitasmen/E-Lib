@@ -46,7 +46,14 @@ pkgs.mkShell {
     unzip
     openssl
     curl
-    nodejs # for package-lock.json / any front-end tooling
+    nodejs # for package.json / Playwright E2E tests (qa/tests)
+
+    # Playwright's own browser download doesn't run on NixOS (missing FHS
+    # shared libs, e.g. libglib-2.0.so.0) — use nixpkgs' prebuilt, patched
+    # browsers instead via PLAYWRIGHT_BROWSERS_PATH below. The browser
+    # revision here must match package.json's pinned @playwright/test
+    # version (currently 1.61.1) or Playwright refuses to launch it.
+    playwright-driver.browsers
   ];
 
   shellHook = ''
@@ -61,5 +68,9 @@ pkgs.mkShell {
     echo ""
     echo "Note: this shell has no local MongoDB server — the app connects"
     echo "      to MongoDB Atlas (see MONGO_URI in .env.example)."
+
+    export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
+    export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+    export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
   '';
 }

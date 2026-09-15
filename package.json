@@ -1,0 +1,17 @@
+{
+  "name": "e-lib",
+  "private": true,
+  "version": "1.0.0",
+  "description": "E2E test tooling for E-Lib (Playwright + TypeScript)",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.0"
+  }
+}
