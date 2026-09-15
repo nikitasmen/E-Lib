@@ -1,5 +1,14 @@
 import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { config as loadDotenv } from 'dotenv';
 import { defineConfig, devices } from '@playwright/test';
+
+// The app's own .env (loaded separately by App\Includes\Environment for PHP)
+// isn't read by Node at all by default. Load it here too so QA_ADMIN_EMAIL/
+// QA_ADMIN_PASSWORD (or PLAYWRIGHT_BASE_URL) can live there instead of having
+// to be exported in the shell — but never override a value the shell already
+// set, so explicit env vars still win.
+loadDotenv({ path: path.join(__dirname, '.env'), quiet: true });
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8000';
 
