@@ -2,22 +2,22 @@ import { createBookViaApi, deleteBookViaApi, loginAsAdmin } from '../../support/
 import { buildSamplePdf } from '../../support/samplePdf';
 import { uniqueBookTitle } from '../../support/testData';
 import { expect, test } from '../../fixtures';
-import { ViewBooksPage } from '../../pages/ViewBooksPage';
+import { BrowsePage } from '../../pages/BrowsePage';
 
 // No dedicated "empty state" test: Books is shared, global state across the whole
 // suite (there's no per-test DB), and other specs seed books concurrently — an
 // assertion that zero books exist would be inherently flaky under parallel workers.
 
-test.describe('Book browsing (/view-books)', () => {
+test.describe('Book browsing (/browse)', () => {
   test('lists a seeded public book', async ({ page, seededBook }) => {
-    const viewBooks = new ViewBooksPage(page);
-    await viewBooks.open();
+    const browse = new BrowsePage(page);
+    await browse.open();
 
-    const card = viewBooks.cardByTitle(seededBook.title);
+    const card = browse.cardByTitle(seededBook.title);
     await expect(card).toBeVisible();
-    await card.getByRole('link', { name: 'Details' }).click();
+    await card.click();
 
-    await expect(page).toHaveURL(new RegExp(`/book/${seededBook.id}$`));
+    await expect(page).toHaveURL(new RegExp(`/books/${seededBook.id}$`));
   });
 
   test('does not list a draft book', async ({ page, request, adminCredentials }) => {
@@ -26,10 +26,10 @@ test.describe('Book browsing (/view-books)', () => {
     const title = uniqueBookTitle();
     const id = await createBookViaApi(request, token, { title, pdf: buildSamplePdf(title) });
 
-    const viewBooks = new ViewBooksPage(page);
-    await viewBooks.open();
+    const browse = new BrowsePage(page);
+    await browse.open();
 
-    await expect(viewBooks.cardByTitle(title)).toHaveCount(0);
+    await expect(browse.cardByTitle(title)).toHaveCount(0);
 
     await deleteBookViaApi(request, token, id);
   });

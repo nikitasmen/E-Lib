@@ -1,25 +1,26 @@
 import { expect, test } from '../../fixtures';
 import { SearchResultsPage } from '../../pages/SearchResultsPage';
 
-// Known bug: search_results.php calls `GET /api/v1/search?title=...&author=...`,
-// but the only registered route is `GET /api/v1/search/(\w+)` — a single path
-// segment, not query params (see App/Router/ApiRouter.php and
-// BookController::searchBooks($search)). The request never matches that route,
-// so every search returns a 404/"not found" and the page renders an error
-// instead of results. This test documents the *intended* behavior and is
-// expected to fail until the route/frontend are reconciled.
+// Was a known bug: GET /api/v1/search/:term was routed with `(\w+)`, which
+// doesn't match spaces — so any multi-word title 404'd and the frontend
+// showed a generic "An error occurred" message instead of real results or a
+// clean "no results" message. Fixed in App/Router/ApiRouter.php (route now
+// captures the whole segment) and App/Controllers/BookController::searchBooks
+// (urldecodes it before querying). These tests cover multi-word terms
+// specifically to guard against a regression.
 
 test.describe('Book search', () => {
-  test.fail(
-    true,
-    'Known bug: GET /api/v1/search?title=... does not match the registered ' +
-      'GET /api/v1/search/(\\w+) route — search always errors. See BookController::searchBooks().',
-  );
-
-  test('searching by title shows matching results', async ({ page, seededBook }) => {
+  test('searching by a multi-word title shows matching results', async ({ page, seededBook }) => {
     const results = new SearchResultsPage(page);
-    await results.openWithTitle(seededBook.title);
+    await results.openWithTerm(seededBook.title);
 
-    await expect(results.resultsContainer).toContainText(seededBook.title);
+    await expect(results.resultsGrid).toContainText(seededBook.title);
+  });
+
+  test('shows a "no results" message for an unmatched multi-word search', async ({ page }) => {
+    const results = new SearchResultsPage(page);
+    await results.openWithTerm('this title definitely does not exist anywhere');
+
+    await expect(results.message).toContainText('No books found for');
   });
 });

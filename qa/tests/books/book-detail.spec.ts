@@ -14,9 +14,10 @@ test.describe('Book detail page', () => {
     await expect(detail.previewButton).toBeVisible();
     await expect(detail.saveButton).toBeHidden();
     await expect(detail.downloadButton).toBeHidden();
+    await expect(detail.loginHint).toBeVisible();
   });
 
-  test('the "Online Preview" button opens the reader for the book', async ({
+  test('the "Online Preview" button opens the reader for the book, even for a guest', async ({
     page,
     seededBook,
   }) => {
@@ -25,6 +26,7 @@ test.describe('Book detail page', () => {
 
     await detail.previewButton.click();
 
+    // /read/:id has no auth guard — guests can preview, just not save/download.
     await expect(page).toHaveURL(new RegExp(`/read/${seededBook.id}$`));
   });
 
@@ -46,14 +48,8 @@ test.describe('Book detail page', () => {
     const home = new HomePage(page);
     await home.open();
 
-    // Asserting the href (rather than clicking through) sidesteps home.php's
-    // unrelated "auto-open #loginPopup on scroll" behavior, which reliably
-    // intercepts a real click on a card this far down the page.
     const card = home.bookCardByTitle(seededBook.title);
     await expect(card).toBeVisible();
-    await expect(card.getByRole('link', { name: 'View Details' })).toHaveAttribute(
-      'href',
-      `/book/${seededBook.id}`,
-    );
+    await expect(card).toHaveAttribute('href', `/books/${seededBook.id}`);
   });
 });

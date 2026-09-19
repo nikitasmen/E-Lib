@@ -1,51 +1,46 @@
 import { expect, test } from '../../fixtures';
-import { HomePage } from '../../pages/HomePage';
+import { LoginPage } from '../../pages/LoginPage';
 
-// The app has no dedicated login page: "Log in" opens a popup (#loginPopup) that's
-// included on every page via the shared header, and GET /login just redirects to
-// '/?showLogin=1' to trigger the same popup (see PageController::login()).
+// The app has no login popup anymore: "Log in" in the nav is a RouterLink to
+// a dedicated, guest-only /login page (frontend/src/views/Login.vue).
 
 test.describe('Login', () => {
-  test('the "Log in" nav button opens the login popup', async ({ page }) => {
-    const home = new HomePage(page);
-    await home.open();
-    const { loginPopup } = home.header;
+  test('the "Log in" nav link opens the login page', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('.navbar').getByRole('link', { name: 'Log in' }).click();
 
-    await loginPopup.openFromNav();
-
-    await expect(loginPopup.email).toBeVisible();
-    await expect(loginPopup.password).toBeVisible();
-    await expect(loginPopup.submit).toBeVisible();
+    await expect(page).toHaveURL(/\/login$/);
+    const login = new LoginPage(page);
+    await expect(login.email).toBeVisible();
+    await expect(login.password).toBeVisible();
+    await expect(login.submit).toBeVisible();
   });
 
-  test('GET /login redirects to the home page with the popup open', async ({ page }) => {
-    await page.goto('/login');
+  test('an authenticated visitor is redirected away from /login', async ({ authenticatedPage }) => {
+    await authenticatedPage.goto('/login');
 
-    await expect(page).toHaveURL(/\/\?showLogin=1/);
-    await expect(page.locator('#loginPopup')).toBeVisible();
+    // `guestOnly` router guard (frontend/src/router/guards.ts).
+    await expect(authenticatedPage).toHaveURL(/\/$/);
   });
 
   test('shows an error for invalid credentials', async ({ page }) => {
-    const home = new HomePage(page);
-    await home.open();
-    const { loginPopup } = home.header;
+    const login = new LoginPage(page);
+    await login.open();
 
-    await loginPopup.openFromNav();
-    await loginPopup.login('nonexistent-user@example.com', 'wrong-password');
+    await login.login('nonexistent-user@example.com', 'wrong-password');
 
-    await expect(loginPopup.errorMessage).toBeVisible();
+    await expect(login.errorMessage).toBeVisible();
   });
 
   test('an existing user can log in and sees the account menu', async ({ page, registeredUser }) => {
-    const home = new HomePage(page);
-    await home.open();
-    const { loginPopup } = home.header;
+    const login = new LoginPage(page);
+    await login.open();
 
-    await loginPopup.openFromNav();
-    await loginPopup.login(registeredUser.email, registeredUser.password);
+    await login.login(registeredUser.email, registeredUser.password);
 
-    // Login triggers a full-page redirect back to '/' on success.
-    await expect(page.locator('#profileDropdown')).toBeVisible();
-    await expect(page.locator('#userDropdown')).toContainText(registeredUser.username);
+    await expect(page).toHaveURL(/\/$/);
+    const nav = page.locator('.navbar');
+    await expect(nav.locator('.user-chip')).toBeVisible();
+    await expect(nav.locator('.user-chip .username')).toHaveText(registeredUser.username);
   });
 });
