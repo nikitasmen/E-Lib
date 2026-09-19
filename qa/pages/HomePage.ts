@@ -4,14 +4,14 @@ import { HeaderComponent } from './HeaderComponent';
 
 export class HomePage extends BasePage {
   readonly header: HeaderComponent;
-  readonly booksGrid: Locator;
+  readonly featuredSection: Locator;
   readonly bookCards: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.booksGrid = page.locator('#booksGrid');
-    this.bookCards = this.booksGrid.locator('.card');
+    this.featuredSection = page.locator('#featured');
+    this.bookCards = this.featuredSection.locator('.book-card');
   }
 
   async open(): Promise<void> {

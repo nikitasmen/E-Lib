@@ -3,29 +3,30 @@ import { BasePage } from './BasePage';
 import { HeaderComponent } from './HeaderComponent';
 
 /**
- * /dashboard — the admin "Manage Books" console (App/Views/admin.php +
- * Components/ViewBooks.php), fed by GET /api/v1/books (all statuses).
- * Server-side, the route only requires a logged-in session (AuthMiddleware);
- * the admin-only check (`checkAdminAccess()`) runs client-side and redirects
- * non-admins to "/".
+ * /admin — the admin "Manage Books" console (frontend/src/views/admin/Dashboard.vue),
+ * fed by GET /api/v1/books (all statuses). Guarded client-side by the `requireAdmin`
+ * router guard (frontend/src/router/guards.ts): an unauthenticated visitor is sent to
+ * /login, an authenticated non-admin is bounced to '/'.
  */
 export class DashboardPage extends BasePage {
   readonly header: HeaderComponent;
   readonly heading: Locator;
-  readonly tableBody: Locator;
+  readonly table: Locator;
+  readonly massUploadLink: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
     this.heading = page.getByRole('heading', { name: 'Manage Books' });
-    this.tableBody = page.locator('#booksTableBody');
+    this.table = page.locator('.admin-table');
+    this.massUploadLink = page.getByRole('link', { name: 'Mass Upload PDFs' });
   }
 
   async open(): Promise<void> {
-    await this.goto('/dashboard');
+    await this.goto('/admin');
   }
 
   rowByTitle(title: string): Locator {
-    return this.tableBody.locator('tr').filter({ hasText: title });
+    return this.table.locator('tbody tr').filter({ hasText: title });
   }
 }
