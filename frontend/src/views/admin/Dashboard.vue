@@ -127,28 +127,11 @@ async function submitEdit() {
   editError.value = ''
   editSaving.value = true
   const id = idToString(editing.value._id)
+  const payload = { ...editForm }
   try {
-    const response = await adminApi.updateBook(id, {
-      title: editForm.title,
-      author: editForm.author,
-      description: editForm.description,
-      status: editForm.status,
-      featured: editForm.featured,
-      isbn: editForm.isbn,
-      downloadable: editForm.downloadable,
-      categories: editForm.categories,
-    })
+    const response = await adminApi.updateBook(id, payload)
     if (isApiSuccess(response.data)) {
-      Object.assign(editing.value, {
-        title: editForm.title,
-        author: editForm.author,
-        description: editForm.description,
-        status: editForm.status,
-        featured: editForm.featured,
-        isbn: editForm.isbn,
-        downloadable: editForm.downloadable,
-        categories: editForm.categories,
-      })
+      Object.assign(editing.value, payload)
       toast.success('Book updated successfully.')
       closeEdit()
     } else {

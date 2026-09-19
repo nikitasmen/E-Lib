@@ -6,7 +6,6 @@ import { useZoomRotate, DEFAULT_SCALE } from '@/composables/reader/useZoomRotate
 import { useReaderSearch } from '@/composables/reader/useReaderSearch'
 import { useReaderNotes } from '@/composables/reader/useReaderNotes'
 import { useReaderPersistence } from '@/composables/reader/useReaderPersistence'
-import { useFullscreen } from '@/composables/reader/useFullscreen'
 import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
@@ -20,7 +19,6 @@ const zoomRotate = useZoomRotate(savedZoom ?? DEFAULT_SCALE)
 const pdf = usePdfDocument(bookId, { scale: zoomRotate.scale, rotation: zoomRotate.rotation })
 const search = useReaderSearch(pdf.pdfDoc)
 const notes = useReaderNotes(bookId)
-const fullscreen = useFullscreen()
 
 const readerShell = ref<HTMLElement | null>(null)
 const pagesContainer = ref<HTMLElement | null>(null)
@@ -94,6 +92,15 @@ function handlePrint() {
   window.print()
 }
 
+function toggleFullscreen() {
+  if (!readerShell.value) return
+  if (document.fullscreenElement) {
+    document.exitFullscreen?.()
+  } else {
+    readerShell.value.requestFullscreen?.()
+  }
+}
+
 function handleKeydown(event: KeyboardEvent) {
   const tag = (event.target as HTMLElement)?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
@@ -153,7 +160,7 @@ onBeforeUnmount(() => {
       <div class="toolbar-group toolbar-end">
         <button type="button" class="btn btn-outline" title="Reading theme" @click="cycleTheme">Theme</button>
         <button type="button" class="btn btn-outline" title="Rotate" @click="handleRotate">⟳</button>
-        <button type="button" class="btn btn-outline" title="Fullscreen" @click="fullscreen.toggle(readerShell)">⛶</button>
+        <button type="button" class="btn btn-outline" title="Fullscreen" @click="toggleFullscreen">⛶</button>
         <button type="button" class="btn btn-outline" title="Print" @click="handlePrint">Print</button>
         <button type="button" class="btn btn-primary" title="Notes" @click="notesOpen = !notesOpen">Notes</button>
       </div>

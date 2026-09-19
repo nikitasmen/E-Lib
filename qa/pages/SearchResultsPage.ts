@@ -5,20 +5,16 @@ import { HeaderComponent } from './HeaderComponent';
 /** /search (frontend/src/views/SearchResults.vue), fed by GET /api/v1/search/:term. */
 export class SearchResultsPage extends BasePage {
   readonly header: HeaderComponent;
-  readonly loadingIndicator: Locator;
-  readonly resultsGrid: Locator;
   readonly message: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.loadingIndicator = page.getByTestId('search-loading');
-    this.resultsGrid = page.getByTestId('search-results');
     this.message = page.getByTestId('search-message');
   }
 
   async openWithTerm(term: string): Promise<void> {
-    await this.goto(`/search?q=${encodeURIComponent(term)}`);
+    await this.page.goto(`/search?q=${encodeURIComponent(term)}`);
   }
 
   cardById(bookId: string): Locator {

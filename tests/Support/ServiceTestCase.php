@@ -4,7 +4,6 @@ namespace Tests\Support;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use ReflectionProperty;
 
 /**
  * Base class for Service unit tests.
@@ -16,6 +15,8 @@ use ReflectionProperty;
  */
 abstract class ServiceTestCase extends TestCase
 {
+    use InjectsMocks;
+
     /**
      * @template T of object
      * @param class-string<T> $serviceClass
@@ -26,9 +27,7 @@ abstract class ServiceTestCase extends TestCase
         $reflection = new ReflectionClass($serviceClass);
         $service = $reflection->newInstanceWithoutConstructor();
 
-        $property = new ReflectionProperty($serviceClass, $propertyName);
-        $property->setAccessible(true);
-        $property->setValue($service, $collaborator);
+        $this->inject($service, $propertyName, $collaborator);
 
         return $service;
     }

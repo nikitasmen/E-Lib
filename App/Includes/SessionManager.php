@@ -22,31 +22,6 @@ class SessionManager
             }
         }
 
-        // Set global variables
-        global $isLoggedIn;
-        $isLoggedIn = isset($_SESSION['user_id']);
-
-        return $isLoggedIn;
-    }
-
-    /**
-     * @return mixed
-     */
-    public static function getCurrentUser()
-    {
-        return $_SESSION['user'] ?? null;
-    }
-
-    /**
-     * @return mixed
-     */
-    public static function getCurrentUserId()
-    {
-        return $_SESSION['user_id'] ?? null;
-    }
-
-    public static function isLoggedIn(): bool
-    {
         return isset($_SESSION['user_id']);
     }
 }

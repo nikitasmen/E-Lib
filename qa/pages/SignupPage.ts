@@ -29,7 +29,7 @@ export class SignupPage extends BasePage {
   }
 
   async open(): Promise<void> {
-    await this.goto('/signup');
+    await this.page.goto('/signup');
   }
 
   async signUp(input: { username: string; email: string; password: string }): Promise<void> {

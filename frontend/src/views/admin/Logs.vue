@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as adminApi from '@/api/admin'
 import { isApiSuccess, requestErrorMessage } from '@/types/api'
 import { useToast } from '@/composables/useToast'
+import { downloadBlob } from '@/utils/dom'
 
 const toast = useToast()
 
@@ -74,15 +75,7 @@ function downloadActiveTab() {
     filename = 'system-info.txt'
   }
 
-  const blob = new Blob([content], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  URL.revokeObjectURL(url)
+  downloadBlob(new Blob([content], { type: 'text/plain' }), filename)
 }
 
 async function refresh() {

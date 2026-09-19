@@ -9,6 +9,7 @@ import type { Book } from '@/types/book'
 import type { Review } from '@/types/review'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { downloadBlob, onThumbnailError } from '@/utils/dom'
 import StarRating from '@/components/StarRating.vue'
 import ReviewList from '@/components/ReviewList.vue'
 import ReviewForm from '@/components/ReviewForm.vue'
@@ -29,10 +30,6 @@ const downloading = ref(false)
 
 const cover = computed(() => book.value?.thumbnail || booksApi.thumbnailUrl(bookId))
 const isDownloadable = computed(() => book.value?.downloadable !== false)
-
-function onImgError(event: Event) {
-  ;(event.target as HTMLImageElement).src = '/assets/uploads/thumbnails/placeholder-book.jpg'
-}
 
 async function loadReviews() {
   try {
@@ -66,14 +63,7 @@ async function handleDownload() {
   downloading.value = true
   try {
     const response = await booksApi.downloadBook(bookId)
-    const url = window.URL.createObjectURL(response.data)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${book.value?.title || 'book'}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(url)
+    downloadBlob(response.data, `${book.value?.title || 'book'}.pdf`)
   } catch {
     toast.error('Failed to download the file. Please try again.')
   } finally {
@@ -112,7 +102,7 @@ onMounted(async () => {
 
     <div v-else-if="book" class="detail-grid">
       <div class="cover-column">
-        <img :src="cover" class="cover" :alt="`Cover of ${book.title}`" @error="onImgError" />
+        <img :src="cover" class="cover" :alt="`Cover of ${book.title}`" @error="onThumbnailError" />
 
         <div class="actions">
           <RouterLink :to="`/read/${bookId}`" class="btn btn-outline full-width" data-testid="preview-button">

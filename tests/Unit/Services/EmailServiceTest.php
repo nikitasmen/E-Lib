@@ -27,44 +27,6 @@ class EmailServiceTest extends TestCase
         return $service;
     }
 
-    public function testSendEmailReturnsTrueOnSuccess(): void
-    {
-        $mailer = $this->createMock(PHPMailer::class);
-        $mailer->expects($this->once())
-            ->method('addAddress')
-            ->with('to@example.com', 'Recipient');
-        $mailer->method('send')->willReturn(true);
-
-        $result = $this->serviceWithMockedMailer($mailer)
-            ->sendEmail('to@example.com', 'Recipient', 'Subject', '<p>Hi</p>');
-
-        $this->assertTrue($result);
-        $this->assertSame('Subject', $mailer->Subject);
-        $this->assertSame('<p>Hi</p>', $mailer->Body);
-    }
-
-    public function testSendEmailFallsBackToStrippedTagsForAltBody(): void
-    {
-        $mailer = $this->createMock(PHPMailer::class);
-        $mailer->method('send')->willReturn(true);
-
-        $this->serviceWithMockedMailer($mailer)
-            ->sendEmail('to@example.com', 'Recipient', 'Subject', '<p>Hi <b>there</b></p>');
-
-        $this->assertSame('Hi there', $mailer->AltBody);
-    }
-
-    public function testSendEmailReturnsFalseWhenMailerThrows(): void
-    {
-        $mailer = $this->createMock(PHPMailer::class);
-        $mailer->method('send')->willThrowException(new PHPMailerException('SMTP connect() failed'));
-
-        $result = $this->serviceWithMockedMailer($mailer)
-            ->sendEmail('to@example.com', 'Recipient', 'Subject', '<p>Hi</p>');
-
-        $this->assertFalse($result);
-    }
-
     public function testSendSupportEmailUsesSenderAsReplyToAndConfiguredSupportInbox(): void
     {
         $mailer = $this->createMock(PHPMailer::class);

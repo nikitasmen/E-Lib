@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Repository\DatabaseRepository;
 use App\Helpers\Database\MongoHelper;
 use InvalidArgumentException;
 

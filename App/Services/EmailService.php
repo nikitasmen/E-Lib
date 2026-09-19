@@ -84,40 +84,6 @@ class EmailService
     }
 
     /**
-     * Send a general email
-     *
-     * @param string $toEmail Recipient email
-     * @param string $toName Recipient name
-     * @param string $subject Email subject
-     * @param string $htmlBody HTML content
-     * @param string $textBody Plain text content
-     * @return bool True if email was sent successfully, false otherwise
-     */
-    public function sendEmail($toEmail, $toName, $subject, $htmlBody, $textBody = '')
-    {
-        try {
-            // Reset all recipients
-            $this->mailer->clearAllRecipients();
-
-            // Add recipient
-            $this->mailer->addAddress($toEmail, $toName);
-
-            // Email content
-            $this->mailer->isHTML(true);
-            $this->mailer->Subject = $subject;
-            $this->mailer->Body = $htmlBody;
-            $this->mailer->AltBody = $textBody ?: strip_tags($htmlBody);
-
-            // Send email
-            $this->mailer->send();
-            return true;
-        } catch (Exception $e) {
-            error_log("PHPMailer Error: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
      * Format support email HTML
      *
      * @param string $name Sender name

@@ -44,7 +44,7 @@ export class ProfilePage extends BasePage {
   }
 
   async open(): Promise<void> {
-    await this.goto('/profile');
+    await this.page.goto('/profile');
   }
 
   async openEditUsername(newUsername: string): Promise<void> {

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Repository\DatabaseRepository;
 use App\Helpers\Database\MongoHelper;
 use InvalidArgumentException;
 
@@ -44,22 +43,6 @@ class Users extends BaseModel
     public function registerUser(array $user): array
     {
         return $this->create($user);
-    }
-
-    /**
-     * Authenticate a user
-     *
-     * @param string $email User's email
-     * @param string $password User's password
-     * @return array<string, mixed>|false User data if authentication succeeds, false otherwise
-     */
-    public function login(string $email, string $password)
-    {
-        $user = $this->getUserByEmail($email);
-        if ($user && password_verify($password, $user['password'])) {
-            return $user;
-        }
-        return false;
     }
 
     /**
@@ -209,48 +192,6 @@ class Users extends BaseModel
         return true;
     }
 
-    /**
-     * Update user profile
-     *
-     * @param string $userId User ID
-     * @param array<string, mixed> $userData Updated user data
-     * @return array<string, mixed>|false Update result or false if validation fails
-     * @throws InvalidArgumentException If validation fails
-     */
-    public function updateProfile(string $userId, array $userData)
-    {
-        // Filter out sensitive fields that shouldn't be updated directly
-        $protectedFields = ['password', 'role', '_id', 'email'];
-        $filteredData = array_diff_key($userData, array_flip($protectedFields));
-
-        // Validate the filtered data
-        $errors = $this->validateProfileUpdate($filteredData);
-        if (!empty($errors)) {
-            throw new InvalidArgumentException(json_encode($errors));
-        }
-
-        return $this->updateById($userId, $filteredData);
-    }
-
-    /**
-     * Validate profile update data
-     *
-     * @param array<string, mixed> $data Profile data to validate
-     * @return array<string, string> Validation errors
-     */
-    private function validateProfileUpdate(array $data): array
-    {
-        $errors = [];
-
-        // Name validation
-        if (isset($data['name']) && strlen($data['name']) < 2) {
-            $errors['name'] = 'Name must be at least 2 characters';
-        }
-
-        // Add other profile field validations as needed
-
-        return $errors;
-    }
     /**
      * Update user profile information
      *

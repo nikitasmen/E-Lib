@@ -12,19 +12,6 @@ if (!$projectRoot) {
     die("Critical error: Unable to determine project root directory");
 }
 
-// Function to safely include a file with proper error handling
-function safeRequire($path)
-{
-    if (file_exists($path)) {
-        require_once $path;
-        return true;
-    }
-    return false;
-}
-
-// Check if we're in GitHub Actions environment
-$isGithubActions = getenv('GITHUB_ACTIONS') === 'true';
-
 // Try to include the autoloader first
 $autoloadPath = $projectRoot . '/vendor/autoload.php';
 if (file_exists($autoloadPath)) {
@@ -54,62 +41,6 @@ try {
         'Verify MONGO_URI placeholders (<db_password> or ${MONGO_PASSWORD}) and MONGO_PASSWORD in .env, Atlas IP allowlist, and DNS. ' .
         'Run: php scripts/mongo-ping.php. See storage/logs/php_errors.log.' . $detail
     );
-}
-
-// Define all the required paths
-$requiredFiles = [
-    '/App/Router/BaseRouter.php',
-    '/App/Router/PageRouter.php',
-    '/App/Router/ApiRouter.php',
-    '/App/Database/DatabaseInterface.php',
-    '/App/Database/MongoDatabase.php',
-    '/App/Includes/Environment.php',
-    '/App/Integration/Database/MongoConnectionFactory.php'
-];
-
-// Try to include all required files
-$missingFiles = [];
-foreach ($requiredFiles as $file) {
-    $fullPath = $projectRoot . $file;
-    if (!safeRequire($fullPath)) {
-        $missingFiles[] = $fullPath;
-    }
-}
-
-// If there are missing files, display error and exit
-if (!empty($missingFiles)) {
-    echo "<h1>Critical Error: Missing Required Files</h1>";
-    echo "<p>The following files could not be found:</p><ul>";
-    foreach ($missingFiles as $file) {
-        echo "<li>$file</li>";
-    }
-    echo "</ul>";
-
-    echo "<h2>Debug Information</h2>";
-    echo "<p>Project Root: $projectRoot</p>";
-    echo "<p>Current Directory: " . getcwd() . "</p>";
-    echo "<p>Is GitHub Actions: " . ($isGithubActions ? 'Yes' : 'No') . "</p>";
-
-    if ($isGithubActions) {
-        echo "<h2>GitHub Actions Environment</h2>";
-        echo "<p>Directory Listing:</p><pre>";
-        // List directories to debug
-        echo shell_exec("ls -la $projectRoot");
-        echo shell_exec("ls -la $projectRoot/App");
-        echo "</pre>";
-    }
-
-    die();
-}
-
-// Environment already loaded above
-
-// Add the new integration folder to the manual includes
-safeRequire($projectRoot . '/App/Integration/Database/MongoConnectionFactory.php');
-
-// Verify the class exists
-if (!class_exists('App\Router\BaseRouter')) {
-    die("Critical error: App\\Router\\BaseRouter class not found despite loading file");
 }
 
 use App\Includes\SessionManager;

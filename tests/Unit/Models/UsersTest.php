@@ -75,37 +75,6 @@ class UsersTest extends ModelTestCase
         $this->assertSame([], $errors);
     }
 
-    public function testLoginReturnsFalseForUnknownEmail(): void
-    {
-        $db = $this->createMock(DatabaseInterface::class);
-        $db->method('findOne')->willReturn(null);
-
-        $this->assertFalse($this->makeUsers($db)->login('nobody@example.com', 'whatever'));
-    }
-
-    public function testLoginReturnsFalseForWrongPassword(): void
-    {
-        $db = $this->createMock(DatabaseInterface::class);
-        $db->method('findOne')->willReturn([
-            'email' => 'nik@example.com',
-            'password' => password_hash('correct-password', PASSWORD_BCRYPT),
-        ]);
-
-        $this->assertFalse($this->makeUsers($db)->login('nik@example.com', 'wrong-password'));
-    }
-
-    public function testLoginReturnsUserForCorrectPassword(): void
-    {
-        $user = [
-            'email' => 'nik@example.com',
-            'password' => password_hash('correct-password', PASSWORD_BCRYPT),
-        ];
-        $db = $this->createMock(DatabaseInterface::class);
-        $db->method('findOne')->willReturn($user);
-
-        $this->assertSame($user, $this->makeUsers($db)->login('nik@example.com', 'correct-password'));
-    }
-
     public function testGetUserByEmailRejectsMalformedEmail(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -170,32 +139,5 @@ class UsersTest extends ModelTestCase
         $db->expects($this->never())->method('update');
 
         $this->assertTrue($this->makeUsers($db)->recordDownload('507f1f77bcf86cd799439011', 'b1'));
-    }
-
-    public function testUpdateProfileStripsProtectedFields(): void
-    {
-        $db = $this->createMock(DatabaseInterface::class);
-        $db->expects($this->once())
-            ->method('update')
-            ->with(
-                'Users',
-                $this->anything(),
-                $this->callback(fn ($update) => $update['$set'] === ['name' => 'Nik'])
-            )
-            ->willReturn(['modifiedCount' => 1]);
-
-        $this->makeUsers($db)->updateProfile('507f1f77bcf86cd799439011', [
-            'name' => 'Nik',
-            'password' => 'should-be-stripped',
-            'role' => 'admin',
-            'email' => 'ignored@example.com',
-        ]);
-    }
-
-    public function testUpdateProfileThrowsOnInvalidName(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->makeUsers()->updateProfile('507f1f77bcf86cd799439011', ['name' => 'x']);
     }
 }

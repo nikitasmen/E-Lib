@@ -206,17 +206,7 @@ class FileHelper
                 return false;
             }
 
-            // Determine which placeholder to use based on file type
-            $placeholderFile = 'placeholder-book.jpg'; // Default placeholder
-
-            switch ($type) {
-                case 'pdf':
-                    $placeholderFile = 'placeholder-pdf.jpg';
-                    break;
-                default:
-                    $placeholderFile = 'placeholder-pdf.jpg';
-                    break;
-            }
+            $placeholderFile = 'placeholder-pdf.jpg';
 
             // Path to placeholder file
             $placeholderPath = __DIR__ . '/../../public/assets/uploads/thumbnails/' . $placeholderFile;
@@ -263,22 +253,24 @@ class FileHelper
     }
 
     /**
+     * Absolute upload directory and public web path for a subdirectory under public/assets/uploads/.
+     * App/Helpers → project root is two levels up (not three — three was wrong and wrote outside E-Lib).
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function resolveUploadPaths(string $subDir): array
+    {
+        $uploadDir = getenv('DOCKER_ENV') === 'true' ? '/var/www/html/public' : dirname(__DIR__, 2) . '/public';
+        $webPath = '/assets/uploads/' . $subDir;
+        return [$uploadDir . $webPath, $webPath];
+    }
+
+    /**
      * Gets or creates a thumbnail for the document
      */
     public function getThumbnail(): string
     {
-        // Use environment detection for Docker compatibility
-        if (getenv('DOCKER_ENV') === 'true') {
-            $uploadDir = '/var/www/html/public';
-            $thumbnailDir = $uploadDir . '/assets/uploads/thumbnails';
-            $webPath = '/assets/uploads/thumbnails';
-        } else {
-            // App/Helpers → project root is two levels up (not three — three was wrong and wrote outside E-Lib)
-            $projectRoot = dirname(__DIR__, 2);
-            $uploadDir = $projectRoot . '/public';
-            $thumbnailDir = $uploadDir . '/assets/uploads/thumbnails';
-            $webPath = '/assets/uploads/thumbnails';
-        }
+        [$thumbnailDir, $webPath] = $this->resolveUploadPaths('thumbnails');
 
         // Create the directory if it doesn't exist
         if (!is_dir($thumbnailDir)) {
@@ -345,17 +337,8 @@ class FileHelper
             // Generate a unique name for the file
             $newFileName = uniqid('doc_') . '.' . $fileExtension;
 
-            // Use environment detection for Docker compatibility
-            if (getenv('DOCKER_ENV') === 'true') {
-                $uploadDir = '/var/www/html/public';
-                $uploadFileDir = $uploadDir . '/assets/uploads/documents/';
-                $webPath = '/assets/uploads/documents';
-            } else {
-                $projectRoot = dirname(__DIR__, 2);
-                $uploadDir = $projectRoot . '/public';
-                $uploadFileDir = $uploadDir . '/assets/uploads/documents/';
-                $webPath = '/assets/uploads/documents';
-            }
+            [$uploadFileDir, $webPath] = $this->resolveUploadPaths('documents');
+            $uploadFileDir .= '/';
 
             // Create directory if it doesn't exist
             if (!is_dir($uploadFileDir)) {

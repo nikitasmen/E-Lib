@@ -64,5 +64,5 @@ Two mechanisms coexist: JWT bearer tokens (`JwtHelper`, checked by `JwtAuthMiddl
 ## Conventions
 
 - PSR-12 is enforced by CI (`.github/workflows/lint.yml`) via `composer run lint`/`composer run analyse`; line length limit is 140 (soft) / 220 (hard) per `phpcs.xml`.
-- Bootstrap/entry scripts (`App/bootstrap.php`, `public/index.php`, `setup-mongodb-cert.php`, `docker-entrypoint.php`, `check-system.php`) are explicitly exempted from PSR1's side-effect rule since they mix declarations and top-level execution by design.
+- Bootstrap/entry scripts (`App/bootstrap.php`, `public/index.php`, `docker-entrypoint.php`, `check-system.php`) are explicitly exempted from PSR1's side-effect rule since they mix declarations and top-level execution by design.
 - `.env` is loaded manually by `App\Includes\Environment` (no vlucas/phpdotenv); values are read with `Environment::get($key, $default)`, never `$_ENV`/`getenv` directly, so defaults stay consistent across the app.

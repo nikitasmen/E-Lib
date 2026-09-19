@@ -13,12 +13,10 @@ use App\Helpers\Database\MongoHelper;
 class BookController
 {
     private BookService $bookService;
-    private ResponseHandler $response;
 
     public function __construct()
     {
         $this->bookService = new BookService();
-        $this->response = new ResponseHandler();
     }
 
     public function featuredBooks(): void
@@ -31,9 +29,9 @@ class BookController
         }
         unset($book);
         if ($books) {
-            $this->response->respond(true, $books);
+            ResponseHandler::respond(true, $books);
         } else {
-            $this->response->respond(false, 'No books found', 404);
+            ResponseHandler::respond(false, 'No books found', 404);
         }
     }
 
@@ -41,15 +39,15 @@ class BookController
     {
         // Check if user is admin
         if (!AuthenticatedUser::isAdmin()) {
-            $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+            ResponseHandler::respond(false, 'Unauthorized: Admin privileges required', 403);
             return;
         }
 
         $response = $this->bookService->deleteBook($id);
         if ($response) {
-            $this->response->respond(true, 'Book deleted successfully');
+            ResponseHandler::respond(true, 'Book deleted successfully');
         } else {
-            $this->response->respond(false, 'Error deleting book', 400);
+            ResponseHandler::respond(false, 'Error deleting book', 400);
         }
     }
 
@@ -57,7 +55,7 @@ class BookController
     {
         // Check if user is admin
         if (!AuthenticatedUser::isAdmin()) {
-            $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+            ResponseHandler::respond(false, 'Unauthorized: Admin privileges required', 403);
             return;
         }
 
@@ -74,7 +72,7 @@ class BookController
         // First get the current book data
         $currentBook = $this->bookService->getBookDetails($id);
         if (!$currentBook) {
-            $this->response->respond(false, 'Book not found', 404);
+            ResponseHandler::respond(false, 'Book not found', 404);
             return;
         }
 
@@ -121,9 +119,9 @@ class BookController
         );
 
         if ($response) {
-            $this->response->respond(true, 'Book updated successfully');
+            ResponseHandler::respond(true, 'Book updated successfully');
         } else {
-            $this->response->respond(false, 'Error updating book', 400);
+            ResponseHandler::respond(false, 'Error updating book', 400);
         }
     }
 
@@ -137,9 +135,9 @@ class BookController
         }
         unset($book);
         if ($books) {
-            $this->response->respond(true, $books);
+            ResponseHandler::respond(true, $books);
         } else {
-            $this->response->respond(false, 'No books found', 404);
+            ResponseHandler::respond(false, 'No books found', 404);
         }
     }
 
@@ -151,9 +149,9 @@ class BookController
                 BookDisplayHelper::applyThumbnailForApi($book);
             }
             unset($book);
-            $this->response->respond(true, $books);
+            ResponseHandler::respond(true, $books);
         } else {
-            $this->response->respond(false, 'No books found', 404);
+            ResponseHandler::respond(false, 'No books found', 404);
         }
     }
 
@@ -164,7 +162,7 @@ class BookController
     public function getCategories(): void
     {
         $categories = $this->bookService->getCategories();
-        $this->response->respond(true, $categories);
+        ResponseHandler::respond(true, $categories);
     }
 
     public function viewBook(string $id): void
@@ -172,9 +170,9 @@ class BookController
         $book = $this->bookService->getBookDetails($id);
         if ($book) {
             BookDisplayHelper::applyThumbnailForApi($book);
-            $this->response->respond(true, $book);
+            ResponseHandler::respond(true, $book);
         } else {
-            $this->response->respond(false, 'Book not found', 404);
+            ResponseHandler::respond(false, 'Book not found', 404);
         }
     }
 
@@ -189,14 +187,14 @@ class BookController
             BookDisplayHelper::applyThumbnailForApi($book);
         }
         unset($book);
-        $this->response->respond(true, $books);
+        ResponseHandler::respond(true, $books);
     }
 
     public function addBook(): void
     {
         // Check if user is admin
         if (!AuthenticatedUser::isAdmin()) {
-            $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+            ResponseHandler::respond(false, 'Unauthorized: Admin privileges required', 403);
             return;
         }
 
@@ -213,18 +211,18 @@ class BookController
 
         // Validate required fields
         if (empty($title)) {
-            $this->response->respond(false, 'Title is required', 400);
+            ResponseHandler::respond(false, 'Title is required', 400);
             return;
         }
 
         if ($this->bookService->getBookByTitle($title)) {
-            $this->response->respond(false, 'Book already exists', 400);
+            ResponseHandler::respond(false, 'Book already exists', 400);
             return;
         }
 
         // Check file upload (see https://www.php.net/manual/en/features.file-upload.errors.php)
         if (!isset($_FILES['bookFile'])) {
-            $this->response->respond(false, 'No file uploaded (missing bookFile).', 400);
+            ResponseHandler::respond(false, 'No file uploaded (missing bookFile).', 400);
             return;
         }
         $uploadErr = (int) ($_FILES['bookFile']['error'] ?? UPLOAD_ERR_NO_FILE);
@@ -237,7 +235,7 @@ class BookController
                 default => 'PDF file upload error (code ' . $uploadErr . ').',
             };
             error_log('bookFile upload error: ' . $uploadErr);
-            $this->response->respond(false, $msg, 400);
+            ResponseHandler::respond(false, $msg, 400);
             return;
         }
 
@@ -249,7 +247,7 @@ class BookController
 
         if (!$storedFile) {
             error_log("Failed to store file");
-            $this->response->respond(false, 'Error storing file', 500);
+            ResponseHandler::respond(false, 'Error storing file', 500);
             return;
         }
 
@@ -278,9 +276,9 @@ class BookController
         );
 
         if ($response) {
-            $this->response->respond(true, $response);
+            ResponseHandler::respond(true, $response);
         } else {
-            $this->response->respond(false, 'Error adding book', 400);
+            ResponseHandler::respond(false, 'Error adding book', 400);
         }
     }
 
@@ -436,13 +434,13 @@ class BookController
 
         // Check if user is admin - utilizing the session data set during login
         if (!AuthenticatedUser::isAdmin()) {
-            $this->response->respond(false, 'Unauthorized: Admin privileges required', 403);
+            ResponseHandler::respond(false, 'Unauthorized: Admin privileges required', 403);
             return;
         }
 
         // Validate if files were uploaded
         if (empty($_FILES['books']) || !is_array($_FILES['books']['name'])) {
-            $this->response->respond(false, 'No PDF files submitted', 400);
+            ResponseHandler::respond(false, 'No PDF files submitted', 400);
             return;
         }
 
@@ -536,27 +534,10 @@ class BookController
                 );
 
                 if ($response) {
+                    $bookId = $this->extractInsertedId($response);
+
                     // If book was added successfully, update its status
                     if ($status !== 'draft') {
-                        // Extract the book ID from the response
-                        $bookId = null;
-
-                        // Handle specific response format with data.insertedId pattern
-                        if (is_array($response) && isset($response['data']) && isset($response['data']['insertedId'])) {
-                            $bookId = $response['data']['insertedId'];
-                        } elseif (is_array($response) && isset($response['_id'])) {
-                            // Handle _id object scenario
-                            if (is_object($response['_id']) && method_exists($response['_id'], '__toString')) {
-                                $bookId = $response['_id']->__toString();
-                            } elseif (is_string($response['_id'])) {
-                                $bookId = $response['_id'];
-                            }
-                        } elseif (is_array($response) && isset($response['insertedId'])) {
-                            // Handle direct insertedId at the root level
-                            $bookId = $response['insertedId'];
-                        }
-
-                        // Only attempt update if we successfully extracted an ID
                         if ($bookId) {
                             $this->bookService->updateBook(
                                 $bookId,
@@ -575,26 +556,10 @@ class BookController
                         }
                     }
 
-                    // Use the same ID extraction logic for the results section
-                    $resultId = null;
-
-                    if (is_array($response) && isset($response['data']) && isset($response['data']['insertedId'])) {
-                        $resultId = $response['data']['insertedId'];
-                    } elseif (is_array($response) && isset($response['_id'])) {
-                        $resultId = is_object($response['_id']) && method_exists($response['_id'], '__toString')
-                            ? $response['_id']->__toString()
-                            : (is_string($response['_id']) ? $response['_id'] : json_encode($response));
-                    } elseif (is_array($response) && isset($response['insertedId'])) {
-                        $resultId = $response['insertedId'];
-                    } else {
-                        // Neither of the known array shapes matched at this point
-                        $resultId = json_encode($response);
-                    }
-
                     $results['success'][] = [
                         'filename' => $file['name'],
                         'title' => $title,
-                        'id' => $resultId
+                        'id' => $bookId ?? json_encode($response)
                     ];
                 } else {
                     $results['failed'][] = [
@@ -622,12 +587,12 @@ class BookController
 
         // Return response with results
         if (empty($results['failed'])) {
-            $this->response->respond(true, [
+            ResponseHandler::respond(true, [
                 'message' => 'All books uploaded successfully',
                 'results' => $results
             ]);
         } else {
-            $this->response->respond(
+            ResponseHandler::respond(
                 count($results['success']) > 0,
                 [
                     'message' => count($results['success']) > 0
@@ -638,6 +603,28 @@ class BookController
                 count($results['success']) > 0 ? 207 : 400
             );
         }
+    }
+
+    /**
+     * Extract the inserted book's ID from a Books::addBook() result, whatever shape it comes in
+     * (data.insertedId, a BSON _id object/string, or a root-level insertedId). Null when none match.
+     */
+    private function extractInsertedId(mixed $response): ?string
+    {
+        if (is_array($response) && isset($response['data']['insertedId'])) {
+            return (string) $response['data']['insertedId'];
+        }
+        if (is_array($response) && isset($response['_id'])) {
+            $id = $response['_id'];
+            if (is_object($id) && method_exists($id, '__toString')) {
+                return (string) $id;
+            }
+            return is_string($id) ? $id : null;
+        }
+        if (is_array($response) && isset($response['insertedId'])) {
+            return (string) $response['insertedId'];
+        }
+        return null;
     }
 
     /**
@@ -724,7 +711,7 @@ class BookController
     {
         // Validate book ID
         if (!$bookId || !preg_match('/^[0-9a-f]{24}$/', $bookId)) {
-            $this->response->respond(false, 'Invalid book ID', 400);
+            ResponseHandler::respond(false, 'Invalid book ID', 400);
             return;
         }
 
@@ -737,13 +724,13 @@ class BookController
 
         $relativePath = $book['file_path'] ?? $book['pdf_path'] ?? '';
         if (!$book || $relativePath === '') {
-            $this->response->respond(false, 'Book not found or has no file', 404);
+            ResponseHandler::respond(false, 'Book not found or has no file', 404);
             return;
         }
 
         $filePath = $this->resolveStoredPublicFile($relativePath);
         if ($filePath === null) {
-            $this->response->respond(false, 'File not found or not accessible', 404);
+            ResponseHandler::respond(false, 'File not found or not accessible', 404);
             return;
         }
 
@@ -757,7 +744,7 @@ class BookController
              // If for some reason a non-PDF is requested (legacy data), we might want to block it or
              // try to serve it as PDF (which might fail in browser but acts as a restriction)
              // For strict restriction:
-             // $this->response->respond(false, 'Only PDF files are supported', 400);
+             // ResponseHandler::respond(false, 'Only PDF files are supported', 400);
              // return;
              // But existing files might still need to be accessible if we didn't delete them.
              // However, the requirement is "Restrict to PDF Only", implying we drop support.

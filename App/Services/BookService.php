@@ -230,17 +230,9 @@ class BookService
             return false;
         }
 
-        $totalRating = 0;
-        $count = 0;
-
-        foreach ($book['reviews'] as $review) {
-            if (isset($review['rating'])) {
-                $totalRating += $review['rating'];
-                $count++;
-            }
-        }
-
-        $averageRating = $count > 0 ? round($totalRating / $count, 1) : 0;
+        $ratings = array_column($book['reviews'], 'rating');
+        $count = count($ratings);
+        $averageRating = $count > 0 ? round(array_sum($ratings) / $count, 1) : 0;
 
         // Update the book with the new average rating
         return $this->book->updateBookRating($bookId, $averageRating, $count);

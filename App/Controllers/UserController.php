@@ -32,21 +32,29 @@ class UserController
         return AuthenticatedUser::id();
     }
 
+    /**
+     * Request body as an array, from $_POST or a JSON body.
+     *
+     * @return array<string, mixed>
+     */
+    private function getRequestData(): array
+    {
+        if (!empty($_POST)) {
+            return $_POST;
+        }
+        $input = json_decode(file_get_contents('php://input'), true);
+        return is_array($input) ? $input : [];
+    }
+
     public function handleLogin(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        if (empty($_POST)) {
-            $inputJSON = file_get_contents('php://input');
-            $input = json_decode($inputJSON, true);
-            $email = $input['email'] ?? null;
-            $password = $input['password'] ?? null;
-        } else {
-            $email = $_POST['email'] ?? null;
-            $password = $_POST['password'] ?? null;
-        }
+        $data = $this->getRequestData();
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
 
         try {
             $user = $this->userService->getUserByEmail($email);
@@ -104,27 +112,15 @@ class UserController
 
     public function handleSignup(): void
     {
-
-        if (empty($_POST)) {
-            // Try to read from input stream (for JSON requests)
-            $inputJSON = file_get_contents('php://input');
-            error_log('Raw input: ' . $inputJSON);
-            $input = json_decode($inputJSON, true);
-
-            if ($input) {
-                $userName = $input['username'] ?? $input['name'] ?? null;
-                $email = $input['email'] ?? null;
-                $password = $input['password'] ?? null;
-            } else {
-                ResponseHandler::respond(false, 'No data received', 400);
-                return;
-            }
-        } else {
-            // Get from POST (SignUpForm uses name="name" for the username field)
-            $userName = $_POST['username'] ?? $_POST['name'] ?? null;
-            $email = $_POST['email'] ?? null;
-            $password = $_POST['password'] ?? null;
+        $data = $this->getRequestData();
+        if (empty($data)) {
+            ResponseHandler::respond(false, 'No data received', 400);
+            return;
         }
+        // SignUpForm uses name="name" for the username field.
+        $userName = $data['username'] ?? $data['name'] ?? null;
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
 
         // Continue with your validation
         if (empty($userName) || empty($email) || empty($password)) {
@@ -210,13 +206,7 @@ class UserController
             return;
         }
 
-        if (empty($_POST)) {
-            $inputJSON = file_get_contents('php://input');
-            $input = json_decode($inputJSON, true);
-            $bookId = $input['book_id'] ?? null;
-        } else {
-            $bookId = $_POST['book_id'] ?? null;
-        }
+        $bookId = $this->getRequestData()['book_id'] ?? null;
 
         if (empty($bookId)) {
             ResponseHandler::respond(false, 'Book ID is required', 400);
@@ -280,13 +270,7 @@ class UserController
             return;
         }
 
-        if (empty($_POST)) {
-            $inputJSON = file_get_contents('php://input');
-            $input = json_decode($inputJSON, true);
-            $bookId = $input['book_id'] ?? null;
-        } else {
-            $bookId = $_POST['book_id'] ?? null;
-        }
+        $bookId = $this->getRequestData()['book_id'] ?? null;
 
         if (empty($bookId)) {
             ResponseHandler::respond(false, 'Book ID is required', 400);
@@ -354,42 +338,11 @@ class UserController
     /**
      * Helper method to get the last N lines of a file
      *
-     * @return array<int, string|false>
+     * @return list<string>
      */
     private function getTailOfFile(string $filePath, int $lines = 100): array
     {
-        $handle = fopen($filePath, "r");
-        $linecounter = $lines;
-        $pos = -2;
-        $beginning = false;
-        $text = [];
-
-        while ($linecounter > 0) {
-            $t = " ";
-            while ($t != "\n") {
-                if (fseek($handle, $pos, SEEK_END) == -1) {
-                    $beginning = true;
-                    break;
-                }
-                $t = fgetc($handle);
-                $pos--;
-            }
-
-            if ($beginning) {
-                rewind($handle);
-            }
-
-            $text[] = fgets($handle);
-
-            if ($beginning) {
-                break;
-            }
-
-            $linecounter--;
-        }
-
-        fclose($handle);
-        return array_reverse($text);
+        return array_slice(file($filePath, FILE_IGNORE_NEW_LINES) ?: [], -$lines);
     }
 
     /**
@@ -512,19 +465,11 @@ class UserController
             session_start();
         }
 
-        // Process form data
-        $name = $_POST['name'] ?? 'Anonymous';
-        $email = $_POST['email'] ?? 'no-reply@example.com';
-        $message = $_POST['message'] ?? null;
-
-        // For regular JSON requests (backward compatibility)
-        if (empty($_POST) && empty($_FILES)) {
-            $inputJSON = file_get_contents('php://input');
-            $input = json_decode($inputJSON, true);
-            $name = $input['name'] ?? $name;
-            $email = $input['email'] ?? $email;
-            $message = $input['message'] ?? $message;
-        }
+        // Process form data (or a JSON body, for backward compatibility)
+        $data = $this->getRequestData();
+        $name = $data['name'] ?? 'Anonymous';
+        $email = $data['email'] ?? 'no-reply@example.com';
+        $message = $data['message'] ?? null;
 
         if (empty($message)) {
             ResponseHandler::respond(false, 'Message is required', 400);

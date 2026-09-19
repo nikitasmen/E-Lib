@@ -24,7 +24,7 @@ export class BookDetailPage extends BasePage {
   }
 
   async openBook(bookId: string): Promise<void> {
-    await this.goto(`/books/${bookId}`);
+    await this.page.goto(`/books/${bookId}`);
     await this.title.waitFor({ state: 'visible' });
   }
 }

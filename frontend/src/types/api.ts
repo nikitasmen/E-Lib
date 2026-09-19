@@ -36,11 +36,8 @@ export function apiErrorMessage(error: ApiError, fallback = 'Something went wron
 export function requestErrorMessage(err: unknown, fallback: string): string {
   if (axios.isAxiosError(err)) {
     const message = err.response?.data?.message
-    if (typeof message === 'string') {
-      return message
-    }
-    if (message && typeof message === 'object') {
-      return Object.values(message as Record<string, string[]>).flat().join(' ')
+    if (typeof message === 'string' || (message && typeof message === 'object')) {
+      return apiErrorMessage({ status: 'error', message }, fallback)
     }
   }
   if (err instanceof Error && err.message) {

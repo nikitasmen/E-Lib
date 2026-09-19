@@ -4,43 +4,30 @@ function keyFor(prefix: string, bookId: string): string {
 
 /** Reading-progress and zoom persisted per book in localStorage. */
 export function useReaderPersistence(bookId: string) {
-  function getSavedPage(): number | null {
+  function getNum(prefix: string, parse: (raw: string) => number): number | null {
     try {
-      const raw = localStorage.getItem(keyFor('page', bookId))
+      const raw = localStorage.getItem(keyFor(prefix, bookId))
       if (!raw) return null
-      const n = parseInt(raw, 10)
+      const n = parse(raw)
       return Number.isNaN(n) ? null : n
     } catch {
       return null
     }
   }
 
-  function setSavedPage(page: number) {
+  function setNum(prefix: string, value: number) {
     try {
-      localStorage.setItem(keyFor('page', bookId), String(page))
-    } catch {
       // Storage may be unavailable (private browsing); progress just won't persist.
-    }
-  }
-
-  function getSavedZoom(): number | null {
-    try {
-      const raw = localStorage.getItem(keyFor('zoom', bookId))
-      if (!raw) return null
-      const n = parseFloat(raw)
-      return Number.isNaN(n) ? null : n
-    } catch {
-      return null
-    }
-  }
-
-  function setSavedZoom(zoom: number) {
-    try {
-      localStorage.setItem(keyFor('zoom', bookId), String(zoom))
+      localStorage.setItem(keyFor(prefix, bookId), String(value))
     } catch {
       // ignore
     }
   }
 
-  return { getSavedPage, setSavedPage, getSavedZoom, setSavedZoom }
+  return {
+    getSavedPage: () => getNum('page', (raw) => parseInt(raw, 10)),
+    setSavedPage: (page: number) => setNum('page', page),
+    getSavedZoom: () => getNum('zoom', parseFloat),
+    setSavedZoom: (zoom: number) => setNum('zoom', zoom),
+  }
 }

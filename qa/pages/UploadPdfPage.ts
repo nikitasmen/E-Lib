@@ -24,7 +24,7 @@ export class UploadPdfPage extends BasePage {
   }
 
   async open(): Promise<void> {
-    await this.goto('/admin/upload');
+    await this.page.goto('/admin/upload');
   }
 
   titleInput(index: number): Locator {

@@ -19,20 +19,7 @@
  * than duplicated; the password is left untouched in that case.
  */
 
-define('GREEN', "\033[0;32m");
-define('YELLOW', "\033[1;33m");
-define('RED', "\033[0;31m");
-define('RESET', "\033[0m");
-
-function success(string $msg): void
-{
-    echo GREEN . "  ✓ {$msg}\n" . RESET;
-}
-
-function fail(string $msg): void
-{
-    fwrite(STDERR, RED . "  ✗ {$msg}\n" . RESET);
-}
+require_once __DIR__ . '/cli-output.php';
 
 $email = $argv[1] ?? null;
 $password = $argv[2] ?? null;

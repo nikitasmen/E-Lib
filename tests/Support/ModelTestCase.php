@@ -18,6 +18,8 @@ use ReflectionClass;
  */
 abstract class ModelTestCase extends TestCase
 {
+    use InjectsMocks;
+
     /**
      * @template T of BaseModel
      * @param class-string<T> $modelClass
@@ -29,9 +31,7 @@ abstract class ModelTestCase extends TestCase
         /** @var T $model */
         $model = $reflection->newInstanceWithoutConstructor();
 
-        $dbProperty = new \ReflectionProperty(BaseModel::class, 'db');
-        $dbProperty->setAccessible(true);
-        $dbProperty->setValue($model, $db);
+        $this->inject($model, 'db', $db);
 
         return $model;
     }
