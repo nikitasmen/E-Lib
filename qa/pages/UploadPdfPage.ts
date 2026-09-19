@@ -35,14 +35,26 @@ export class UploadPdfPage extends BasePage {
     return this.page.getByTestId(`file-author-input-${index}`);
   }
 
-  /** Uploads a single PDF — files are appended in order, so the first (and only) one is index 0. */
+  /** Uploads one PDF. */
   async uploadOne(input: { title: string; author?: string; pdf: Buffer; fileName?: string }): Promise<void> {
-    const fileName = input.fileName ?? 'sample.pdf';
-    await this.fileInput.setInputFiles({ name: fileName, mimeType: 'application/pdf', buffer: input.pdf });
+    await this.uploadMany([input]);
+  }
 
-    await this.titleInput(0).fill(input.title);
-    if (input.author) {
-      await this.authorInput(0).fill(input.author);
+  /** Uploads several PDFs in one go — files are appended in order, so row N matches input N. */
+  async uploadMany(inputs: { title: string; author?: string; pdf: Buffer; fileName?: string }[]): Promise<void> {
+    await this.fileInput.setInputFiles(
+      inputs.map((input, index) => ({
+        name: input.fileName ?? `sample-${index}.pdf`,
+        mimeType: 'application/pdf',
+        buffer: input.pdf,
+      })),
+    );
+
+    for (const [index, input] of inputs.entries()) {
+      await this.titleInput(index).fill(input.title);
+      if (input.author) {
+        await this.authorInput(index).fill(input.author);
+      }
     }
 
     await this.uploadButton.click();

@@ -1,4 +1,4 @@
-import { deleteBookViaApi, findBookIdByTitle, loginAsAdmin } from '../../support/api';
+import { deleteBooksByTitle, loginAsAdmin } from '../../support/api';
 import { buildSamplePdf } from '../../support/samplePdf';
 import { uniqueBookTitle } from '../../support/testData';
 import { expect, test } from '../../fixtures';
@@ -7,7 +7,8 @@ import { UploadPdfPage } from '../../pages/UploadPdfPage';
 // The SPA has no single-book "add book" form anymore (see App.vue routes) —
 // /admin/upload (frontend/src/views/admin/UploadPdf.vue) is the only upload
 // flow, and it's admin-gated by the same `requireAdmin` router guard as the
-// dashboard (see dashboard.spec.ts).
+// dashboard (see dashboard.spec.ts). It still needs covering both ways it's
+// used: one PDF at a time, and several at once.
 
 test.describe('Upload PDF (admin book upload)', () => {
   test('a logged-in non-admin is bounced back to the home page', async ({ authenticatedPage }) => {
@@ -20,7 +21,7 @@ test.describe('Upload PDF (admin book upload)', () => {
     await expect(authenticatedPage.getByTestId('file-input')).toHaveCount(0);
   });
 
-  test('an admin can upload a new book', async ({ adminPage, request, adminCredentials }) => {
+  test('an admin can upload a single PDF', async ({ adminPage, request, adminCredentials }) => {
     const uploadPdf = new UploadPdfPage(adminPage);
     await uploadPdf.open();
     const title = uniqueBookTitle();
@@ -32,12 +33,19 @@ test.describe('Upload PDF (admin book upload)', () => {
     // Clean up via the same API the app itself exposes for this — the UI flow
     // that created the book never handed the test its id.
     const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
-    const id = await findBookIdByTitle(request, title);
-    // Cleanup guard, not test logic under test — id is only ever null if the
-    // lookup itself failed, in which case there's nothing to delete.
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if (id) {
-      await deleteBookViaApi(request, token, id);
-    }
+    await deleteBooksByTitle(request, token, [title]);
+  });
+
+  test('an admin can upload multiple PDFs at once', async ({ adminPage, request, adminCredentials }) => {
+    const uploadPdf = new UploadPdfPage(adminPage);
+    await uploadPdf.open();
+    const titles = [uniqueBookTitle(), uniqueBookTitle()];
+
+    await uploadPdf.uploadMany(titles.map((title) => ({ title, author: 'QA Test Author', pdf: buildSamplePdf(title) })));
+
+    await expect(uploadPdf.feedback).toContainText(`All ${titles.length} books were uploaded successfully`);
+
+    const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
+    await deleteBooksByTitle(request, token, titles);
   });
 });

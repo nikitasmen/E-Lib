@@ -48,14 +48,10 @@ interface CreateBookResponse {
 }
 
 /**
- * POST /api/v1/books (multipart) — the same endpoint /add-book's form submits to.
- *
- * `author` always defaults to a non-empty string: the add-book form marks it
- * optional, but Books::REQUIRED_FIELDS requires it server-side, and
- * BookController::addBook() doesn't catch the resulting
- * InvalidArgumentException — an empty author crashes with an uncaught fatal
- * error (HTML 500) instead of a clean validation response. Worth fixing in
- * the app itself; sidestepped here since it's not what these tests are about.
+ * POST /api/v1/books (multipart) — the single-book endpoint behind the app's
+ * upload flow (frontend/src/views/admin/UploadPdf.vue calls the equivalent
+ * mass-upload endpoint; this is its one-file sibling, used here for fixture
+ * setup that doesn't need a UI round-trip).
  */
 export async function createBookViaApi(
   request: APIRequestContext,
@@ -136,4 +132,23 @@ export async function deleteBookViaApi(
   await request.delete(`/api/v1/books/${id}`, {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
+}
+
+/**
+ * Finds and deletes each book by title — cleanup for books created through a
+ * UI flow (e.g. the upload page) whose ids the test never saw. A title with
+ * no matching book is skipped, not an error: the lookup only ever misses
+ * when creation itself failed, in which case there's nothing to delete.
+ */
+export async function deleteBooksByTitle(
+  request: APIRequestContext,
+  adminToken: string,
+  titles: string[],
+): Promise<void> {
+  for (const title of titles) {
+    const id = await findBookIdByTitle(request, title);
+    if (id) {
+      await deleteBookViaApi(request, adminToken, id);
+    }
+  }
 }
