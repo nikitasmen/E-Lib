@@ -114,7 +114,6 @@ if (!class_exists('App\Router\BaseRouter')) {
 
 use App\Includes\SessionManager;
 use App\Router\BaseRouter;
-use App\Middleware\AuthMiddleware;
 use App\Middleware\LoggingMiddleware;
 use App\Middleware\JwtAuthMiddleware;
 
@@ -126,17 +125,9 @@ $router = new BaseRouter($baseUrl);
 
 // Add middleware
 $router->addMiddleware(new LoggingMiddleware());
-$router->addMiddleware(new AuthMiddleware([
-    // Protect profile and dashboard pages for logged-in users
-    ['path' => '/profile', 'method' => 'GET'],
-    ['path' => '/dashboard', 'method' => 'GET'],
-    ['path' => '/admin/logs', 'method' => 'GET'],
-    // Protect book management endpoints
-    ['path' => '/api/v1/books', 'method' => 'POST'],
-    ['path' => '/api/v1/books', 'method' => 'PUT'],
-    ['path' => '/api/v1/books', 'method' => 'DELETE'],
-]));
 
+// Page routes are all handled client-side by the SPA now (PageRouter just serves the shell);
+// only API endpoints need server-side auth, via JwtAuthMiddleware below.
 $router->addMiddleware(new JwtAuthMiddleware([
     // Protect user-specific and admin API endpoints
     ['path' => '/api/v1/user', 'method' => 'GET'],
@@ -149,7 +140,11 @@ $router->addMiddleware(new JwtAuthMiddleware([
     ['path' => '/api/v1/admin/logs', 'method' => 'GET'],
     ['path' => '/api/v1/update-profile', 'method' => 'POST'],
     ['path' => '/api/v1/change-password', 'method' => 'POST'],
-
+    // Book management endpoints (moved from session-based AuthMiddleware for SPA/JWT auth;
+    // prefix match also covers /api/v1/books/mass-upload and /api/v1/books/{id})
+    ['path' => '/api/v1/books', 'method' => 'POST'],
+    ['path' => '/api/v1/books', 'method' => 'PUT'],
+    ['path' => '/api/v1/books', 'method' => 'DELETE'],
 
     // ...add more as needed
 ]));

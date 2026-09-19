@@ -2,48 +2,16 @@
 
 namespace App\Router;
 
-use App\Controllers\PageController;
 use App\Includes\Environment;
-use App\Includes\ResponseHandler;
 use App\Services\CasService;
-
-// require_once(__DIR__ . '/../../vendor/autoload.php');
-// use Firebase\JWT\JWT;
-// use Firebase\JWT\Key;
 
 class PageRouter
 {
-    /**
-     * @var array<int, array<string, mixed>>
-     */
-    private array $routes = [];
     private CasService $casService;
 
     public function __construct()
     {
-        $this->defineRoutes();
         $this->casService = new CasService();
-        // Remove the setSecurityHeaders call from constructor - will call it at the right time
-    }
-
-    private function defineRoutes(): void
-    {
-        $this->routes = [
-            ['path' => '/index', 'handler' => [new PageController(), 'home']],
-            ['path' => '/', 'handler' => [new PageController(), 'home']],
-            ['path' => '/view-books', 'handler' => [new PageController(), 'viewBooks']],
-            ['path' => '/profile', 'handler' => [new PageController(), 'profile']],
-            ['path' => '/read/([0-9a-f]{24})', 'handler' => [new PageController(), 'readBook']],
-            ['path' => '/book/([0-9a-f]{24})', 'handler' => [new PageController(), 'viewBook']],
-            ['path' => '/add-book', 'handler' => [new PageController(), 'addBookForm']],
-            ['path' => '/search_results', 'handler' => [new PageController(), 'searchBooks']],
-            ['path' => '/error', 'handler' => [new PageController(), 'error']],
-            ['path' => '/dashboard', 'handler' => [new PageController(), 'dashboard']],
-            ['path' => '/signup', 'handler' => [new PageController(), 'signup']],
-            ['path' => '/login', 'handler' => [new PageController(), 'login']],
-            ['path' => '/admin/logs', 'handler' => [new PageController(), 'viewLogs']],
-            ['path' => '/docs', 'handler' => [new PageController(), 'docs']],
-        ];
     }
 
     public function handleRequest(string $path): void
@@ -56,39 +24,45 @@ class PageRouter
 
         $pathOnly = parse_url($path, PHP_URL_PATH);
 
-        // CAS login was previously handled on the /login path
-        // Now we'll handle it differently
-        if (strpos($pathOnly, '/cas-login') === 0) {
+        // CAS SSO callback: validate the ticket, mint a JWT, hand it to the SPA via a URL
+        // fragment (never sent to/logged by the server) for AuthCallback.vue to pick up.
+        if (strpos((string) $pathOnly, '/cas-login') === 0) {
             $ticket = $_GET['ticket'] ?? null;
-            // Use Environment to get the application URL
-            $serviceUrl = Environment::get('APP_URL', 'http://localhost:8080') . '/cas-login';
+            $appUrl = rtrim((string) Environment::get('APP_URL', 'http://localhost:8080'), '/');
+            $serviceUrl = $appUrl . '/cas-login';
 
-            if ($ticket && $this->casService->authenticate($ticket, $serviceUrl)) {
-                // Redirect to home with a success parameter for the UI to handle
-                if (!headers_sent()) {
-                    header('Location: /?login=success');
-                    exit;
-                }
-            } else {
-                // Redirect to home with error parameter
-                if (!headers_sent()) {
-                    header('Location: /?login=failed');
-                    exit;
-                }
+            $token = (is_string($ticket) && $ticket !== '')
+                ? $this->casService->authenticateAndIssueToken($ticket, $serviceUrl)
+                : null;
+
+            if (!headers_sent()) {
+                $fragment = $token !== null ? '#token=' . $token : '';
+                header('Location: ' . $appUrl . '/auth/callback' . $fragment);
+                exit;
             }
             return;
         }
 
+        // Everything else is a client-side route handled by the Vue SPA; static files under
+        // public/dist/ are served directly by Apache/PHP's built-in server before this runs,
+        // so anything reaching here just needs the SPA shell.
+        $this->serveSpaShell();
+    }
 
-        foreach ($this->routes as $route) {
-            if (preg_match('#^' . $route['path'] . '$#', $pathOnly, $matches)) {
-                call_user_func_array($route['handler'], $matches);
-                return;
-            }
+    private function serveSpaShell(): void
+    {
+        $indexPath = dirname(__DIR__, 2) . '/public/dist/index.html';
+
+        if (!is_file($indexPath)) {
+            http_response_code(503);
+            echo 'Frontend build not found. Run: cd frontend && npm ci && npm run build';
+            return;
         }
 
-        $pageController = new PageController();
-        $pageController->error();
+        if (!headers_sent()) {
+            header('Content-Type: text/html; charset=UTF-8');
+        }
+        readfile($indexPath);
     }
 
     private function setSecurityHeaders(): void
