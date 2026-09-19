@@ -199,6 +199,7 @@ onMounted(loadBooks)
                 class="btn btn-sm"
                 :class="book.status === 'public' ? 'btn-primary' : 'btn-outline'"
                 :disabled="isBusy(idToString(book._id))"
+                :data-testid="`status-toggle-${idToString(book._id)}`"
                 @click="toggleStatus(book)"
               >
                 {{ book.status === 'public' ? 'Public' : 'Draft' }}
@@ -210,15 +211,29 @@ onMounted(loadBooks)
                 class="btn btn-sm"
                 :class="book.featured ? 'btn-primary' : 'btn-outline'"
                 :disabled="isBusy(idToString(book._id))"
+                :data-testid="`featured-toggle-${idToString(book._id)}`"
                 @click="toggleFeatured(book)"
               >
                 {{ book.featured ? 'Featured' : 'Regular' }}
               </button>
             </td>
             <td class="actions-cell">
-              <button type="button" class="btn btn-sm btn-outline" @click="openEdit(book)">Edit</button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline"
+                :data-testid="`edit-book-${idToString(book._id)}`"
+                @click="openEdit(book)"
+              >
+                Edit
+              </button>
               <RouterLink :to="`/read/${idToString(book._id)}`" class="btn btn-sm btn-outline">Preview</RouterLink>
-              <button type="button" class="btn btn-sm btn-outline danger" :disabled="isBusy(idToString(book._id))" @click="handleDelete(book)">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline danger"
+                :disabled="isBusy(idToString(book._id))"
+                :data-testid="`delete-book-${idToString(book._id)}`"
+                @click="handleDelete(book)"
+              >
                 Delete
               </button>
             </td>
@@ -260,7 +275,7 @@ onMounted(loadBooks)
               <label><input v-model="editForm.featured" type="checkbox" /> Featured</label>
             </div>
             <div class="form-field checkbox-field">
-              <label><input v-model="editForm.downloadable" type="checkbox" /> Downloadable</label>
+              <label><input v-model="editForm.downloadable" type="checkbox" data-testid="edit-downloadable-checkbox" /> Downloadable</label>
             </div>
             <div class="form-field span-2">
               <label for="edit-categories">Categories</label>
@@ -275,7 +290,9 @@ onMounted(loadBooks)
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-outline" @click="closeEdit">Cancel</button>
-            <button type="submit" class="btn btn-primary" :disabled="editSaving">{{ editSaving ? 'Saving…' : 'Save Changes' }}</button>
+            <button type="submit" class="btn btn-primary" :disabled="editSaving" data-testid="edit-save-button">
+              {{ editSaving ? 'Saving…' : 'Save Changes' }}
+            </button>
           </div>
         </form>
       </div>

@@ -95,7 +95,9 @@ class Books extends BaseModel
      */
     public function getDistinctCategories(): array
     {
-        $categories = $this->db->distinct($this->collection, 'categories');
+        // distinct() surfaces a BSON Undefined value for documents where the
+        // categories field is entirely absent — filter down to real strings.
+        $categories = array_values(array_filter($this->db->distinct($this->collection, 'categories'), 'is_string'));
         sort($categories);
         return $categories;
     }

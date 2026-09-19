@@ -28,21 +28,29 @@ const menuOpen = ref(false)
 const trimmedQuery = computed(() => query.value.trim())
 
 function sameName(a: string, b: string): boolean {
-  return a.toLowerCase() === b.toLowerCase()
+  // `modelValue` comes straight from a book's own (freely admin-edited) categories
+  // field, unsanitized — coerce defensively so a stray non-string value there can't
+  // crash the picker the way an unfiltered `options` entry just did.
+  return String(a).toLowerCase() === String(b).toLowerCase()
 }
 
 function isSelected(name: string): boolean {
   return props.modelValue.some((selected) => sameName(selected, name))
 }
 
+// `options` crosses an API boundary that TypeScript can't guarantee at runtime — a
+// stray non-string value here (e.g. a malformed category on some book) would crash
+// every comparison below, so filter it out once rather than guard each call site.
+const safeOptions = computed(() => props.options.filter((option): option is string => typeof option === 'string'))
+
 const availableOptions = computed(() => {
   const q = trimmedQuery.value.toLowerCase()
-  return props.options.filter((option) => !isSelected(option) && (!q || option.toLowerCase().includes(q)))
+  return safeOptions.value.filter((option) => !isSelected(option) && (!q || option.toLowerCase().includes(q)))
 })
 
 const canCreate = computed(() => {
   const q = trimmedQuery.value
-  return q !== '' && !isSelected(q) && !props.options.some((option) => sameName(option, q))
+  return q !== '' && !isSelected(q) && !safeOptions.value.some((option) => sameName(option, q))
 })
 
 const rowCount = computed(() => availableOptions.value.length + (canCreate.value ? 1 : 0))
@@ -97,7 +105,7 @@ function commitSelection(name: string) {
 // Enter either picks the option the typed text names exactly, or — if nothing matches —
 // creates it as a new category.
 function commitQuery() {
-  const exactMatch = props.options.find((option) => sameName(option, trimmedQuery.value))
+  const exactMatch = safeOptions.value.find((option) => sameName(option, trimmedQuery.value))
   if (exactMatch) {
     commitSelection(exactMatch)
   } else if (canCreate.value) {
