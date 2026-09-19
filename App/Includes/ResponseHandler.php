@@ -150,41 +150,4 @@ class ResponseHandler
             strpos($acceptHeader, 'application/json') !== false
         );
     }
-
-    /**
-     * Render a view with the given data
-     *
-     * @param string $view Path to the view file
-     * @param array<string, mixed> $data Data to pass to the view
-     * @param int $statusCode HTTP status code
-     * @return void
-     */
-    public static function renderView($view, $data = [], $statusCode = 200)
-    {
-        // Set HTTP status code and content type if headers haven't been sent yet
-        if (!headers_sent()) {
-            http_response_code($statusCode);
-            // Set content type for HTML
-            header('Content-Type: text/html; charset=UTF-8');
-        }
-
-        // Extract data to make variables available to the view
-        if (!empty($data)) {
-            extract($data);
-        }
-
-        // Ensure the view file exists
-        $viewPath = realpath($view);
-        if (!$viewPath || !file_exists($viewPath)) {
-            throw new \RuntimeException("View file not found: $view");
-        }
-
-        // Include the view file
-        ob_start();
-        include $viewPath;
-        $content = ob_get_clean();
-
-        echo $content;
-        exit();
-    }
 }

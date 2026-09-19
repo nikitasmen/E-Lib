@@ -349,12 +349,8 @@ class BookController
      */
     public function addReview(): void
     {
-        // Check authentication
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id'])) {
+        $userId = AuthenticatedUser::id();
+        if ($userId === null) {
             ResponseHandler::respond(false, 'Authentication required', 401);
             return;
         }
@@ -377,10 +373,10 @@ class BookController
         }
 
         $userService = new \App\Services\UserService();
-        $user = $userService->getUserById($_SESSION['user_id']);
+        $user = $userService->getUserById($userId);
 
         $review = [
-            'user_id' => $_SESSION['user_id'],
+            'user_id' => $userId,
             'username' => $user['username'] ?? 'Anonymous User',
             'rating' => $rating,
             'comment' => $input['comment'],
@@ -608,7 +604,7 @@ class BookController
         // Log the upload activity
         error_log(sprintf(
             "User %s uploaded %d books (%d successful, %d failed)",
-            $_SESSION['user_id'],
+            AuthenticatedUser::id() ?? 'unknown',
             $fileCount,
             count($results['success']),
             count($results['failed'])
