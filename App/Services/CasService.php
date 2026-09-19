@@ -1,14 +1,16 @@
 <?php
 
-// filepath: /Users/hub/Documents/Personal/GenCode/app/Services/CasService.php
+// filepath: /Users/hub/Documents/Personal/GenCode/E-Lib/App/Services/CasService.php
 namespace App\Services;
 
 use App\Includes\Environment;
+use App\Includes\JwtHelper;
 
 class CasService
 {
     private string $casServerUrl;
     private ?\GuzzleHttp\Client $httpClient = null;
+    private ?UserService $userService = null;
 
     public function __construct()
     {
@@ -20,7 +22,11 @@ class CasService
         }
     }
 
-    public function authenticate(string $ticket, string $serviceUrl): bool
+    /**
+     * Validates a CAS ticket against the CAS server and returns the CAS username
+     * (the principal on line 2 of a CAS 1.0 validation response), or null on failure.
+     */
+    public function authenticate(string $ticket, string $serviceUrl): ?string
     {
         try {
             if ($this->httpClient) {
@@ -38,20 +44,91 @@ class CasService
                 $body = @file_get_contents($validationUrl);
                 if ($body === false) {
                     echo("CAS validation request failed: Unable to connect to CAS server");
-                    return false;
+                    return null;
                 }
             }
 
-            // Process the CAS server response
-            $lines = explode("\n", trim($body));
-            if (strtolower(trim($lines[0])) === 'yes') {
-                return true;
+            // Process the CAS server response: line 1 is "yes"/"no", line 2 (on success) is the username
+            $lines = preg_split('/\r\n|\r|\n/', trim($body)) ?: [];
+            if (strtolower(trim($lines[0] ?? '')) !== 'yes') {
+                return null;
             }
 
-            return false;
+            $username = trim($lines[1] ?? '');
+            return $username !== '' ? $username : null;
         } catch (\Exception $e) {
             echo("CAS authentication error: " . $e->getMessage());
-            return false;
+            return null;
         }
+    }
+
+    /**
+     * Validates the ticket and, if the CAS username resolves to a local user, mints the
+     * same JWT shape UserController::handleLogin issues. Returns null on any failure so the
+     * caller (PageRouter's /cas-login branch) can redirect without a token.
+     */
+    public function authenticateAndIssueToken(string $ticket, string $serviceUrl): ?string
+    {
+        $casUsername = $this->authenticate($ticket, $serviceUrl);
+        if ($casUsername === null) {
+            return null;
+        }
+
+        $user = $this->resolveLocalUser($casUsername);
+        if ($user === null) {
+            return null;
+        }
+
+        return JwtHelper::generateToken([
+            'user_id' => (string) $user['_id'],
+            'email' => $user['email'],
+            'isAdmin' => $user['isAdmin'] ?? false,
+        ]);
+    }
+
+    /**
+     * PENDING DECISION POINT: it isn't yet confirmed whether HMU's CAS server releases the
+     * university email as the validated principal, or a bare netid that needs a domain
+     * suffix. Until that's confirmed, this tries the CAS username as an email directly, then
+     * falls back to appending CAS_EMAIL_DOMAIN (e.g. "@hmu.gr") if configured. Revisit here
+     * once the real CAS response shape is known — see docs/architecture/vue-spa-migration-plan.md.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function resolveLocalUser(string $casUsername): ?array
+    {
+        $userService = $this->getUserService();
+
+        try {
+            $user = $userService->getUserByEmail($casUsername);
+            if ($user !== null) {
+                return $user;
+            }
+        } catch (\InvalidArgumentException $e) {
+            // $casUsername wasn't a valid email (likely a bare netid) — fall through below.
+        }
+
+        if (str_contains($casUsername, '@')) {
+            return null;
+        }
+
+        $domain = trim((string) Environment::get('CAS_EMAIL_DOMAIN', ''));
+        if ($domain === '') {
+            return null;
+        }
+
+        try {
+            return $userService->getUserByEmail($casUsername . $domain);
+        } catch (\InvalidArgumentException $e) {
+            return null;
+        }
+    }
+
+    private function getUserService(): UserService
+    {
+        if ($this->userService === null) {
+            $this->userService = new UserService();
+        }
+        return $this->userService;
     }
 }

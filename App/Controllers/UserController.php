@@ -65,8 +65,9 @@ class UserController
 
         if ($user && password_verify($password, $user['password'])) {
             $payload = [
-                'user_id' => $user['_id'],
-                'email' => $user['email']
+                'user_id' => (string) $user['_id'],
+                'email' => $user['email'],
+                'isAdmin' => $user['isAdmin'] ?? false,
             ];
             $token = JwtHelper::generateToken($payload);
 
