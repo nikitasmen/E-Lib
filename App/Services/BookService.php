@@ -7,11 +7,19 @@ use MongoDB\BSON\UTCDateTime;
 
 class BookService
 {
+    private const DEFAULT_AUTHOR = 'Unknown Author';
+
     private Books $book;
 
     public function __construct()
     {
         $this->book = new Books();
+    }
+
+    private static function resolveAuthor(string $author): string
+    {
+        $trimmed = trim($author);
+        return $trimmed !== '' ? $trimmed : self::DEFAULT_AUTHOR;
     }
 
     /**
@@ -44,6 +52,14 @@ class BookService
     public function getPublicBooks(): array
     {
         return $this->book->getPublicBooks();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getCategories(): array
+    {
+        return $this->book->getDistinctCategories();
     }
 
     /**
@@ -115,7 +131,7 @@ class BookService
 
         $book = [
             'title' => $title,
-            'author' => $author,
+            'author' => self::resolveAuthor($author),
             'year' => (int)$year,
             'description' => $description,
             'categories' => $categories,
