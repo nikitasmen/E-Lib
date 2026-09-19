@@ -13,4 +13,4 @@ const router = useRouter()
   </div>
 </template>
 
-<style scoped src="./Signup.css"></style>
+<style scoped src="@/css/views/Signup.css"></style>

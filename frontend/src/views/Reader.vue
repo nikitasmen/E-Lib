@@ -195,4 +195,4 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped src="./Reader.css"></style>
+<style scoped src="@/css/views/Reader.css"></style>

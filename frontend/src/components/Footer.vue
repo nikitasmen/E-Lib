@@ -40,4 +40,4 @@ const year = new Date().getFullYear()
   </footer>
 </template>
 
-<style scoped src="./Footer.css"></style>
+<style scoped src="@/css/components/Footer.css"></style>

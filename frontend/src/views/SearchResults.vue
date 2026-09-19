@@ -70,4 +70,4 @@ watch(
   </div>
 </template>
 
-<style scoped src="./SearchResults.css"></style>
+<style scoped src="@/css/views/SearchResults.css"></style>

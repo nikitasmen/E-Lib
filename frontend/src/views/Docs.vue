@@ -169,4 +169,4 @@
   </div>
 </template>
 
-<style scoped src="./Docs.css"></style>
+<style scoped src="@/css/views/Docs.css"></style>

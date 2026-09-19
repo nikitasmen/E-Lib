@@ -180,4 +180,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped src="./BookDetail.css"></style>
+<style scoped src="@/css/views/BookDetail.css"></style>

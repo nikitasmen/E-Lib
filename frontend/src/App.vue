@@ -15,14 +15,4 @@ import ToastContainer from '@/components/ToastContainer.vue'
   </div>
 </template>
 
-<style scoped>
-.app-shell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.app-main {
-  flex: 1;
-}
-</style>
+<style scoped src="@/css/App.css"></style>

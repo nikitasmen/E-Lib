@@ -8,4 +8,4 @@ defineProps<{ rating: number; max?: number }>()
   </span>
 </template>
 
-<style scoped src="./StarRating.css"></style>
+<style scoped src="@/css/components/StarRating.css"></style>

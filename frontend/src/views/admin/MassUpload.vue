@@ -210,4 +210,4 @@ async function handleUpload() {
   </div>
 </template>
 
-<style scoped src="./MassUpload.css"></style>
+<style scoped src="@/css/views/admin/MassUpload.css"></style>

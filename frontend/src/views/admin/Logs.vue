@@ -147,4 +147,4 @@ onMounted(loadLogs)
   </div>
 </template>
 
-<style scoped src="./Logs.css"></style>
+<style scoped src="@/css/views/admin/Logs.css"></style>

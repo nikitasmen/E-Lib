@@ -42,4 +42,4 @@ function onImgError(event: Event) {
   </RouterLink>
 </template>
 
-<style scoped src="./BookCard.css"></style>
+<style scoped src="@/css/components/BookCard.css"></style>

@@ -280,4 +280,4 @@ onMounted(loadBooks)
   </div>
 </template>
 
-<style scoped src="./Dashboard.css"></style>
+<style scoped src="@/css/views/admin/Dashboard.css"></style>

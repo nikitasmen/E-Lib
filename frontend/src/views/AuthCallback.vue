@@ -50,4 +50,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped src="./AuthCallback.css"></style>
+<style scoped src="@/css/views/AuthCallback.css"></style>

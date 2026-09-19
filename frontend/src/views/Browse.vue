@@ -37,4 +37,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped src="./Browse.css"></style>
+<style scoped src="@/css/views/Browse.css"></style>

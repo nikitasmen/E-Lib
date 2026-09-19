@@ -268,4 +268,4 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped src="./Profile.css"></style>
+<style scoped src="@/css/views/Profile.css"></style>

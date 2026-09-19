@@ -112,4 +112,4 @@ async function handleSubmit() {
   </form>
 </template>
 
-<style scoped src="./SignupForm.css"></style>
+<style scoped src="@/css/components/SignupForm.css"></style>

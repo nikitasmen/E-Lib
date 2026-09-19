@@ -8,4 +8,4 @@
   </div>
 </template>
 
-<style scoped src="./NotFound.css"></style>
+<style scoped src="@/css/views/NotFound.css"></style>

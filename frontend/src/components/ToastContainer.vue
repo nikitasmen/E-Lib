@@ -12,4 +12,4 @@ const store = useToastStore()
   </div>
 </template>
 
-<style scoped src="./ToastContainer.css"></style>
+<style scoped src="@/css/components/ToastContainer.css"></style>

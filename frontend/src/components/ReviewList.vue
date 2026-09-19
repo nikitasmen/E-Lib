@@ -22,4 +22,4 @@ defineProps<{ reviews: Review[] }>()
   </div>
 </template>
 
-<style scoped src="./ReviewList.css"></style>
+<style scoped src="@/css/components/ReviewList.css"></style>

@@ -79,4 +79,4 @@ async function submit() {
   </form>
 </template>
 
-<style scoped src="./ReviewForm.css"></style>
+<style scoped src="@/css/components/ReviewForm.css"></style>

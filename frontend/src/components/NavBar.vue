@@ -70,4 +70,4 @@ async function handleLogout() {
   </nav>
 </template>
 
-<style scoped src="./NavBar.css"></style>
+<style scoped src="@/css/components/NavBar.css"></style>

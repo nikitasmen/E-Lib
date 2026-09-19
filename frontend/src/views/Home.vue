@@ -91,4 +91,4 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./Home.css"></style>
+<style scoped src="@/css/views/Home.css"></style>

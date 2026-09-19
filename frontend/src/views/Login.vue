@@ -25,4 +25,4 @@ const redirect = typeof route.query.redirect === 'string' ? route.query.redirect
   </div>
 </template>
 
-<style scoped src="./Login.css"></style>
+<style scoped src="@/css/views/Login.css"></style>
