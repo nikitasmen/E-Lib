@@ -1,5 +1,6 @@
 import { expect, test } from '../../fixtures';
 import { ProfilePage } from '../../pages/ProfilePage';
+import { LoginPage } from '../../pages/LoginPage';
 
 test.describe('Profile', () => {
   test('shows the logged-in user\'s account info', async ({ authenticatedPage, registeredUser }) => {
@@ -17,6 +18,10 @@ test.describe('Profile', () => {
 
     await profile.openEditUsername(newUsername);
 
+    await expect(profile.usernameHeading).toHaveText(newUsername);
+
+    // Cross-check persistence, not just the client's own optimistic state.
+    await authenticatedPage.reload();
     await expect(profile.usernameHeading).toHaveText(newUsername);
   });
 
@@ -37,6 +42,19 @@ test.describe('Profile', () => {
     await profile.changePassword(registeredUser.password, newPassword);
 
     await expect(profile.changePasswordFeedback).toContainText('Password updated successfully');
+
+    // Cross-check against the server, not just the toast: log out and prove
+    // the new password actually works and the old one no longer does.
+    await profile.header.logout();
+    const login = new LoginPage(authenticatedPage);
+    await login.open();
+
+    await login.login(registeredUser.email, registeredUser.password);
+    await expect(login.errorMessage).toHaveText('Invalid credentials');
+
+    await login.login(registeredUser.email, newPassword);
+    await expect(authenticatedPage).toHaveURL('/');
+    await expect(authenticatedPage.getByTestId('nav-username')).toHaveText(registeredUser.username);
   });
 
   test('rejects the wrong current password', async ({ authenticatedPage }) => {
@@ -45,7 +63,7 @@ test.describe('Profile', () => {
 
     await profile.changePassword('definitely-the-wrong-password', 'NewPassw0rd!');
 
-    await expect(profile.changePasswordFeedback).toBeVisible();
-    await expect(profile.changePasswordFeedback).not.toContainText('successfully');
+    // Exact backend copy (App/Controllers/UserController.php) — not just "some error showed".
+    await expect(profile.changePasswordFeedback).toHaveText('Current password is incorrect');
   });
 });

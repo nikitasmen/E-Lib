@@ -24,14 +24,26 @@ async function registerViaApi(request: APIRequestContext, user: TestUser): Promi
 }
 
 /** Logs in through the real /login page and waits for the post-login redirect to settle. */
-async function loginViaUi(page: Page, credentials: { email: string; password: string }): Promise<void> {
+async function loginViaUi(
+  page: Page,
+  credentials: { email: string; password: string; username?: string },
+): Promise<void> {
   const login = new LoginPage(page);
   await login.open();
   await login.login(credentials.email, credentials.password);
   // LoginForm redirects to '/' on success (no `redirect` query param was set here) —
   // check the actual signal of a successful login (the nav's user chip), not just the URL.
-  await expect(page).toHaveURL('/');
+  // The default 5s expect timeout is too tight for this specific redirect under heavy
+  // parallel load against the single-threaded `php -S` dev server (observed flaking here,
+  // never in the login flow's own dedicated tests) — every other assertion in this suite
+  // keeps the default.
+  await expect(page).toHaveURL('/', { timeout: 15_000 });
   await expect(page.getByTestId('nav-user-chip')).toBeVisible();
+  // When we know who should be logged in, confirm it's actually them and not
+  // just "someone" — the chip alone doesn't prove that.
+  if (credentials.username) {
+    await expect(page.getByTestId('nav-username')).toHaveText(credentials.username);
+  }
 }
 
 interface AdminCredentials {
@@ -76,7 +88,12 @@ export const test = base.extend<Fixtures>({
     await use(page);
   },
 
-  adminPage: async ({ page, adminCredentials }, use) => {
+  adminPage: async ({ page, request, adminCredentials }, use) => {
+    // Verify the env-provided account is actually an admin *before* touching the
+    // UI — loginAsAdmin already gives a clear, actionable error if it isn't;
+    // without this, a misconfigured QA_ADMIN_EMAIL would only surface later as a
+    // confusing "dashboard-heading not found" inside whatever test runs next.
+    await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
     await loginViaUi(page, adminCredentials);
     await use(page);
   },

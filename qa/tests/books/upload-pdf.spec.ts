@@ -1,4 +1,4 @@
-import { deleteBooksByTitle, loginAsAdmin } from '../../support/api';
+import { bookId, deleteBooksByTitle, getBookByTitle, loginAsAdmin, type UploadedBook } from '../../support/api';
 import { buildSamplePdf } from '../../support/samplePdf';
 import { uniqueBookTitle } from '../../support/testData';
 import { expect, test } from '../../fixtures';
@@ -30,10 +30,20 @@ test.describe('Upload PDF (admin book upload)', () => {
 
     await expect(uploadPdf.feedback).toContainText('uploaded successfully');
 
-    // Clean up via the same API the app itself exposes for this — the UI flow
-    // that created the book never handed the test its id.
+    // Cross-check against the server, not just the toast: the book must
+    // actually exist with the fields the form submitted.
+    const created = await getBookByTitle(request, title);
+    expect(created).not.toBeNull();
+    expect(created?.author).toBe('QA Test Author');
+    expect(created?.file_extension).toBe('pdf');
+    expect(created?.downloadable).toBe(true);
+    expect(created?.status).toBe('draft');
+
     const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
     await deleteBooksByTitle(request, token, [title]);
+
+    // Confirm cleanup actually removed it, rather than assuming DELETE worked.
+    expect(await getBookByTitle(request, title)).toBeNull();
   });
 
   test('an admin can upload multiple PDFs at once', async ({ adminPage, request, adminCredentials }) => {
@@ -45,7 +55,22 @@ test.describe('Upload PDF (admin book upload)', () => {
 
     await expect(uploadPdf.feedback).toContainText(`All ${titles.length} books were uploaded successfully`);
 
+    // Cross-check that each file became its own book server-side — not that
+    // the toast merely counted correctly, and not a dedup/overwrite bug where
+    // two files collapse into one document.
+    const created = await Promise.all(titles.map((title) => getBookByTitle(request, title)));
+    const foundBooks = created.filter((book): book is UploadedBook => book !== null);
+    expect(foundBooks).toHaveLength(titles.length);
+    for (const book of foundBooks) {
+      expect(book.author).toBe('QA Test Author');
+      expect(book.file_extension).toBe('pdf');
+    }
+    expect(new Set(foundBooks.map(bookId)).size).toBe(titles.length);
+
     const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
     await deleteBooksByTitle(request, token, titles);
+
+    const afterCleanup = await Promise.all(titles.map((title) => getBookByTitle(request, title)));
+    expect(afterCleanup.every((book) => book === null)).toBe(true);
   });
 });

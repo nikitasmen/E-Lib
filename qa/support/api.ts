@@ -97,30 +97,39 @@ export async function setBookVisibility(
   }
 }
 
-interface RawBook {
-  title: string;
+export interface UploadedBook {
   _id: string | { $oid: string };
+  title: string;
+  author?: string;
+  status?: string;
+  downloadable?: boolean;
+  file_extension?: string;
+  categories?: string[];
+}
+
+export function bookId(book: UploadedBook): string {
+  return typeof book._id === 'string' ? book._id : book._id.$oid;
 }
 
 /**
  * GET /api/v1/books is unauthenticated and returns every book regardless of
- * status — used here to find the id of a book created through the UI (whose
- * response the test never saw), for cleanup only.
+ * status — the same admin "all books" list the Dashboard table reads from.
+ * Used both to find a book's id for cleanup, and to cross-check that a UI
+ * action (an upload, a status toggle, ...) actually persisted the fields it
+ * claimed to, rather than trusting the page's own success message.
  */
-export async function findBookIdByTitle(
-  request: APIRequestContext,
-  title: string,
-): Promise<string | null> {
+export async function getBookByTitle(request: APIRequestContext, title: string): Promise<UploadedBook | null> {
   const response = await request.get('/api/v1/books');
   if (!response.ok()) {
     return null;
   }
-  const body = (await response.json()) as { data?: RawBook[] };
-  const match = body.data?.find((book) => book.title === title);
-  if (!match) {
-    return null;
-  }
-  return typeof match._id === 'string' ? match._id : match._id.$oid;
+  const body = (await response.json()) as { data?: UploadedBook[] };
+  return body.data?.find((book) => book.title === title) ?? null;
+}
+
+export async function findBookIdByTitle(request: APIRequestContext, title: string): Promise<string | null> {
+  const book = await getBookByTitle(request, title);
+  return book ? bookId(book) : null;
 }
 
 /** DELETE /api/v1/books/:id */
@@ -129,9 +138,12 @@ export async function deleteBookViaApi(
   adminToken: string,
   id: string,
 ): Promise<void> {
-  await request.delete(`/api/v1/books/${id}`, {
+  const response = await request.delete(`/api/v1/books/${id}`, {
     headers: { Authorization: `Bearer ${adminToken}` },
   });
+  if (!response.ok()) {
+    throw new Error(`deleteBookViaApi failed: ${response.status()} ${await response.text()}`);
+  }
 }
 
 /**

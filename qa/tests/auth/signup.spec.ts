@@ -1,6 +1,7 @@
 import { buildTestUser } from '../../support/testData';
 import { expect, test } from '../../fixtures';
 import { SignupPage } from '../../pages/SignupPage';
+import { LoginPage } from '../../pages/LoginPage';
 
 // Accounts created below are not deleted afterwards — there's no self-service
 // "delete my account" API, and this suite only ever talks to the app's HTTP/UI
@@ -22,6 +23,13 @@ test.describe('Signup', () => {
     await expect(signup.successMessage).toContainText('Account created successfully');
     // SignupForm redirects to /login ~1.2s after a successful signup.
     await expect(page).toHaveURL('/login', { timeout: 5_000 });
+
+    // Cross-check against the server, not just the toast: the account must
+    // actually work, not merely have shown a success message.
+    const login = new LoginPage(page);
+    await login.login(user.email, user.password);
+    await expect(page).toHaveURL('/');
+    await expect(page.getByTestId('nav-username')).toHaveText(user.username);
   });
 
   test('rejects mismatched passwords before calling the API', async ({ page }) => {

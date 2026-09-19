@@ -32,7 +32,8 @@ test.describe('Login', () => {
 
     await login.login('nonexistent-user@example.com', 'wrong-password');
 
-    await expect(login.errorMessage).toBeVisible();
+    // Exact backend copy (App/Controllers/UserController.php) — not just "some error showed".
+    await expect(login.errorMessage).toHaveText('Invalid credentials');
   });
 
   test('an existing user can log in and sees the account menu', async ({ page, registeredUser }) => {

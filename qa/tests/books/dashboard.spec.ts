@@ -30,7 +30,13 @@ test.describe('Admin dashboard (/admin)', () => {
   test('an admin sees a seeded book in the table', async ({ adminPage, seededBook }) => {
     const dashboard = new DashboardPage(adminPage);
     await dashboard.open();
+    const row = dashboard.rowById(seededBook.id);
 
-    await expect(dashboard.rowById(seededBook.id)).toBeVisible();
+    await expect(row).toBeVisible();
+    await expect(row).toContainText(seededBook.title);
+    // The seededBook fixture sets status: 'public', featured: true — confirm
+    // the table actually reflects that, not just that some row exists.
+    await expect(row.getByRole('button', { name: 'Public' })).toBeVisible();
+    await expect(row.getByRole('button', { name: 'Featured' })).toBeVisible();
   });
 });

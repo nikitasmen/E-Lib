@@ -14,12 +14,19 @@ export class DashboardPage extends BasePage {
   readonly table: Locator;
   readonly uploadPdfLink: Locator;
 
+  readonly downloadableCheckbox: Locator;
+  readonly saveEditButton: Locator;
+
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
     this.heading = page.getByTestId('dashboard-heading');
     this.table = page.getByTestId('books-table');
     this.uploadPdfLink = page.getByTestId('upload-pdf-link');
+
+    // Edit modal — only one is ever open at a time, so these don't need a book id.
+    this.downloadableCheckbox = page.getByTestId('edit-downloadable-checkbox');
+    this.saveEditButton = page.getByTestId('edit-save-button');
   }
 
   async open(): Promise<void> {
@@ -28,5 +35,21 @@ export class DashboardPage extends BasePage {
 
   rowById(bookId: string): Locator {
     return this.page.getByTestId(`book-row-${bookId}`);
+  }
+
+  statusToggle(bookId: string): Locator {
+    return this.page.getByTestId(`status-toggle-${bookId}`);
+  }
+
+  featuredToggle(bookId: string): Locator {
+    return this.page.getByTestId(`featured-toggle-${bookId}`);
+  }
+
+  editButton(bookId: string): Locator {
+    return this.page.getByTestId(`edit-book-${bookId}`);
+  }
+
+  deleteButton(bookId: string): Locator {
+    return this.page.getByTestId(`delete-book-${bookId}`);
   }
 }
