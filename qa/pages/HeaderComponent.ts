@@ -48,5 +48,11 @@ export class HeaderComponent {
   async logout(): Promise<void> {
     await this.openUserMenu();
     await this.logoutMenuButton.click();
+    // NavBar's handleLogout is async — it awaits POST /v1/logout before clearing
+    // auth state and redirecting. The click itself resolves long before that
+    // finishes, so without this, a caller that immediately navigates elsewhere
+    // can race the app's own delayed `router.push('/')` and get yanked back
+    // mid-test. Wait for the guest-only nav state to actually appear.
+    await this.loginLink.waitFor({ state: 'visible' });
   }
 }
