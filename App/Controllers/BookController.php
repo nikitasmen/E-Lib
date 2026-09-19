@@ -157,6 +157,16 @@ class BookController
         }
     }
 
+    /**
+     * List the distinct categories already in use across all books, for picker/autocomplete UIs.
+     * An empty catalog is a valid state, not an error.
+     */
+    public function getCategories(): void
+    {
+        $categories = $this->bookService->getCategories();
+        $this->response->respond(true, $categories);
+    }
+
     public function viewBook(string $id): void
     {
         $book = $this->bookService->getBookDetails($id);

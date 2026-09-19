@@ -16,7 +16,7 @@ class Books extends BaseModel
     /**
      * Required fields for a valid book
      */
-    private const REQUIRED_FIELDS = ['title', 'author'];
+    private const REQUIRED_FIELDS = ['title'];
 
     /**
      * Get all books in the database
@@ -86,6 +86,27 @@ class Books extends BaseModel
     public function searchBooks(array $searchQuery): array
     {
         return $this->findAll($searchQuery);
+    }
+
+    /**
+     * Get the distinct category values used across all books, sorted alphabetically
+     *
+     * @return list<string>
+     */
+    public function getDistinctCategories(): array
+    {
+        $pipeline = [
+            ['$unwind' => '$categories'],
+            ['$group' => ['_id' => '$categories']],
+            ['$sort' => ['_id' => 1]],
+        ];
+
+        $results = $this->db->aggregate($this->collection, $pipeline);
+
+        return array_values(array_filter(array_map(
+            static fn (array $row) => $row['_id'] ?? null,
+            $results
+        )));
     }
 
     /**

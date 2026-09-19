@@ -26,6 +26,7 @@ class ApiRouter
             ['method' => 'POST', 'path' => '/api/v1/books', 'handler' => [new BookController(), 'addBook']],
             ['method' => 'GET', 'path' => '/api/v1/books/list', 'handler' => [new BookController(), 'listBooks']],
             ['method' => 'GET', 'path' => '/api/v1/books/featured', 'handler' => [new BookController(), 'featuredBooks']],
+            ['method' => 'GET', 'path' => '/api/v1/books/categories', 'handler' => [new BookController(), 'getCategories']],
             ['method' => 'POST', 'path' => '/api/v1/books/mass-upload', 'handler' => [new BookController(), 'massUploadBooks']],
             ['method' => 'GET', 'path' => '/api/v1/books/([0-9a-f]{24})', 'handler' => [new BookController(), 'viewBook']],
             ['method' => 'PUT', 'path' => '/api/v1/books/([0-9a-f]{24})', 'handler' => [new BookController(), 'updateBook']],
