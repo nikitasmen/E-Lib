@@ -12,7 +12,11 @@ test.describe('Admin dashboard (/admin)', () => {
   test('a logged-in non-admin is bounced back to the home page', async ({ authenticatedPage }) => {
     await authenticatedPage.goto('/admin');
 
-    await expect(authenticatedPage).toHaveURL(/\/$/);
+    // `requireAdmin` router guard (frontend/src/router/guards.ts) should block
+    // the page outright — check both the URL and that the "Manage Books" table
+    // never rendered, not just where we ended up.
+    await expect(authenticatedPage).toHaveURL('/');
+    await expect(authenticatedPage.getByRole('heading', { name: 'Manage Books' })).toHaveCount(0);
   });
 
   test('an admin sees the Manage Books table', async ({ adminPage }) => {

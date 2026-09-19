@@ -19,8 +19,11 @@ test.describe('Login', () => {
   test('an authenticated visitor is redirected away from /login', async ({ authenticatedPage }) => {
     await authenticatedPage.goto('/login');
 
-    // `guestOnly` router guard (frontend/src/router/guards.ts).
-    await expect(authenticatedPage).toHaveURL(/\/$/);
+    // `guestOnly` router guard (frontend/src/router/guards.ts) should bounce
+    // to home before the login form ever renders — check both the URL and
+    // that the form itself never showed up, not just where we ended up.
+    await expect(authenticatedPage).toHaveURL('/');
+    await expect(authenticatedPage.locator('.login-form')).toHaveCount(0);
   });
 
   test('shows an error for invalid credentials', async ({ page }) => {
@@ -38,7 +41,7 @@ test.describe('Login', () => {
 
     await login.login(registeredUser.email, registeredUser.password);
 
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL('/');
     const nav = page.locator('.navbar');
     await expect(nav.locator('.user-chip')).toBeVisible();
     await expect(nav.locator('.user-chip .username')).toHaveText(registeredUser.username);

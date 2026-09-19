@@ -28,8 +28,10 @@ async function loginViaUi(page: Page, credentials: { email: string; password: st
   const login = new LoginPage(page);
   await login.open();
   await login.login(credentials.email, credentials.password);
-  // LoginForm redirects to '/' on success (no `redirect` query param was set here).
-  await expect(page).toHaveURL(/\/$/);
+  // LoginForm redirects to '/' on success (no `redirect` query param was set here) —
+  // check the actual signal of a successful login (the nav's user chip), not just the URL.
+  await expect(page).toHaveURL('/');
+  await expect(page.locator('.navbar .user-chip')).toBeVisible();
 }
 
 interface AdminCredentials {

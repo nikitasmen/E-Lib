@@ -13,7 +13,11 @@ test.describe('Mass upload (admin book upload)', () => {
   test('a logged-in non-admin is bounced back to the home page', async ({ authenticatedPage }) => {
     await authenticatedPage.goto('/admin/mass-upload');
 
-    await expect(authenticatedPage).toHaveURL(/\/$/);
+    // `requireAdmin` router guard (frontend/src/router/guards.ts) should block
+    // the page outright — check both the URL and that the upload form never
+    // rendered, not just where we ended up.
+    await expect(authenticatedPage).toHaveURL('/');
+    await expect(authenticatedPage.locator('#pdf-files-input')).toHaveCount(0);
   });
 
   test('an admin can upload a new book', async ({ adminPage, request, adminCredentials }) => {
