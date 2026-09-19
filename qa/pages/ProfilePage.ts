@@ -12,6 +12,7 @@ export class ProfilePage extends BasePage {
   readonly usernameHeading: Locator;
   readonly emailText: Locator;
   readonly accountTab: Locator;
+  readonly downloadedTab: Locator;
 
   readonly usernameInput: Locator;
   readonly saveUsernameButton: Locator;
@@ -29,6 +30,7 @@ export class ProfilePage extends BasePage {
     this.usernameHeading = page.getByTestId('profile-username-heading');
     this.emailText = page.getByTestId('profile-email');
     this.accountTab = page.getByTestId('profile-tab-account');
+    this.downloadedTab = page.getByTestId('profile-tab-downloaded');
 
     this.usernameInput = page.getByTestId('profile-username-input');
     this.saveUsernameButton = page.getByTestId('profile-save-username');
@@ -57,5 +59,9 @@ export class ProfilePage extends BasePage {
     await this.newPasswordInput.fill(next);
     await this.confirmNewPasswordInput.fill(next);
     await this.updatePasswordButton.click();
+  }
+
+  downloadedBookById(bookId: string): Locator {
+    return this.page.getByTestId(`book-card-${bookId}`);
   }
 }
