@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import * as booksApi from '@/api/books'
 import * as reviewsApi from '@/api/reviews'
 import * as usersApi from '@/api/users'
-import { isApiSuccess, apiErrorMessage, type ApiError } from '@/types/api'
+import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 import type { Book } from '@/types/book'
 import type { Review } from '@/types/review'
 import { useAuthStore } from '@/stores/auth'
@@ -55,8 +55,8 @@ async function handleSave() {
     } else {
       toast.error(apiErrorMessage(body as ApiError, 'Failed to save book'))
     }
-  } catch (err: any) {
-    toast.error(err.response?.data?.message ?? 'An error occurred while saving the book')
+  } catch (err) {
+    toast.error(requestErrorMessage(err, 'An error occurred while saving the book'))
   } finally {
     saving.value = false
   }

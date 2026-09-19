@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import * as adminApi from '@/api/admin'
-import { isApiSuccess } from '@/types/api'
+import { isApiSuccess, requestErrorMessage } from '@/types/api'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()
@@ -125,9 +125,9 @@ async function handleUpload() {
       feedbackVariant.value = 'danger'
       feedback.value = 'Upload failed: some or all files could not be processed.'
     }
-  } catch (err: any) {
+  } catch (err) {
     feedbackVariant.value = 'danger'
-    feedback.value = `Upload failed: ${err.response?.data?.message ?? err.message ?? 'Network error'}`
+    feedback.value = `Upload failed: ${requestErrorMessage(err, 'Network error')}`
   } finally {
     uploading.value = false
   }

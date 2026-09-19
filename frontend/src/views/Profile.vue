@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import * as usersApi from '@/api/users'
-import { isApiSuccess, apiErrorMessage, type ApiError } from '@/types/api'
+import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 import type { Book } from '@/types/book'
 import { idToString } from '@/types/book'
 import { useAuthStore } from '@/stores/auth'
@@ -149,8 +149,8 @@ async function saveUsername() {
     } else {
       usernameError.value = apiErrorMessage(body as ApiError, 'Failed to update username')
     }
-  } catch (err: any) {
-    usernameError.value = err.response?.data?.message ?? 'An error occurred. Please try again.'
+  } catch (err) {
+    usernameError.value = requestErrorMessage(err, 'An error occurred. Please try again.')
   } finally {
     usernameSaving.value = false
   }
@@ -182,8 +182,8 @@ async function submitPasswordChange() {
     } else {
       passwordError.value = apiErrorMessage(body as ApiError, 'Could not update password.')
     }
-  } catch (err: any) {
-    passwordError.value = err.response?.data?.message ?? 'Could not update password. Please try again.'
+  } catch (err) {
+    passwordError.value = requestErrorMessage(err, 'Could not update password. Please try again.')
   } finally {
     passwordSaving.value = false
   }

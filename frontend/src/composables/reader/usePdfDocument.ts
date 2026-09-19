@@ -3,6 +3,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist'
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import * as booksApi from '@/api/books'
+import { requestErrorMessage } from '@/types/api'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc
 
@@ -133,8 +134,8 @@ export function usePdfDocument(bookId: string, options: UsePdfDocumentOptions) {
       pdfDoc.value = doc
       numPages.value = doc.numPages
       await rebuildPages()
-    } catch (err: any) {
-      error.value = err?.message ?? 'Error loading PDF'
+    } catch (err) {
+      error.value = requestErrorMessage(err, 'Error loading PDF')
     } finally {
       loading.value = false
     }

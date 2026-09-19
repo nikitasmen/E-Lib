@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useToast } from '@/composables/useToast'
 import * as usersApi from '@/api/users'
-import { isApiSuccess, apiErrorMessage, type ApiError } from '@/types/api'
+import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 
 const emit = defineEmits<{ success: []; 'switch-to-login': [] }>()
 
@@ -60,13 +60,8 @@ async function handleSubmit() {
     } else {
       error.value = apiErrorMessage(body as ApiError, 'Signup failed. Please check your information.')
     }
-  } catch (err: any) {
-    const data = err.response?.data
-    if (data?.message && typeof data.message === 'object') {
-      error.value = Object.values(data.message).flat().join(' ')
-    } else {
-      error.value = data?.message ?? 'An error occurred while trying to create your account. Please try again later.'
-    }
+  } catch (err) {
+    error.value = requestErrorMessage(err, 'An error occurred while trying to create your account. Please try again later.')
   } finally {
     submitting.value = false
   }

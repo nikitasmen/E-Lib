@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as adminApi from '@/api/admin'
-import { isApiSuccess } from '@/types/api'
+import { isApiSuccess, requestErrorMessage } from '@/types/api'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()
@@ -42,8 +42,8 @@ async function loadLogs() {
     } else {
       loadError.value = 'Failed to load logs.'
     }
-  } catch (err: any) {
-    loadError.value = err.response?.data?.message ?? 'Failed to load logs.'
+  } catch (err) {
+    loadError.value = requestErrorMessage(err, 'Failed to load logs.')
   } finally {
     loading.value = false
   }

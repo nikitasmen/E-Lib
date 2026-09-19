@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import * as usersApi from '@/api/users'
-import { isApiSuccess, apiErrorMessage, type ApiError } from '@/types/api'
+import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 import { idToString } from '@/types/book'
 
 const props = defineProps<{ redirect?: string }>()
@@ -41,8 +41,8 @@ async function handleSubmit() {
     } else {
       error.value = apiErrorMessage(body as ApiError, 'Invalid credentials')
     }
-  } catch (err: any) {
-    error.value = err.response?.data?.message ?? 'An error occurred while trying to log in. Please try again later.'
+  } catch (err) {
+    error.value = requestErrorMessage(err, 'An error occurred while trying to log in. Please try again later.')
   } finally {
     submitting.value = false
   }

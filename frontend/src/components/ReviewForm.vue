@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import * as reviewsWriteApi from '@/api/reviews'
-import { isApiSuccess, apiErrorMessage, type ApiError } from '@/types/api'
+import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 import { useToast } from '@/composables/useToast'
 
 const props = defineProps<{ bookId: string }>()
@@ -38,8 +38,8 @@ async function submit() {
     } else {
       error.value = apiErrorMessage(body as ApiError, 'Error submitting review')
     }
-  } catch (err: any) {
-    error.value = err.response?.data?.message ?? 'Error submitting review. Please try again.'
+  } catch (err) {
+    error.value = requestErrorMessage(err, 'Error submitting review. Please try again.')
   } finally {
     submitting.value = false
   }

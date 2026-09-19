@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import * as adminApi from '@/api/admin'
-import { isApiSuccess, apiErrorMessage, type ApiError } from '@/types/api'
+import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 import type { Book } from '@/types/book'
 import { idToString } from '@/types/book'
 import { useToast } from '@/composables/useToast'
@@ -158,8 +158,8 @@ async function submitEdit() {
     } else {
       editError.value = apiErrorMessage(response.data as ApiError, 'Update failed')
     }
-  } catch (err: any) {
-    editError.value = err.response?.data?.message ?? 'An error occurred during update.'
+  } catch (err) {
+    editError.value = requestErrorMessage(err, 'An error occurred during update.')
   } finally {
     editSaving.value = false
   }
