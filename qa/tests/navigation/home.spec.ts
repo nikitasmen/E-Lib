@@ -6,7 +6,7 @@ test.describe('Home page', () => {
     const home = new HomePage(page);
     await home.open();
 
-    await expect(page).toHaveTitle('Epictetus Library - Home of Knowledge');
+    await expect(page).toHaveTitle('Epictetus Library');
     await expect(home.header.brand).toContainText('Epictetus Library');
   });
 
@@ -14,7 +14,7 @@ test.describe('Home page', () => {
     const home = new HomePage(page);
     await home.open();
 
-    await expect(home.header.navLink('Books')).toHaveAttribute('href', '/view-books');
-    await expect(home.header.navLink('Add Book')).toHaveAttribute('href', '/add-book');
+    await expect(home.header.homeLink).toHaveAttribute('href', '/');
+    await expect(home.header.browseLink).toHaveAttribute('href', '/browse');
   });
 });

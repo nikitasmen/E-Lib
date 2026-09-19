@@ -1,0 +1,86 @@
+import client from './client'
+import type { ApiResponse } from '@/types/api'
+import type { Book } from '@/types/book'
+
+/** Full catalog (all statuses) — admin only. */
+export function getAllBooks() {
+  return client.get<ApiResponse<Book[]>>('/v1/books')
+}
+
+export interface BookUpdatePayload {
+  title?: string
+  author?: string
+  year?: string
+  description?: string
+  categories?: string[]
+  status?: string
+  featured?: boolean
+  isbn?: string
+  downloadable?: boolean
+}
+
+export function updateBook(id: string, payload: BookUpdatePayload) {
+  return client.put<ApiResponse<string>>(`/v1/books/${id}`, payload)
+}
+
+export function deleteBook(id: string) {
+  return client.delete<ApiResponse<string>>(`/v1/books/${id}`)
+}
+
+export interface MassUploadDefaults {
+  author: string
+  categories: string[]
+  status: string
+  downloadable: boolean
+}
+
+export interface MassUploadFileMeta {
+  file: File
+  title: string
+  author: string
+}
+
+export interface MassUploadResult {
+  message: string
+  results: {
+    success: { filename: string; title: string; id: string }[]
+    failed: { filename: string; reason: string }[]
+  }
+}
+
+export function massUpload(
+  files: MassUploadFileMeta[],
+  defaults: MassUploadDefaults,
+  onProgress?: (percent: number) => void,
+) {
+  const formData = new FormData()
+  formData.append('defaultAuthor', defaults.author)
+  formData.append('defaultCategories', JSON.stringify(defaults.categories))
+  formData.append('defaultStatus', defaults.status)
+  formData.append('defaultDownloadable', defaults.downloadable ? 'true' : 'false')
+
+  files.forEach((item, index) => {
+    formData.append('books[]', item.file)
+    if (item.title || item.author) {
+      formData.append(`metadata_${index}`, JSON.stringify({ title: item.title, author: item.author || defaults.author }))
+    }
+  })
+
+  return client.post<ApiResponse<MassUploadResult>>('/v1/books/mass-upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (event) => {
+      if (onProgress && event.total) {
+        onProgress(Math.round((event.loaded * 100) / event.total))
+      }
+    },
+  })
+}
+
+export interface AdminLogs {
+  errors: string[] | string
+  requests: string[] | string
+}
+
+export function getLogs() {
+  return client.get<ApiResponse<AdminLogs>>('/v1/admin/logs')
+}

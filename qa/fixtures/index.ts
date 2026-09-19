@@ -3,7 +3,7 @@ import { createBookViaApi, deleteBookViaApi, loginAsAdmin, setBookVisibility } f
 import { requireEnv } from '../support/env';
 import { buildSamplePdf } from '../support/samplePdf';
 import { buildTestUser, uniqueBookTitle, type TestUser } from '../support/testData';
-import { HomePage } from '../pages/HomePage';
+import { LoginPage } from '../pages/LoginPage';
 
 /**
  * Signs up a user through the real API (not the UI — the signup *flow* itself
@@ -23,13 +23,15 @@ async function registerViaApi(request: APIRequestContext, user: TestUser): Promi
   expect(response.ok(), `signup API setup call failed: ${await response.text()}`).toBeTruthy();
 }
 
-/** Logs in through the real login popup and waits for the post-login reload to settle. */
+/** Logs in through the real /login page and waits for the post-login redirect to settle. */
 async function loginViaUi(page: Page, credentials: { email: string; password: string }): Promise<void> {
-  const home = new HomePage(page);
-  await home.open();
-  await home.header.loginPopup.openFromNav();
-  await home.header.loginPopup.login(credentials.email, credentials.password);
-  await expect(page.locator('#profileDropdown')).toBeVisible();
+  const login = new LoginPage(page);
+  await login.open();
+  await login.login(credentials.email, credentials.password);
+  // LoginForm redirects to '/' on success (no `redirect` query param was set here) —
+  // check the actual signal of a successful login (the nav's user chip), not just the URL.
+  await expect(page).toHaveURL('/');
+  await expect(page.getByTestId('nav-user-chip')).toBeVisible();
 }
 
 interface AdminCredentials {

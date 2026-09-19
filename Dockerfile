@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y \
     default-jre \
     fonts-liberation \
     fontconfig \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -114,6 +116,9 @@ RUN php setup-mongodb-cert.php
 
 # Copy the rest of the application
 COPY . .
+
+# Build the frontend SPA into public/dist/ (served as-is by PageRouter)
+RUN cd frontend && npm ci && npm run build
 
 # Set the certificate path in environment
 ENV MONGO_CERT_FILE=/var/www/html/certificates/mongodb-ca.pem

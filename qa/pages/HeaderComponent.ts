@@ -1,27 +1,52 @@
 import type { Locator, Page } from '@playwright/test';
-import { LoginPopup } from './LoginPopup';
-import { SignupPopup } from './SignupPopup';
 
-/** The site-wide navbar (App/Views/Partials/Header.php), present on every page. */
+/** The site-wide navbar (frontend/src/components/NavBar.vue), present on every page. */
 export class HeaderComponent {
   readonly nav: Locator;
   readonly brand: Locator;
-  readonly loginPopup: LoginPopup;
-  readonly signupPopup: SignupPopup;
+  readonly homeLink: Locator;
+  readonly browseLink: Locator;
+  readonly searchInput: Locator;
+  readonly searchSubmit: Locator;
+  readonly loginLink: Locator;
+  readonly signupLink: Locator;
+  readonly userChip: Locator;
+  readonly username: Locator;
+  readonly userMenu: Locator;
+  readonly profileMenuLink: Locator;
+  readonly dashboardMenuLink: Locator;
+  readonly logoutMenuButton: Locator;
 
   constructor(private readonly page: Page) {
-    this.nav = page.getByRole('navigation').first();
-    this.brand = this.nav.locator('.navbar-brand');
-    this.loginPopup = new LoginPopup(page);
-    this.signupPopup = new SignupPopup(page);
+    this.nav = page.getByTestId('navbar');
+    this.brand = page.getByTestId('navbar-brand');
+    this.homeLink = page.getByTestId('nav-link-home');
+    this.browseLink = page.getByTestId('nav-link-browse');
+    this.searchInput = page.getByTestId('nav-search-input');
+    this.searchSubmit = page.getByTestId('nav-search-submit');
+    // Guest-only links — replaced by the user chip once authenticated.
+    this.loginLink = page.getByTestId('nav-login-link');
+    this.signupLink = page.getByTestId('nav-signup-link');
+    // Authenticated-only: clicking the chip reveals the dropdown menu.
+    this.userChip = page.getByTestId('nav-user-chip');
+    this.username = page.getByTestId('nav-username');
+    this.userMenu = page.getByTestId('nav-user-menu');
+    this.profileMenuLink = page.getByTestId('nav-menu-profile');
+    this.dashboardMenuLink = page.getByTestId('nav-menu-dashboard');
+    this.logoutMenuButton = page.getByTestId('nav-menu-logout');
   }
 
-  navLink(name: string): Locator {
-    return this.nav.getByRole('link', { name, exact: true });
+  async search(term: string): Promise<void> {
+    await this.searchInput.fill(term);
+    await this.searchSubmit.click();
   }
 
-  async search(title: string): Promise<void> {
-    await this.page.locator('#bookToSearch').fill(title);
-    await this.page.locator('#searchForm').getByRole('button', { name: 'Search' }).click();
+  async openUserMenu(): Promise<void> {
+    await this.userChip.click();
+  }
+
+  async logout(): Promise<void> {
+    await this.openUserMenu();
+    await this.logoutMenuButton.click();
   }
 }

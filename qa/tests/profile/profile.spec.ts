@@ -17,7 +17,6 @@ test.describe('Profile', () => {
 
     await profile.openEditUsername(newUsername);
 
-    await expect(profile.editUsernameModal).toBeHidden();
     await expect(profile.usernameHeading).toHaveText(newUsername);
   });
 

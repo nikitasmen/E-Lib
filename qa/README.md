@@ -70,7 +70,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:8081 npm run test:e2e
 
 ### Admin-gated tests
 
-A few specs (dashboard, add-book) need to act as an admin. The app has no
+A few specs (dashboard, mass-upload) need to act as an admin. The app has no
 self-service way to become one (`AuthenticatedUser::isAdmin()` only trusts the
 `isAdmin` flag on the Users document, set at login from the database — there's
 no signup-as-admin or promote-yourself flow, by design). So the suite doesn't
@@ -93,28 +93,10 @@ here, rather than a confusing downstream error.
 ### Test data cleanup
 
 - Books created via `support/api.ts` (the `seededBook` fixture, and the
-  add/view-books specs) are deleted afterwards through the real
+  browse/mass-upload specs) are deleted afterwards through the real
   `DELETE /api/v1/books/:id` endpoint.
 - Users created via signup (`registeredUser`, and the signup specs) are **not**
   deleted — there's no self-service "delete my account" API. They're tagged
   with the `e2e.e-lib.test` email domain (see `support/testData.ts`) so
   they're easy to identify if a database owner ever wants to purge them
   separately; the suite itself doesn't touch the database to do so.
-
-## Known-failing tests (by design)
-
-Two specs assert the *documented, intended* behavior of a feature that's
-currently broken in the app, and are marked `test.fail()` so the suite stays
-green while tracking the regression — if either bug gets fixed, that test will
-start passing and Playwright will flag it as an unexpected pass (a signal to
-remove the `.fail()` annotation):
-
-- `qa/tests/auth/signup.spec.ts` — the standalone `/signup` page renders a
-  second, hidden copy of `#signupForm` (via the shared header's popup) plus its
-  own visible one with the same id; both inline scripts bind their submit
-  handler to the first (hidden) node, so the page's own form silently falls
-  back to an unhandled native POST.
-- `qa/tests/books/search.spec.ts` — `search_results.php` calls
-  `GET /api/v1/search?title=...`, but the only registered route is
-  `GET /api/v1/search/(\w+)` (a single path segment). The two never match, so
-  site search always errors.

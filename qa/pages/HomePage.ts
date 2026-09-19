@@ -4,21 +4,25 @@ import { HeaderComponent } from './HeaderComponent';
 
 export class HomePage extends BasePage {
   readonly header: HeaderComponent;
-  readonly booksGrid: Locator;
-  readonly bookCards: Locator;
+  readonly featuredSection: Locator;
+  readonly featuredLoading: Locator;
+  readonly featuredError: Locator;
+  readonly featuredGrid: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.booksGrid = page.locator('#booksGrid');
-    this.bookCards = this.booksGrid.locator('.card');
+    this.featuredSection = page.getByTestId('featured-section');
+    this.featuredLoading = page.getByTestId('featured-loading');
+    this.featuredError = page.getByTestId('featured-error');
+    this.featuredGrid = page.getByTestId('featured-grid');
   }
 
   async open(): Promise<void> {
     await this.goto('/');
   }
 
-  bookCardByTitle(title: string): Locator {
-    return this.bookCards.filter({ hasText: title });
+  bookCardById(bookId: string): Locator {
+    return this.page.getByTestId(`book-card-${bookId}`);
   }
 }

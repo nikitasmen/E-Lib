@@ -39,7 +39,7 @@ class ApiRouter
                 'handler' => [new BookController(), 'streamBookThumbnail'],
             ],
 
-            ['method' => 'GET', 'path' => '/api/v1/search/(\w+)', 'handler' => [new BookController(), 'searchBooks']],
+            ['method' => 'GET', 'path' => '/api/v1/search/([^/]+)', 'handler' => [new BookController(), 'searchBooks']],
 
             ['method' => 'POST', 'path' => '/api/v1/reviews', 'handler' => [new BookController(), 'addReview']],
             ['method' => 'GET', 'path' => '/api/v1/reviews/([0-9a-f]{24})', 'handler' => [new BookController(), 'getReviews']],

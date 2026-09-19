@@ -1,0 +1,34 @@
+import client from './client'
+import type { ApiResponse } from '@/types/api'
+import type { Book } from '@/types/book'
+
+export function getFeaturedBooks() {
+  return client.get<ApiResponse<Book[]>>('/v1/books/featured')
+}
+
+export function listBooks() {
+  return client.get<ApiResponse<Book[]>>('/v1/books/list')
+}
+
+export function searchBooks(term: string) {
+  return client.get<ApiResponse<Book[]>>(`/v1/search/${encodeURIComponent(term)}`)
+}
+
+export function getBook(id: string) {
+  return client.get<ApiResponse<Book>>(`/v1/books/${id}`)
+}
+
+export function thumbnailUrl(bookId: string): string {
+  const base = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+  return `${base}/v1/books/${bookId}/thumbnail`
+}
+
+/** Authenticated PDF download as a blob; caller is responsible for saving it. */
+export function downloadBook(bookId: string) {
+  return client.get<Blob>(`/v1/books/${bookId}/download`, { responseType: 'blob' })
+}
+
+/** Raw PDF bytes for in-browser preview (Reader.vue passes this straight to pdfjs-dist). */
+export function getBookFile(bookId: string) {
+  return client.get<ArrayBuffer>(`/v1/books/${bookId}/file`, { responseType: 'arraybuffer' })
+}

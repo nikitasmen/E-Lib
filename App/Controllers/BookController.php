@@ -170,16 +170,16 @@ class BookController
 
     public function searchBooks(string $search): void
     {
-        $books = $this->bookService->searchBooks($search);
-        if ($books) {
-            foreach ($books as &$book) {
-                BookDisplayHelper::applyThumbnailForApi($book);
-            }
-            unset($book);
-            $this->response->respond(true, $books);
-        } else {
-            $this->response->respond(false, 'No books found', 404);
+        // Zero matches is a normal outcome for a search, not an error — respond
+        // with 200 + an empty array so the frontend's "No books found" message
+        // (as opposed to its generic network-error message) is reachable; axios
+        // treats any non-2xx status as a rejected promise regardless of body.
+        $books = $this->bookService->searchBooks(urldecode($search));
+        foreach ($books as &$book) {
+            BookDisplayHelper::applyThumbnailForApi($book);
         }
+        unset($book);
+        $this->response->respond(true, $books);
     }
 
     public function addBook(): void
@@ -349,12 +349,8 @@ class BookController
      */
     public function addReview(): void
     {
-        // Check authentication
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (empty($_SESSION['user_id'])) {
+        $userId = AuthenticatedUser::id();
+        if ($userId === null) {
             ResponseHandler::respond(false, 'Authentication required', 401);
             return;
         }
@@ -377,10 +373,10 @@ class BookController
         }
 
         $userService = new \App\Services\UserService();
-        $user = $userService->getUserById($_SESSION['user_id']);
+        $user = $userService->getUserById($userId);
 
         $review = [
-            'user_id' => $_SESSION['user_id'],
+            'user_id' => $userId,
             'username' => $user['username'] ?? 'Anonymous User',
             'rating' => $rating,
             'comment' => $input['comment'],
@@ -608,7 +604,7 @@ class BookController
         // Log the upload activity
         error_log(sprintf(
             "User %s uploaded %d books (%d successful, %d failed)",
-            $_SESSION['user_id'],
+            AuthenticatedUser::id() ?? 'unknown',
             $fileCount,
             count($results['success']),
             count($results['failed'])

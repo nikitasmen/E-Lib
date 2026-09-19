@@ -242,9 +242,20 @@ class BookService
     public function getBookReviews(string $bookId): array
     {
         $book = $this->book->getBookDetails($bookId);
-        if ($book) {
-            return $book['reviews'] ?? [];
+        if (!$book || empty($book['reviews'])) {
+            return [];
         }
-        return [];
+
+        $reviews = $book['reviews'];
+        $reviews = is_object($reviews) && method_exists($reviews, 'getArrayCopy')
+            ? $reviews->getArrayCopy()
+            : (array) $reviews;
+
+        return array_values(array_map(
+            fn ($review) => is_object($review) && method_exists($review, 'getArrayCopy')
+                ? $review->getArrayCopy()
+                : (array) $review,
+            $reviews
+        ));
     }
 }
