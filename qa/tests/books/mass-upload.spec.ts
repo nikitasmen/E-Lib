@@ -33,6 +33,9 @@ test.describe('Mass upload (admin book upload)', () => {
     // that created the book never handed the test its id.
     const token = await loginAsAdmin(request, adminCredentials.email, adminCredentials.password);
     const id = await findBookIdByTitle(request, title);
+    // Cleanup guard, not test logic under test — id is only ever null if the
+    // lookup itself failed, in which case there's nothing to delete.
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (id) {
       await deleteBookViaApi(request, token, id);
     }
