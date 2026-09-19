@@ -8,6 +8,14 @@ README.md
 # Ignore the vendor directory if using Composer
 vendor/
 
+# Ignore local node_modules — npm ci reinstalls inside the image, and root/frontend both
+# have their own package-lock.json (Playwright tooling vs. the Vue SPA build)
+node_modules/
+frontend/node_modules/
+
+# Ignore a locally-built SPA — the Dockerfile builds its own copy in-image
+public/dist/
+
 # Ignore any log files
 *.log
 

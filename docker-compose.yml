@@ -8,6 +8,10 @@ services:
     container_name: elib-app
     ports:
       - "8081:80"
+    # NOTE: this bind-mount shadows the image-build-time public/dist/ (built by the
+    # Dockerfile's `npm run build`) with whatever's on the host. For local compose use, run
+    # `cd frontend && npm run build` on the host first (or `npm run dev` against the Vite
+    # proxy instead of this container) so public/dist/index.html actually exists.
     volumes:
       - .:/var/www/html
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
