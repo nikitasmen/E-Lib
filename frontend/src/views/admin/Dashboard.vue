@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import * as adminApi from '@/api/admin'
 import { isApiSuccess, apiErrorMessage, requestErrorMessage, type ApiError } from '@/types/api'
 import type { Book } from '@/types/book'
 import { idToString } from '@/types/book'
 import { useToast } from '@/composables/useToast'
+import { useCategoryOptions } from '@/composables/useCategoryOptions'
+import CategoryPicker from '@/components/CategoryPicker.vue'
 
 const toast = useToast()
 
@@ -12,6 +14,7 @@ const books = ref<Book[]>([])
 const loading = ref(true)
 const loadError = ref('')
 const busyIds = ref<Set<string>>(new Set())
+const availableCategories = useCategoryOptions()
 
 async function loadBooks() {
   loading.value = true
@@ -97,17 +100,10 @@ const editForm = reactive({
   featured: false,
   isbn: '',
   downloadable: true,
-  categoriesText: '',
+  categories: [] as string[],
 })
 const editSaving = ref(false)
 const editError = ref('')
-
-const editCategories = computed(() =>
-  editForm.categoriesText
-    .split(',')
-    .map((c) => c.trim())
-    .filter((c) => c.length > 0),
-)
 
 function openEdit(book: Book) {
   editing.value = book
@@ -118,7 +114,7 @@ function openEdit(book: Book) {
   editForm.featured = !!book.featured
   editForm.isbn = book.isbn ?? ''
   editForm.downloadable = book.downloadable !== false
-  editForm.categoriesText = (book.categories ?? []).join(', ')
+  editForm.categories = [...(book.categories ?? [])]
   editError.value = ''
 }
 
@@ -140,7 +136,7 @@ async function submitEdit() {
       featured: editForm.featured,
       isbn: editForm.isbn,
       downloadable: editForm.downloadable,
-      categories: editCategories.value,
+      categories: editForm.categories,
     })
     if (isApiSuccess(response.data)) {
       Object.assign(editing.value, {
@@ -151,7 +147,7 @@ async function submitEdit() {
         featured: editForm.featured,
         isbn: editForm.isbn,
         downloadable: editForm.downloadable,
-        categories: editCategories.value,
+        categories: editForm.categories,
       })
       toast.success('Book updated successfully.')
       closeEdit()
@@ -268,8 +264,13 @@ onMounted(loadBooks)
             </div>
             <div class="form-field span-2">
               <label for="edit-categories">Categories</label>
-              <input id="edit-categories" v-model="editForm.categoriesText" type="text" placeholder="Fiction, Fantasy, Adventure" />
-              <small class="text-muted">Separate categories with commas.</small>
+              <CategoryPicker
+                id="edit-categories"
+                v-model="editForm.categories"
+                :options="availableCategories"
+                placeholder="Fiction, Fantasy, Adventure…"
+              />
+              <small class="text-muted">Pick an existing category or type a new one and press Enter.</small>
             </div>
           </div>
           <div class="modal-actions">

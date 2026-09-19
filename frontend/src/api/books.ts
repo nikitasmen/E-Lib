@@ -10,6 +10,11 @@ export function listBooks() {
   return client.get<ApiResponse<Book[]>>('/v1/books/list')
 }
 
+/** Distinct category values already in use across the catalog, for the category picker. */
+export function getCategories() {
+  return client.get<ApiResponse<string[]>>('/v1/books/categories')
+}
+
 export function searchBooks(term: string) {
   return client.get<ApiResponse<Book[]>>(`/v1/search/${encodeURIComponent(term)}`)
 }

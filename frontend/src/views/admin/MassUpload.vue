@@ -3,8 +3,11 @@ import { reactive, ref } from 'vue'
 import * as adminApi from '@/api/admin'
 import { isApiSuccess, requestErrorMessage } from '@/types/api'
 import { useToast } from '@/composables/useToast'
+import { useCategoryOptions } from '@/composables/useCategoryOptions'
+import CategoryPicker from '@/components/CategoryPicker.vue'
 
 const toast = useToast()
+const availableCategories = useCategoryOptions()
 
 interface PendingFile {
   file: File
@@ -23,7 +26,7 @@ const feedbackVariant = ref<'info' | 'success' | 'warning' | 'danger'>('info')
 
 const defaults = reactive({
   author: '',
-  categoriesText: '',
+  categories: [] as string[],
   downloadable: true,
   status: 'draft',
 })
@@ -80,10 +83,7 @@ async function handleUpload() {
       pendingFiles.value.map((f) => ({ file: f.file, title: f.title.trim(), author: f.author.trim() })),
       {
         author: defaults.author,
-        categories: defaults.categoriesText
-          .split(',')
-          .map((c) => c.trim())
-          .filter(Boolean),
+        categories: defaults.categories,
         downloadable: defaults.downloadable,
         status: defaults.status,
       },
@@ -203,7 +203,12 @@ async function handleUpload() {
         </div>
         <div class="form-field">
           <label for="default-categories">Default Categories</label>
-          <input id="default-categories" v-model="defaults.categoriesText" type="text" placeholder="Comma-separated categories" />
+          <CategoryPicker
+            id="default-categories"
+            v-model="defaults.categories"
+            :options="availableCategories"
+            placeholder="Fiction, Fantasy, Adventure…"
+          />
         </div>
         <div class="form-field checkbox-field">
           <label><input v-model="defaults.downloadable" type="checkbox" /> Allow download</label>
