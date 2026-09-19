@@ -12,7 +12,6 @@ const router = createRouter({
       path: '/read/:id',
       name: 'reader',
       component: () => import('@/views/Reader.vue'),
-      beforeEnter: requireAuth,
     },
     {
       path: '/login',

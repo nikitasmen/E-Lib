@@ -27,7 +27,12 @@ const downloadedLoading = ref(true)
 const downloadedLoaded = ref(false)
 const downloadedError = ref('')
 
-const usernameInput = ref('')
+// Seeded synchronously from the cached login/profile state (not just left
+// blank until loadProfile()'s GET resolves) so the field always shows
+// something immediately; usernameTouched then stops that GET from clobbering
+// an edit the user already started typing before it resolves.
+const usernameInput = ref(auth.username ?? '')
+const usernameTouched = ref(false)
 const usernameSaving = ref(false)
 const usernameError = ref('')
 
@@ -47,7 +52,9 @@ async function loadProfile() {
     const body = response.data
     if (isApiSuccess(body)) {
       email.value = body.data.email
-      usernameInput.value = body.data.username
+      if (!usernameTouched.value) {
+        usernameInput.value = body.data.username
+      }
       auth.setProfile({
         id: body.data._id,
         email: body.data.email,
@@ -235,7 +242,14 @@ onMounted(() => {
         <p v-if="usernameError" class="alert alert-danger">{{ usernameError }}</p>
         <div class="form-field">
           <label for="profile-username">Username</label>
-          <input id="profile-username" v-model="usernameInput" type="text" minlength="3" required />
+          <input
+            id="profile-username"
+            v-model="usernameInput"
+            type="text"
+            minlength="3"
+            required
+            @input="usernameTouched = true"
+          />
         </div>
         <button type="button" class="btn btn-primary" :disabled="usernameSaving" @click="saveUsername">
           {{ usernameSaving ? 'Saving…' : 'Save' }}

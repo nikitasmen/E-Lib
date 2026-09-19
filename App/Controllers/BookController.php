@@ -170,16 +170,16 @@ class BookController
 
     public function searchBooks(string $search): void
     {
-        $books = $this->bookService->searchBooks($search);
-        if ($books) {
-            foreach ($books as &$book) {
-                BookDisplayHelper::applyThumbnailForApi($book);
-            }
-            unset($book);
-            $this->response->respond(true, $books);
-        } else {
-            $this->response->respond(false, 'No books found', 404);
+        // Zero matches is a normal outcome for a search, not an error — respond
+        // with 200 + an empty array so the frontend's "No books found" message
+        // (as opposed to its generic network-error message) is reachable; axios
+        // treats any non-2xx status as a rejected promise regardless of body.
+        $books = $this->bookService->searchBooks(urldecode($search));
+        foreach ($books as &$book) {
+            BookDisplayHelper::applyThumbnailForApi($book);
         }
+        unset($book);
+        $this->response->respond(true, $books);
     }
 
     public function addBook(): void
