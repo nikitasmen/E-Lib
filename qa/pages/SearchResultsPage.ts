@@ -12,12 +12,16 @@ export class SearchResultsPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.loadingIndicator = page.locator('.search-page .spinner');
-    this.resultsGrid = page.locator('.search-page .grid-books');
-    this.message = page.locator('.search-page > p.text-muted');
+    this.loadingIndicator = page.getByTestId('search-loading');
+    this.resultsGrid = page.getByTestId('search-results');
+    this.message = page.getByTestId('search-message');
   }
 
   async openWithTerm(term: string): Promise<void> {
     await this.goto(`/search?q=${encodeURIComponent(term)}`);
+  }
+
+  cardById(bookId: string): Locator {
+    return this.page.getByTestId(`book-card-${bookId}`);
   }
 }

@@ -196,20 +196,41 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container profile-page">
+  <div class="container profile-page" data-testid="profile-page">
     <div class="card profile-header">
       <div class="avatar-lg">{{ avatarInitial }}</div>
       <div>
-        <h1>{{ auth.username || 'User' }}</h1>
-        <p class="text-muted">{{ profileLoading ? 'Loading…' : email }}</p>
-        <p v-if="memberSince" class="text-muted small">Member since {{ memberSince }}</p>
+        <h1 data-testid="profile-username-heading">{{ auth.username || 'User' }}</h1>
+        <p class="text-muted" data-testid="profile-email">{{ profileLoading ? 'Loading…' : email }}</p>
+        <p v-if="memberSince" class="text-muted small" data-testid="profile-member-since">Member since {{ memberSince }}</p>
       </div>
     </div>
 
     <div class="tabs">
-      <button type="button" :class="{ active: activeTab === 'saved' }" @click="selectTab('saved')">Saved Books</button>
-      <button type="button" :class="{ active: activeTab === 'downloaded' }" @click="selectTab('downloaded')">Downloaded</button>
-      <button type="button" :class="{ active: activeTab === 'account' }" @click="selectTab('account')">Account</button>
+      <button
+        type="button"
+        :class="{ active: activeTab === 'saved' }"
+        data-testid="profile-tab-saved"
+        @click="selectTab('saved')"
+      >
+        Saved Books
+      </button>
+      <button
+        type="button"
+        :class="{ active: activeTab === 'downloaded' }"
+        data-testid="profile-tab-downloaded"
+        @click="selectTab('downloaded')"
+      >
+        Downloaded
+      </button>
+      <button
+        type="button"
+        :class="{ active: activeTab === 'account' }"
+        data-testid="profile-tab-account"
+        @click="selectTab('account')"
+      >
+        Account
+      </button>
     </div>
 
     <section v-if="activeTab === 'saved'" class="tab-panel">
@@ -239,7 +260,7 @@ onMounted(() => {
     <section v-else class="tab-panel account-panel">
       <div class="card account-card">
         <h3>Edit username</h3>
-        <p v-if="usernameError" class="alert alert-danger">{{ usernameError }}</p>
+        <p v-if="usernameError" class="alert alert-danger" data-testid="profile-username-error">{{ usernameError }}</p>
         <div class="form-field">
           <label for="profile-username">Username</label>
           <input
@@ -248,32 +269,62 @@ onMounted(() => {
             type="text"
             minlength="3"
             required
+            data-testid="profile-username-input"
             @input="usernameTouched = true"
           />
         </div>
-        <button type="button" class="btn btn-primary" :disabled="usernameSaving" @click="saveUsername">
+        <button
+          type="button"
+          class="btn btn-primary"
+          :disabled="usernameSaving"
+          data-testid="profile-save-username"
+          @click="saveUsername"
+        >
           {{ usernameSaving ? 'Saving…' : 'Save' }}
         </button>
       </div>
 
       <div class="card account-card">
         <h3>Change password</h3>
-        <p v-if="passwordError" class="alert alert-danger">{{ passwordError }}</p>
-        <p v-if="passwordSuccess" class="alert alert-success">{{ passwordSuccess }}</p>
+        <p v-if="passwordError" class="alert alert-danger" data-testid="profile-password-feedback">{{ passwordError }}</p>
+        <p v-if="passwordSuccess" class="alert alert-success" data-testid="profile-password-feedback">{{ passwordSuccess }}</p>
         <form @submit.prevent="submitPasswordChange">
           <div class="form-field">
             <label for="current-password">Current password</label>
-            <input id="current-password" v-model="currentPassword" type="password" autocomplete="current-password" required />
+            <input
+              id="current-password"
+              v-model="currentPassword"
+              type="password"
+              autocomplete="current-password"
+              required
+              data-testid="profile-current-password"
+            />
           </div>
           <div class="form-field">
             <label for="new-password">New password</label>
-            <input id="new-password" v-model="newPassword" type="password" minlength="8" autocomplete="new-password" required />
+            <input
+              id="new-password"
+              v-model="newPassword"
+              type="password"
+              minlength="8"
+              autocomplete="new-password"
+              required
+              data-testid="profile-new-password"
+            />
           </div>
           <div class="form-field">
             <label for="confirm-new-password">Confirm new password</label>
-            <input id="confirm-new-password" v-model="confirmPassword" type="password" minlength="8" autocomplete="new-password" required />
+            <input
+              id="confirm-new-password"
+              v-model="confirmPassword"
+              type="password"
+              minlength="8"
+              autocomplete="new-password"
+              required
+              data-testid="profile-confirm-new-password"
+            />
           </div>
-          <button type="submit" class="btn btn-primary" :disabled="passwordSaving">
+          <button type="submit" class="btn btn-primary" :disabled="passwordSaving" data-testid="profile-update-password">
             {{ passwordSaving ? 'Updating…' : 'Update password' }}
           </button>
         </form>

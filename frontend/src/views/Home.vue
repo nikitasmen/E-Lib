@@ -71,12 +71,18 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="featured" class="container featured-section">
+    <section id="featured" class="container featured-section" data-testid="featured-section">
       <h2 class="section-title">Featured Collection</h2>
 
-      <div v-if="loading" class="spinner" role="status" aria-label="Loading featured books"></div>
-      <p v-else-if="loadError" class="text-muted centered">{{ loadError }}</p>
-      <div v-else class="grid-books">
+      <div
+        v-if="loading"
+        class="spinner"
+        role="status"
+        aria-label="Loading featured books"
+        data-testid="featured-loading"
+      ></div>
+      <p v-else-if="loadError" class="text-muted centered" data-testid="featured-error">{{ loadError }}</p>
+      <div v-else class="grid-books" data-testid="featured-grid">
         <BookCard v-for="book in books" :key="String(book._id)" :book="book" />
       </div>
     </section>

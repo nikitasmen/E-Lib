@@ -26,12 +26,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="container browse-page">
+  <div class="container browse-page" data-testid="browse-page">
     <h1>Browse the Collection</h1>
 
-    <div v-if="loading" class="spinner" role="status" aria-label="Loading books"></div>
-    <p v-else-if="error" class="text-muted">{{ error }}</p>
-    <div v-else class="grid-books">
+    <div v-if="loading" class="spinner" role="status" aria-label="Loading books" data-testid="browse-loading"></div>
+    <p v-else-if="error" class="text-muted" data-testid="browse-error">{{ error }}</p>
+    <div v-else class="grid-books" data-testid="browse-grid">
       <BookCard v-for="book in books" :key="String(book._id)" :book="book" />
     </div>
   </div>

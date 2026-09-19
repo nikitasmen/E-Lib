@@ -6,17 +6,17 @@ test.describe('Admin dashboard (/admin)', () => {
     await page.goto('/admin');
 
     // `requireAdmin` router guard (frontend/src/router/guards.ts).
-    await expect(page).toHaveURL(/\/login\?redirect=\/admin/);
+    await expect(page).toHaveURL('/login?redirect=/admin');
   });
 
   test('a logged-in non-admin is bounced back to the home page', async ({ authenticatedPage }) => {
     await authenticatedPage.goto('/admin');
 
-    // `requireAdmin` router guard (frontend/src/router/guards.ts) should block
-    // the page outright — check both the URL and that the "Manage Books" table
-    // never rendered, not just where we ended up.
+    // `requireAdmin` router guard should block the page outright — check both
+    // the URL and that the "Manage Books" table never rendered, not just
+    // where we ended up.
     await expect(authenticatedPage).toHaveURL('/');
-    await expect(authenticatedPage.getByRole('heading', { name: 'Manage Books' })).toHaveCount(0);
+    await expect(authenticatedPage.getByTestId('dashboard-heading')).toHaveCount(0);
   });
 
   test('an admin sees the Manage Books table', async ({ adminPage }) => {
@@ -31,6 +31,6 @@ test.describe('Admin dashboard (/admin)', () => {
     const dashboard = new DashboardPage(adminPage);
     await dashboard.open();
 
-    await expect(dashboard.rowByTitle(seededBook.title)).toBeVisible();
+    await expect(dashboard.rowById(seededBook.id)).toBeVisible();
   });
 });

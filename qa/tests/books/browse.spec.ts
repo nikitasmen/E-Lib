@@ -13,11 +13,11 @@ test.describe('Book browsing (/browse)', () => {
     const browse = new BrowsePage(page);
     await browse.open();
 
-    const card = browse.cardByTitle(seededBook.title);
+    const card = browse.cardById(seededBook.id);
     await expect(card).toBeVisible();
     await card.click();
 
-    await expect(page).toHaveURL(new RegExp(`/books/${seededBook.id}$`));
+    await expect(page).toHaveURL(`/books/${seededBook.id}`);
   });
 
   test('does not list a draft book', async ({ page, request, adminCredentials }) => {
@@ -29,7 +29,7 @@ test.describe('Book browsing (/browse)', () => {
     const browse = new BrowsePage(page);
     await browse.open();
 
-    await expect(browse.cardByTitle(title)).toHaveCount(0);
+    await expect(browse.cardById(id)).toHaveCount(0);
 
     await deleteBookViaApi(request, token, id);
   });

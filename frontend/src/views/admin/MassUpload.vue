@@ -150,20 +150,45 @@ async function handleUpload() {
     >
       <p class="drop-title">Drag &amp; Drop PDF Files Here</p>
       <p class="text-muted">or</p>
-      <input id="pdf-files-input" type="file" accept="application/pdf" multiple hidden @change="onFileInput" />
+      <input
+        id="pdf-files-input"
+        type="file"
+        accept="application/pdf"
+        multiple
+        hidden
+        data-testid="file-input"
+        @change="onFileInput"
+      />
       <label for="pdf-files-input" class="btn btn-outline">Browse Files</label>
     </div>
 
     <div v-if="pendingFiles.length" class="files-list card">
       <h3>Selected Files <span class="badge">{{ pendingFiles.length }}</span></h3>
-      <div v-for="(item, index) in pendingFiles" :key="item.file.name + index" class="file-row" :class="item.status">
+      <div
+        v-for="(item, index) in pendingFiles"
+        :key="item.file.name + index"
+        class="file-row"
+        :class="item.status"
+        :data-testid="`file-row-${index}`"
+      >
         <div class="file-row-header">
           <strong>{{ item.file.name }}</strong>
           <button type="button" class="btn-close" aria-label="Remove" @click="removeFile(index)">&times;</button>
         </div>
         <div class="file-row-fields">
-          <input v-model="item.title" type="text" placeholder="Book Title" required />
-          <input v-model="item.author" type="text" placeholder="Author (optional)" />
+          <input
+            v-model="item.title"
+            type="text"
+            placeholder="Book Title"
+            required
+            :data-testid="`file-title-input-${index}`"
+          />
+          <input
+            v-model="item.author"
+            type="text"
+            placeholder="Author (optional)"
+            :data-testid="`file-author-input-${index}`"
+          />
         </div>
         <p v-if="item.reason" class="file-reason">{{ item.reason }}</p>
       </div>
@@ -197,13 +222,24 @@ async function handleUpload() {
       <div v-if="uploading" class="progress-bar-track">
         <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
       </div>
-      <p v-if="feedback" class="alert" :class="`alert-${feedbackVariant === 'danger' ? 'danger' : feedbackVariant === 'success' ? 'success' : 'info'}`">
+      <p
+        v-if="feedback"
+        class="alert"
+        :class="`alert-${feedbackVariant === 'danger' ? 'danger' : feedbackVariant === 'success' ? 'success' : 'info'}`"
+        data-testid="upload-feedback"
+      >
         {{ feedback }}
       </p>
     </div>
 
     <div class="page-actions">
-      <button type="button" class="btn btn-primary" :disabled="uploading || !pendingFiles.length" @click="handleUpload">
+      <button
+        type="button"
+        class="btn btn-primary"
+        :disabled="uploading || !pendingFiles.length"
+        data-testid="upload-button"
+        @click="handleUpload"
+      >
         {{ uploading ? 'Uploading…' : 'Upload All Files' }}
       </button>
     </div>

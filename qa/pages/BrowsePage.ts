@@ -7,21 +7,21 @@ export class BrowsePage extends BasePage {
   readonly header: HeaderComponent;
   readonly loadingIndicator: Locator;
   readonly emptyMessage: Locator;
-  readonly bookCards: Locator;
+  readonly grid: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.loadingIndicator = page.locator('.browse-page .spinner');
-    this.emptyMessage = page.locator('.browse-page > p.text-muted');
-    this.bookCards = page.locator('.browse-page .book-card');
+    this.loadingIndicator = page.getByTestId('browse-loading');
+    this.emptyMessage = page.getByTestId('browse-error');
+    this.grid = page.getByTestId('browse-grid');
   }
 
   async open(): Promise<void> {
     await this.goto('/browse');
   }
 
-  cardByTitle(title: string): Locator {
-    return this.bookCards.filter({ hasText: title });
+  cardById(bookId: string): Locator {
+    return this.page.getByTestId(`book-card-${bookId}`);
   }
 }

@@ -7,9 +7,9 @@ import { LoginPage } from '../../pages/LoginPage';
 test.describe('Login', () => {
   test('the "Log in" nav link opens the login page', async ({ page }) => {
     await page.goto('/');
-    await page.locator('.navbar').getByRole('link', { name: 'Log in' }).click();
+    await page.getByTestId('nav-login-link').click();
 
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL('/login');
     const login = new LoginPage(page);
     await expect(login.email).toBeVisible();
     await expect(login.password).toBeVisible();
@@ -23,7 +23,7 @@ test.describe('Login', () => {
     // to home before the login form ever renders — check both the URL and
     // that the form itself never showed up, not just where we ended up.
     await expect(authenticatedPage).toHaveURL('/');
-    await expect(authenticatedPage.locator('.login-form')).toHaveCount(0);
+    await expect(authenticatedPage.getByTestId('login-form')).toHaveCount(0);
   });
 
   test('shows an error for invalid credentials', async ({ page }) => {
@@ -42,8 +42,7 @@ test.describe('Login', () => {
     await login.login(registeredUser.email, registeredUser.password);
 
     await expect(page).toHaveURL('/');
-    const nav = page.locator('.navbar');
-    await expect(nav.locator('.user-chip')).toBeVisible();
-    await expect(nav.locator('.user-chip .username')).toHaveText(registeredUser.username);
+    await expect(page.getByTestId('nav-user-chip')).toBeVisible();
+    await expect(page.getByTestId('nav-username')).toHaveText(registeredUser.username);
   });
 });

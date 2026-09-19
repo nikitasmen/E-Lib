@@ -32,38 +32,55 @@ async function handleLogout() {
 </script>
 
 <template>
-  <nav class="navbar">
+  <nav class="navbar" data-testid="navbar">
     <div class="container navbar-inner">
-      <RouterLink to="/" class="brand">
+      <RouterLink to="/" class="brand" data-testid="navbar-brand">
         <span class="brand-mark">📖</span>
         <span>Epictetus Library</span>
       </RouterLink>
 
       <div class="nav-links">
-        <RouterLink to="/" class="nav-link">Home</RouterLink>
-        <RouterLink to="/browse" class="nav-link">Browse</RouterLink>
+        <RouterLink to="/" class="nav-link" data-testid="nav-link-home">Home</RouterLink>
+        <RouterLink to="/browse" class="nav-link" data-testid="nav-link-browse">Browse</RouterLink>
       </div>
 
-      <form class="search-form" @submit.prevent="submitSearch">
-        <input v-model="searchTerm" type="search" placeholder="Search titles…" aria-label="Search books" />
-        <button type="submit" class="btn btn-primary" aria-label="Search">Search</button>
+      <form class="search-form" data-testid="nav-search-form" @submit.prevent="submitSearch">
+        <input
+          v-model="searchTerm"
+          type="search"
+          placeholder="Search titles…"
+          aria-label="Search books"
+          data-testid="nav-search-input"
+        />
+        <button type="submit" class="btn btn-primary" aria-label="Search" data-testid="nav-search-submit">
+          Search
+        </button>
       </form>
 
       <div class="auth-area">
         <template v-if="auth.isAuthenticated">
-          <button type="button" class="user-chip" @click="menuOpen = !menuOpen">
+          <button type="button" class="user-chip" data-testid="nav-user-chip" @click="menuOpen = !menuOpen">
             <span class="avatar">{{ (auth.username || '?').charAt(0).toUpperCase() }}</span>
-            <span class="username">{{ auth.username }}</span>
+            <span class="username" data-testid="nav-username">{{ auth.username }}</span>
           </button>
-          <div v-if="menuOpen" class="user-menu" @click="menuOpen = false">
-            <RouterLink to="/profile" class="user-menu-item">Profile</RouterLink>
-            <RouterLink v-if="auth.isAdmin" to="/admin" class="user-menu-item">Dashboard</RouterLink>
-            <button type="button" class="user-menu-item" @click="handleLogout">Log out</button>
+          <div v-if="menuOpen" class="user-menu" data-testid="nav-user-menu" @click="menuOpen = false">
+            <RouterLink to="/profile" class="user-menu-item" data-testid="nav-menu-profile">Profile</RouterLink>
+            <RouterLink
+              v-if="auth.isAdmin"
+              to="/admin"
+              class="user-menu-item"
+              data-testid="nav-menu-dashboard"
+            >
+              Dashboard
+            </RouterLink>
+            <button type="button" class="user-menu-item" data-testid="nav-menu-logout" @click="handleLogout">
+              Log out
+            </button>
           </div>
         </template>
         <template v-else>
-          <RouterLink to="/login" class="btn btn-outline">Log in</RouterLink>
-          <RouterLink to="/signup" class="btn btn-primary">Sign up</RouterLink>
+          <RouterLink to="/login" class="btn btn-outline" data-testid="nav-login-link">Log in</RouterLink>
+          <RouterLink to="/signup" class="btn btn-primary" data-testid="nav-signup-link">Sign up</RouterLink>
         </template>
       </div>
     </div>

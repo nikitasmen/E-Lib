@@ -14,7 +14,7 @@ test.describe('Home page', () => {
     const home = new HomePage(page);
     await home.open();
 
-    await expect(home.header.navLink('Home')).toHaveAttribute('href', '/');
-    await expect(home.header.navLink('Browse')).toHaveAttribute('href', '/browse');
+    await expect(home.header.homeLink).toHaveAttribute('href', '/');
+    await expect(home.header.browseLink).toHaveAttribute('href', '/browse');
   });
 });

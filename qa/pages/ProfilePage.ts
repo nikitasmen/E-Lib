@@ -26,21 +26,19 @@ export class ProfilePage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.usernameHeading = page.locator('.profile-header h1');
-    this.emailText = page.locator('.profile-header .text-muted').first();
-    this.accountTab = page.getByRole('button', { name: 'Account' });
+    this.usernameHeading = page.getByTestId('profile-username-heading');
+    this.emailText = page.getByTestId('profile-email');
+    this.accountTab = page.getByTestId('profile-tab-account');
 
-    const usernameCard = page.locator('.account-card').filter({ hasText: 'Edit username' });
-    this.usernameInput = usernameCard.locator('#profile-username');
-    this.saveUsernameButton = usernameCard.getByRole('button', { name: /^(Save|Saving…)$/ });
-    this.usernameError = usernameCard.locator('.alert-danger');
+    this.usernameInput = page.getByTestId('profile-username-input');
+    this.saveUsernameButton = page.getByTestId('profile-save-username');
+    this.usernameError = page.getByTestId('profile-username-error');
 
-    const passwordCard = page.locator('.account-card').filter({ hasText: 'Change password' });
-    this.currentPasswordInput = passwordCard.locator('#current-password');
-    this.newPasswordInput = passwordCard.locator('#new-password');
-    this.confirmNewPasswordInput = passwordCard.locator('#confirm-new-password');
-    this.updatePasswordButton = passwordCard.getByRole('button', { name: /^(Update password|Updating…)$/ });
-    this.changePasswordFeedback = passwordCard.locator('.alert');
+    this.currentPasswordInput = page.getByTestId('profile-current-password');
+    this.newPasswordInput = page.getByTestId('profile-new-password');
+    this.confirmNewPasswordInput = page.getByTestId('profile-confirm-new-password');
+    this.updatePasswordButton = page.getByTestId('profile-update-password');
+    this.changePasswordFeedback = page.getByTestId('profile-password-feedback');
   }
 
   async open(): Promise<void> {

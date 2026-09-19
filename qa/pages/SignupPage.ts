@@ -13,17 +13,19 @@ export class SignupPage extends BasePage {
   readonly confirmPassword: Locator;
   readonly terms: Locator;
   readonly submit: Locator;
-  readonly message: Locator;
+  readonly errorMessage: Locator;
+  readonly successMessage: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.username = page.locator('#signup-username');
-    this.email = page.locator('#signup-email');
-    this.password = page.locator('#signup-password');
-    this.confirmPassword = page.locator('#signup-confirm');
-    this.terms = page.locator('.terms-check input[type="checkbox"]');
-    this.submit = page.locator('.signup-form button[type="submit"]');
-    this.message = page.locator('.signup-form .alert');
+    this.username = page.getByTestId('signup-username');
+    this.email = page.getByTestId('signup-email');
+    this.password = page.getByTestId('signup-password');
+    this.confirmPassword = page.getByTestId('signup-confirm');
+    this.terms = page.getByTestId('signup-terms');
+    this.submit = page.getByTestId('signup-submit');
+    this.errorMessage = page.getByTestId('signup-error');
+    this.successMessage = page.getByTestId('signup-success');
   }
 
   async open(): Promise<void> {

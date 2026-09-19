@@ -7,6 +7,7 @@ import { BasePage } from './BasePage';
  * visitor to '/' before this ever renders.
  */
 export class LoginPage extends BasePage {
+  readonly form: Locator;
   readonly email: Locator;
   readonly password: Locator;
   readonly submit: Locator;
@@ -14,10 +15,11 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.email = page.locator('#login-email');
-    this.password = page.locator('#login-password');
-    this.submit = page.locator('.login-form button[type="submit"]');
-    this.errorMessage = page.locator('.login-form .alert-danger');
+    this.form = page.getByTestId('login-form');
+    this.email = page.getByTestId('login-email');
+    this.password = page.getByTestId('login-password');
+    this.submit = page.getByTestId('login-submit');
+    this.errorMessage = page.getByTestId('login-error');
   }
 
   async open(): Promise<void> {

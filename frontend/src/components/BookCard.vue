@@ -18,19 +18,20 @@ function onImgError(event: Event) {
 </script>
 
 <template>
-  <RouterLink :to="`/books/${id}`" class="book-card">
+  <RouterLink :to="`/books/${id}`" class="book-card" :data-testid="`book-card-${id}`">
     <button
       v-if="removable"
       type="button"
       class="remove-btn"
       aria-label="Remove from saved books"
+      data-testid="book-card-remove"
       @click.stop.prevent="emit('remove')"
     >
       &times;
     </button>
     <img :src="cover" class="cover" :alt="`Cover of ${book.title}`" @error="onImgError" />
     <div class="body">
-      <h3 class="title" :title="book.title">{{ book.title || 'Unknown Title' }}</h3>
+      <h3 class="title" :title="book.title" data-testid="book-card-title">{{ book.title || 'Unknown Title' }}</h3>
       <p class="author">By {{ book.author || 'Unknown Author' }}</p>
       <p v-if="book.year" class="year">{{ book.year }}</p>
       <div v-if="visibleCategories.length" class="categories">

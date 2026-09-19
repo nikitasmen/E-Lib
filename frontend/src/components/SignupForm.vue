@@ -74,34 +74,56 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <form class="signup-form" @submit.prevent="handleSubmit">
+  <form class="signup-form" data-testid="signup-form" @submit.prevent="handleSubmit">
     <h2>Create an Account</h2>
-    <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
-    <p v-if="success" class="alert alert-success" role="status">{{ success }}</p>
+    <p v-if="error" class="alert alert-danger" role="alert" data-testid="signup-error">{{ error }}</p>
+    <p v-if="success" class="alert alert-success" role="status" data-testid="signup-success">{{ success }}</p>
 
     <div class="form-field">
       <label for="signup-username">Username</label>
-      <input id="signup-username" v-model="username" type="text" required autocomplete="name" />
+      <input
+        id="signup-username"
+        v-model="username"
+        type="text"
+        required
+        autocomplete="name"
+        data-testid="signup-username"
+      />
     </div>
     <div class="form-field">
       <label for="signup-email">Email</label>
-      <input id="signup-email" v-model="email" type="email" required autocomplete="email" />
+      <input id="signup-email" v-model="email" type="email" required autocomplete="email" data-testid="signup-email" />
     </div>
     <div class="form-field">
       <label for="signup-password">Password</label>
-      <input id="signup-password" v-model="password" type="password" minlength="8" required autocomplete="new-password" />
+      <input
+        id="signup-password"
+        v-model="password"
+        type="password"
+        minlength="8"
+        required
+        autocomplete="new-password"
+        data-testid="signup-password"
+      />
       <small class="text-muted">Min 8 chars with a number and a special character</small>
     </div>
     <div class="form-field">
       <label for="signup-confirm">Confirm Password</label>
-      <input id="signup-confirm" v-model="confirmPassword" type="password" required autocomplete="new-password" />
+      <input
+        id="signup-confirm"
+        v-model="confirmPassword"
+        type="password"
+        required
+        autocomplete="new-password"
+        data-testid="signup-confirm"
+      />
     </div>
     <label class="terms-check">
-      <input v-model="terms" type="checkbox" required />
+      <input v-model="terms" type="checkbox" required data-testid="signup-terms" />
       <span>I agree to the <a href="/terms" target="_blank">Terms of Service</a></span>
     </label>
 
-    <button type="submit" class="btn btn-primary full-width" :disabled="submitting">
+    <button type="submit" class="btn btn-primary full-width" :disabled="submitting" data-testid="signup-submit">
       {{ submitting ? 'Creating account…' : 'Sign Up' }}
     </button>
 

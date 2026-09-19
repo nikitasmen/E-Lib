@@ -50,20 +50,27 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <form class="login-form" @submit.prevent="handleSubmit">
+  <form class="login-form" data-testid="login-form" @submit.prevent="handleSubmit">
     <h2>Login</h2>
-    <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
+    <p v-if="error" class="alert alert-danger" role="alert" data-testid="login-error">{{ error }}</p>
 
     <div class="form-field">
       <label for="login-email">Email</label>
-      <input id="login-email" v-model="email" type="email" required autocomplete="email" />
+      <input id="login-email" v-model="email" type="email" required autocomplete="email" data-testid="login-email" />
     </div>
     <div class="form-field">
       <label for="login-password">Password</label>
-      <input id="login-password" v-model="password" type="password" required autocomplete="current-password" />
+      <input
+        id="login-password"
+        v-model="password"
+        type="password"
+        required
+        autocomplete="current-password"
+        data-testid="login-password"
+      />
     </div>
 
-    <button type="submit" class="btn btn-primary full-width" :disabled="submitting">
+    <button type="submit" class="btn btn-primary full-width" :disabled="submitting" data-testid="login-submit">
       {{ submitting ? 'Logging in…' : 'Login' }}
     </button>
 

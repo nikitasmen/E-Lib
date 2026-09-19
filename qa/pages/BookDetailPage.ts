@@ -9,16 +9,18 @@ export class BookDetailPage extends BasePage {
   readonly previewButton: Locator;
   readonly saveButton: Locator;
   readonly downloadButton: Locator;
+  readonly downloadDisabledButton: Locator;
   readonly loginHint: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.title = page.locator('.info-column h1');
-    this.previewButton = page.getByRole('link', { name: 'Online Preview' });
-    this.saveButton = page.getByRole('button', { name: /^(Save to Reading List|Saved to List|Saving…)$/ });
-    this.downloadButton = page.getByRole('button', { name: /^(Download PDF|Downloading…)$/ });
-    this.loginHint = page.locator('.login-hint');
+    this.title = page.getByTestId('book-title');
+    this.previewButton = page.getByTestId('preview-button');
+    this.saveButton = page.getByTestId('save-button');
+    this.downloadButton = page.getByTestId('download-button');
+    this.downloadDisabledButton = page.getByTestId('download-disabled-button');
+    this.loginHint = page.getByTestId('login-hint');
   }
 
   async openBook(bookId: string): Promise<void> {

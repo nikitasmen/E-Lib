@@ -6,15 +6,15 @@ import { SearchResultsPage } from '../../pages/SearchResultsPage';
 // showed a generic "An error occurred" message instead of real results or a
 // clean "no results" message. Fixed in App/Router/ApiRouter.php (route now
 // captures the whole segment) and App/Controllers/BookController::searchBooks
-// (urldecodes it before querying). These tests cover multi-word terms
-// specifically to guard against a regression.
+// (urldecodes it before querying, and no longer 404s on zero matches). These
+// tests cover multi-word terms specifically to guard against a regression.
 
 test.describe('Book search', () => {
   test('searching by a multi-word title shows matching results', async ({ page, seededBook }) => {
     const results = new SearchResultsPage(page);
     await results.openWithTerm(seededBook.title);
 
-    await expect(results.resultsGrid).toContainText(seededBook.title);
+    await expect(results.cardById(seededBook.id)).toBeVisible();
   });
 
   test('shows a "no results" message for an unmatched multi-word search', async ({ page }) => {

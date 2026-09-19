@@ -19,9 +19,9 @@ test.describe('Signup', () => {
 
     await signup.signUp(user);
 
-    await expect(signup.message).toContainText('Account created successfully');
+    await expect(signup.successMessage).toContainText('Account created successfully');
     // SignupForm redirects to /login ~1.2s after a successful signup.
-    await expect(page).toHaveURL(/\/login$/, { timeout: 5_000 });
+    await expect(page).toHaveURL('/login', { timeout: 5_000 });
   });
 
   test('rejects mismatched passwords before calling the API', async ({ page }) => {
@@ -36,9 +36,9 @@ test.describe('Signup', () => {
     await signup.terms.check();
     await signup.submit.click();
 
-    await expect(signup.message).toContainText('Passwords do not match');
+    await expect(signup.errorMessage).toContainText('Passwords do not match');
     // Client-side validation should short-circuit — no account should be created.
-    await expect(page).toHaveURL(/\/signup$/);
+    await expect(page).toHaveURL('/signup');
   });
 
   test('requires agreeing to the Terms of Service', async ({ page }) => {
@@ -56,6 +56,6 @@ test.describe('Signup', () => {
 
     const isValid = await signup.terms.evaluate((el: HTMLInputElement) => el.validity.valid);
     expect(isValid).toBe(false);
-    await expect(page).toHaveURL(/\/signup$/); // nothing was submitted
+    await expect(page).toHaveURL('/signup'); // nothing was submitted
   });
 });

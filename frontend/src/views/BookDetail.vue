@@ -115,9 +115,17 @@ onMounted(async () => {
         <img :src="cover" class="cover" :alt="`Cover of ${book.title}`" @error="onImgError" />
 
         <div class="actions">
-          <RouterLink :to="`/read/${bookId}`" class="btn btn-outline full-width">Online Preview</RouterLink>
+          <RouterLink :to="`/read/${bookId}`" class="btn btn-outline full-width" data-testid="preview-button">
+            Online Preview
+          </RouterLink>
           <template v-if="auth.isAuthenticated">
-            <button type="button" class="btn btn-outline full-width" :disabled="saving || saved" @click="handleSave">
+            <button
+              type="button"
+              class="btn btn-outline full-width"
+              :disabled="saving || saved"
+              data-testid="save-button"
+              @click="handleSave"
+            >
               {{ saved ? 'Saved to List' : saving ? 'Saving…' : 'Save to Reading List' }}
             </button>
             <button
@@ -125,15 +133,23 @@ onMounted(async () => {
               type="button"
               class="btn btn-primary full-width"
               :disabled="downloading"
+              data-testid="download-button"
               @click="handleDownload"
             >
               {{ downloading ? 'Downloading…' : 'Download PDF' }}
             </button>
-            <button v-else type="button" class="btn btn-outline full-width" disabled title="This book is not available for download">
+            <button
+              v-else
+              type="button"
+              class="btn btn-outline full-width"
+              disabled
+              title="This book is not available for download"
+              data-testid="download-disabled-button"
+            >
               Download Disabled
             </button>
           </template>
-          <p v-else class="text-muted login-hint">
+          <p v-else class="text-muted login-hint" data-testid="login-hint">
             <RouterLink :to="{ path: '/login', query: { redirect: route.fullPath } }">Log in</RouterLink>
             to read online, save, or download this book.
           </p>
@@ -141,7 +157,7 @@ onMounted(async () => {
       </div>
 
       <div class="info-column">
-        <h1>{{ book.title || 'Untitled' }}</h1>
+        <h1 data-testid="book-title">{{ book.title || 'Untitled' }}</h1>
 
         <div v-if="book.average_rating" class="rating-row">
           <StarRating :rating="book.average_rating" />

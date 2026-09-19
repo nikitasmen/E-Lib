@@ -17,16 +17,16 @@ export class DashboardPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
-    this.heading = page.getByRole('heading', { name: 'Manage Books' });
-    this.table = page.locator('.admin-table');
-    this.massUploadLink = page.getByRole('link', { name: 'Mass Upload PDFs' });
+    this.heading = page.getByTestId('dashboard-heading');
+    this.table = page.getByTestId('books-table');
+    this.massUploadLink = page.getByTestId('mass-upload-link');
   }
 
   async open(): Promise<void> {
     await this.goto('/admin');
   }
 
-  rowByTitle(title: string): Locator {
-    return this.table.locator('tbody tr').filter({ hasText: title });
+  rowById(bookId: string): Locator {
+    return this.page.getByTestId(`book-row-${bookId}`);
   }
 }

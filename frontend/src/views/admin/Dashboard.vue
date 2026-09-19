@@ -169,17 +169,19 @@ onMounted(loadBooks)
 </script>
 
 <template>
-  <div class="container admin-page">
+  <div class="container admin-page" data-testid="dashboard-page">
     <div class="admin-header">
-      <h1>Manage Books</h1>
-      <RouterLink to="/admin/mass-upload" class="btn btn-primary">Mass Upload PDFs</RouterLink>
+      <h1 data-testid="dashboard-heading">Manage Books</h1>
+      <RouterLink to="/admin/mass-upload" class="btn btn-primary" data-testid="mass-upload-link">
+        Mass Upload PDFs
+      </RouterLink>
     </div>
 
-    <div v-if="loading" class="spinner" role="status" aria-label="Loading books"></div>
-    <p v-else-if="loadError" class="text-muted">{{ loadError }}</p>
+    <div v-if="loading" class="spinner" role="status" aria-label="Loading books" data-testid="dashboard-loading"></div>
+    <p v-else-if="loadError" class="text-muted" data-testid="dashboard-error">{{ loadError }}</p>
 
     <div v-else class="table-wrap">
-      <table class="admin-table">
+      <table class="admin-table" data-testid="books-table">
         <thead>
           <tr>
             <th>Title</th>
@@ -191,7 +193,7 @@ onMounted(loadBooks)
           </tr>
         </thead>
         <tbody>
-          <tr v-for="book in books" :key="String(book._id)">
+          <tr v-for="book in books" :key="String(book._id)" :data-testid="`book-row-${idToString(book._id)}`">
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
             <td>{{ book.isbn }}</td>

@@ -54,19 +54,25 @@ watch(
 </script>
 
 <template>
-  <div class="container search-page">
+  <div class="container search-page" data-testid="search-page">
     <h1>Search</h1>
-    <form class="search-bar" @submit.prevent="submit">
-      <input v-model="searchTerm" type="search" placeholder="Search by title…" aria-label="Search books" />
-      <button type="submit" class="btn btn-primary">Search</button>
+    <form class="search-bar" data-testid="search-form" @submit.prevent="submit">
+      <input
+        v-model="searchTerm"
+        type="search"
+        placeholder="Search by title…"
+        aria-label="Search books"
+        data-testid="search-input"
+      />
+      <button type="submit" class="btn btn-primary" data-testid="search-submit">Search</button>
     </form>
 
-    <div v-if="loading" class="spinner" role="status" aria-label="Searching"></div>
-    <p v-else-if="error" class="text-muted">{{ error }}</p>
-    <div v-else-if="hasSearched" class="grid-books">
+    <div v-if="loading" class="spinner" role="status" aria-label="Searching" data-testid="search-loading"></div>
+    <p v-else-if="error" class="text-muted" data-testid="search-message">{{ error }}</p>
+    <div v-else-if="hasSearched" class="grid-books" data-testid="search-results">
       <BookCard v-for="book in books" :key="String(book._id)" :book="book" />
     </div>
-    <p v-else class="text-muted">Enter a title to search the catalog.</p>
+    <p v-else class="text-muted" data-testid="search-message">Enter a title to search the catalog.</p>
   </div>
 </template>
 
