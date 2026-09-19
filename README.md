@@ -322,9 +322,9 @@ To get started with the E-Lib project:
 ### Administrator Guide
 
 1. **Admin Access**: Login with an admin account
-2. **Adding Books**: Use the "Add Book" form to upload new books
+2. **Adding Books**: Use the "Upload PDF" page to upload new books, one at a time or several at once
 3. **Managing Content**: Edit or delete books as needed
-4. **Bulk Upload**: Use mass upload feature for multiple books
+4. **Bulk Upload**: The same "Upload PDF" page accepts multiple files at once
 5. **Setting Permissions**: Control which books can be downloaded
 6. **Featuring Books**: Mark books as featured to highlight them
 7. **Monitoring System**: Check logs for errors or suspicious activity

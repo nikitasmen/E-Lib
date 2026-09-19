@@ -168,8 +168,8 @@ onMounted(loadBooks)
   <div class="container admin-page" data-testid="dashboard-page">
     <div class="admin-header">
       <h1 data-testid="dashboard-heading">Manage Books</h1>
-      <RouterLink to="/admin/mass-upload" class="btn btn-primary" data-testid="mass-upload-link">
-        Mass Upload PDFs
+      <RouterLink to="/admin/upload" class="btn btn-primary" data-testid="upload-pdf-link">
+        Upload PDF
       </RouterLink>
     </div>
 

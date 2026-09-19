@@ -12,14 +12,14 @@ export class DashboardPage extends BasePage {
   readonly header: HeaderComponent;
   readonly heading: Locator;
   readonly table: Locator;
-  readonly massUploadLink: Locator;
+  readonly uploadPdfLink: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
     this.heading = page.getByTestId('dashboard-heading');
     this.table = page.getByTestId('books-table');
-    this.massUploadLink = page.getByTestId('mass-upload-link');
+    this.uploadPdfLink = page.getByTestId('upload-pdf-link');
   }
 
   async open(): Promise<void> {

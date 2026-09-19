@@ -70,7 +70,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:8081 npm run test:e2e
 
 ### Admin-gated tests
 
-A few specs (dashboard, mass-upload) need to act as an admin. The app has no
+A few specs (dashboard, upload-pdf) need to act as an admin. The app has no
 self-service way to become one (`AuthenticatedUser::isAdmin()` only trusts the
 `isAdmin` flag on the Users document, set at login from the database — there's
 no signup-as-admin or promote-yourself flow, by design). So the suite doesn't
@@ -93,7 +93,7 @@ here, rather than a confusing downstream error.
 ### Test data cleanup
 
 - Books created via `support/api.ts` (the `seededBook` fixture, and the
-  browse/mass-upload specs) are deleted afterwards through the real
+  browse/upload-pdf specs) are deleted afterwards through the real
   `DELETE /api/v1/books/:id` endpoint.
 - Users created via signup (`registeredUser`, and the signup specs) are **not**
   deleted — there's no self-service "delete my account" API. They're tagged

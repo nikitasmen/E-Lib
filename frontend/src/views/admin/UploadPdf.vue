@@ -79,7 +79,7 @@ async function handleUpload() {
   feedback.value = 'Uploading files…'
 
   try {
-    const response = await adminApi.massUpload(
+    const response = await adminApi.uploadBooks(
       pendingFiles.value.map((f) => ({ file: f.file, title: f.title.trim(), author: f.author.trim() })),
       {
         author: defaults.author,
@@ -135,9 +135,9 @@ async function handleUpload() {
 </script>
 
 <template>
-  <div class="container mass-upload-page">
+  <div class="container upload-pdf-page">
     <div class="page-header">
-      <h1>Mass Upload PDFs</h1>
+      <h1>Upload PDF</h1>
       <RouterLink to="/admin" class="btn btn-outline">Back to Dashboard</RouterLink>
     </div>
 
@@ -251,4 +251,4 @@ async function handleUpload() {
   </div>
 </template>
 
-<style scoped src="@/css/views/admin/MassUpload.css"></style>
+<style scoped src="@/css/views/admin/UploadPdf.css"></style>

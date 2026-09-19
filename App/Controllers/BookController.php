@@ -424,10 +424,10 @@ class BookController
     }
 
     /**
-     * Handle mass upload of PDF books
-     * Processes multiple PDF files at once with common metadata
+     * Handle PDF upload
+     * Processes one or more PDF files at once with common metadata
      */
-    public function massUploadBooks(): void
+    public function uploadBooks(): void
     {
         // Verify authentication (session should already be checked by middleware)
         if (session_status() === PHP_SESSION_NONE) {
@@ -498,7 +498,7 @@ class BookController
                 ? filter_var($metadata['downloadable'], FILTER_VALIDATE_BOOLEAN)
                 : $defaultDownloadable;
             $year = $metadata['year'] ?? '';
-            $description = $metadata['description'] ?? 'Uploaded via mass upload feature';
+            $description = $metadata['description'] ?? 'Uploaded via the upload feature';
             $isbn = $metadata['isbn'] ?? '';
 
             try {
@@ -571,7 +571,7 @@ class BookController
                                 $downloadable
                             );
                         } else {
-                            error_log("ERROR: Could not extract book ID from response during mass upload");
+                            error_log("ERROR: Could not extract book ID from response during upload");
                         }
                     }
 
@@ -603,7 +603,7 @@ class BookController
                     ];
                 }
             } catch (\Exception $e) {
-                error_log('Mass upload error: ' . $e->getMessage());
+                error_log('Upload error: ' . $e->getMessage());
                 $results['failed'][] = [
                     'filename' => $file['name'],
                     'reason' => 'Processing error: ' . $e->getMessage()

@@ -3,12 +3,13 @@ import { BasePage } from './BasePage';
 import { HeaderComponent } from './HeaderComponent';
 
 /**
- * /admin/mass-upload — the only book-upload flow in the SPA
- * (frontend/src/views/admin/MassUpload.vue). There's no single-book "add
- * book" form anymore; even a single PDF goes through this bulk uploader.
+ * /admin/upload — the only book-upload flow in the SPA
+ * (frontend/src/views/admin/UploadPdf.vue). There's no single-book "add
+ * book" form anymore; even a single PDF goes through this uploader, which
+ * also accepts multiple files at once.
  * Admin-only, guarded the same way as /admin (see DashboardPage).
  */
-export class MassUploadPage extends BasePage {
+export class UploadPdfPage extends BasePage {
   readonly header: HeaderComponent;
   readonly fileInput: Locator;
   readonly uploadButton: Locator;
@@ -23,7 +24,7 @@ export class MassUploadPage extends BasePage {
   }
 
   async open(): Promise<void> {
-    await this.goto('/admin/mass-upload');
+    await this.goto('/admin/upload');
   }
 
   titleInput(index: number): Locator {

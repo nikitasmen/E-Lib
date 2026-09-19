@@ -32,7 +32,7 @@
         <div class="card feature-card">
           <h3>Admin Features</h3>
           <ul>
-            <li>Add and manage books, including mass upload</li>
+            <li>Add and manage books, including uploading several PDFs at once</li>
             <li>Edit book metadata</li>
             <li>Remove books from the library</li>
             <li>Control book download permissions</li>
@@ -159,7 +159,7 @@
           <ol>
             <li>Log in with an admin account</li>
             <li>Manage books from the Admin Dashboard</li>
-            <li>Use Mass Upload for bulk PDF ingestion</li>
+            <li>Use Upload PDF for bulk PDF ingestion</li>
             <li>Toggle status/featured, edit metadata, or delete</li>
             <li>Monitor the system via Admin &gt; Logs</li>
           </ol>

@@ -24,6 +24,12 @@ cd frontend && npm install             # install frontend deps (Vue 3 + Vite + T
 cd frontend && npm run dev             # Vite dev server on :5173, proxies /api to localhost:8000
 cd frontend && npm run build           # vue-tsc typecheck + build to public/dist/ (what PHP serves)
 cd frontend && npm run typecheck       # vue-tsc --noEmit only
+cd frontend && npm run lint            # ESLint (eslint-plugin-vue "essential" + typescript-eslint) on frontend/src
+cd frontend && npm run lint:fix        # ESLint autofix
+
+npm install                            # install e2e tooling deps (repo root — separate package.json from frontend/)
+npm run lint                           # ESLint (typescript-eslint + eslint-plugin-playwright) on qa/ + playwright.config.ts
+npm run lint:fix                       # ESLint autofix
 ```
 
 `composer run check` runs the PHPUnit suite (`tests/Unit/`, mocked collaborators via `tests/Support/*TestCase.php` — no real MongoDB needed). `tests/verify_refactoring.php` and `tests/verify_pdf_restriction.php` are separate standalone scripts run directly with `php tests/<file>.php`; the refactoring one talks to a real MongoDB and inserts/deletes throwaway documents, so only run it against a dev database.

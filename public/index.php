@@ -141,7 +141,7 @@ $router->addMiddleware(new JwtAuthMiddleware([
     ['path' => '/api/v1/update-profile', 'method' => 'POST'],
     ['path' => '/api/v1/change-password', 'method' => 'POST'],
     // Book management endpoints (moved from session-based AuthMiddleware for SPA/JWT auth;
-    // prefix match also covers /api/v1/books/mass-upload and /api/v1/books/{id})
+    // prefix match also covers /api/v1/books/upload and /api/v1/books/{id})
     ['path' => '/api/v1/books', 'method' => 'POST'],
     ['path' => '/api/v1/books', 'method' => 'PUT'],
     ['path' => '/api/v1/books', 'method' => 'DELETE'],

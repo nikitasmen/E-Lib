@@ -39,9 +39,9 @@ const router = createRouter({
       beforeEnter: requireAdmin,
     },
     {
-      path: '/admin/mass-upload',
-      name: 'admin-mass-upload',
-      component: () => import('@/views/admin/MassUpload.vue'),
+      path: '/admin/upload',
+      name: 'admin-upload',
+      component: () => import('@/views/admin/UploadPdf.vue'),
       beforeEnter: requireAdmin,
     },
     {

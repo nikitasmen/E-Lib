@@ -27,20 +27,20 @@ export function deleteBook(id: string) {
   return client.delete<ApiResponse<string>>(`/v1/books/${id}`)
 }
 
-export interface MassUploadDefaults {
+export interface UploadDefaults {
   author: string
   categories: string[]
   status: string
   downloadable: boolean
 }
 
-export interface MassUploadFileMeta {
+export interface UploadFileMeta {
   file: File
   title: string
   author: string
 }
 
-export interface MassUploadResult {
+export interface UploadResult {
   message: string
   results: {
     success: { filename: string; title: string; id: string }[]
@@ -48,11 +48,7 @@ export interface MassUploadResult {
   }
 }
 
-export function massUpload(
-  files: MassUploadFileMeta[],
-  defaults: MassUploadDefaults,
-  onProgress?: (percent: number) => void,
-) {
+export function uploadBooks(files: UploadFileMeta[], defaults: UploadDefaults, onProgress?: (percent: number) => void) {
   const formData = new FormData()
   formData.append('defaultAuthor', defaults.author)
   formData.append('defaultCategories', JSON.stringify(defaults.categories))
@@ -66,7 +62,7 @@ export function massUpload(
     }
   })
 
-  return client.post<ApiResponse<MassUploadResult>>('/v1/books/mass-upload', formData, {
+  return client.post<ApiResponse<UploadResult>>('/v1/books/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (event) => {
       if (onProgress && event.total) {
