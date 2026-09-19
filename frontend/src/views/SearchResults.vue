@@ -70,22 +70,4 @@ watch(
   </div>
 </template>
 
-<style scoped>
-.search-page {
-  padding: 2.5rem 1.5rem;
-}
-
-.search-bar {
-  display: flex;
-  max-width: 480px;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.search-bar input {
-  flex: 1;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 0.6rem 0.75rem;
-}
-</style>
+<style scoped src="./SearchResults.css"></style>

@@ -22,33 +22,4 @@ defineProps<{ reviews: Review[] }>()
   </div>
 </template>
 
-<style scoped>
-.reviews {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.review {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.85rem;
-}
-
-.review-header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.3rem;
-}
-
-.review-comment {
-  margin: 0.2rem 0;
-}
-
-.review-date {
-  font-size: 0.8rem;
-}
-</style>
+<style scoped src="./ReviewList.css"></style>

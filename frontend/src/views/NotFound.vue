@@ -8,9 +8,4 @@
   </div>
 </template>
 
-<style scoped>
-.not-found {
-  text-align: center;
-  padding: 5rem 1.5rem;
-}
-</style>
+<style scoped src="./NotFound.css"></style>

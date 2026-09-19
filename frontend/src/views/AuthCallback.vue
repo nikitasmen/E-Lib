@@ -50,11 +50,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-.callback-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4rem 1.5rem;
-}
-</style>
+<style scoped src="./AuthCallback.css"></style>

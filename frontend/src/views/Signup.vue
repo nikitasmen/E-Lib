@@ -13,16 +13,4 @@ const router = useRouter()
   </div>
 </template>
 
-<style scoped>
-.auth-page {
-  display: flex;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 2rem;
-}
-</style>
+<style scoped src="./Signup.css"></style>

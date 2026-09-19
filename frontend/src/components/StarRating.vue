@@ -8,18 +8,4 @@ defineProps<{ rating: number; max?: number }>()
   </span>
 </template>
 
-<style scoped>
-.star-rating {
-  display: inline-flex;
-  gap: 0.1rem;
-}
-
-.star {
-  color: var(--color-border);
-  font-size: 0.95rem;
-}
-
-.star.filled {
-  color: var(--color-accent);
-}
-</style>
+<style scoped src="./StarRating.css"></style>

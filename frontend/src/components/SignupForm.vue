@@ -112,26 +112,4 @@ async function handleSubmit() {
   </form>
 </template>
 
-<style scoped>
-.signup-form {
-  text-align: center;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.terms-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  text-align: left;
-  margin-bottom: 1.25rem;
-}
-
-.switch-link {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-</style>
+<style scoped src="./SignupForm.css"></style>

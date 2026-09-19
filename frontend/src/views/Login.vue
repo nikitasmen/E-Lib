@@ -25,16 +25,4 @@ const redirect = typeof route.query.redirect === 'string' ? route.query.redirect
   </div>
 </template>
 
-<style scoped>
-.auth-page {
-  display: flex;
-  justify-content: center;
-  padding: 3rem 1.5rem;
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-  padding: 2rem;
-}
-</style>
+<style scoped src="./Login.css"></style>

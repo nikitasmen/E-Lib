@@ -37,8 +37,4 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
-.browse-page {
-  padding: 2.5rem 1.5rem;
-}
-</style>
+<style scoped src="./Browse.css"></style>
