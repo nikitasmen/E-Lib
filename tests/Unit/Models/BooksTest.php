@@ -16,15 +16,22 @@ class BooksTest extends ModelTestCase
         return $books;
     }
 
-    public function testValidateRequiresTitleAndAuthor(): void
+    public function testValidateRequiresTitleButNotAuthor(): void
     {
         $errors = $this->makeBooks()->validate([]);
 
         $this->assertArrayHasKey('title', $errors);
-        $this->assertArrayHasKey('author', $errors);
+        $this->assertArrayNotHasKey('author', $errors);
     }
 
-    public function testValidatePassesWithRequiredFieldsOnly(): void
+    public function testValidatePassesWithTitleOnly(): void
+    {
+        $errors = $this->makeBooks()->validate(['title' => 'Meditations']);
+
+        $this->assertSame([], $errors);
+    }
+
+    public function testValidatePassesWithTitleAndAuthor(): void
     {
         $errors = $this->makeBooks()->validate(['title' => 'Meditations', 'author' => 'Marcus Aurelius']);
 
@@ -86,7 +93,7 @@ class BooksTest extends ModelTestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->makeBooks()->addBook(['title' => 'Only a title']);
+        $this->makeBooks()->addBook(['author' => 'Missing a title']);
     }
 
     public function testAddBookInsertsValidatedData(): void
@@ -98,6 +105,19 @@ class BooksTest extends ModelTestCase
             ->willReturn(['insertedId' => 'abc123']);
 
         $result = $this->makeBooks($db)->addBook(['title' => 'Title', 'author' => 'Author']);
+
+        $this->assertSame(['insertedId' => 'abc123'], $result);
+    }
+
+    public function testAddBookInsertsWithoutAuthor(): void
+    {
+        $db = $this->createMock(DatabaseInterface::class);
+        $db->expects($this->once())
+            ->method('insert')
+            ->with('Books', $this->callback(fn ($data) => $data['title'] === 'Title' && !isset($data['author'])))
+            ->willReturn(['insertedId' => 'abc123']);
+
+        $result = $this->makeBooks($db)->addBook(['title' => 'Title']);
 
         $this->assertSame(['insertedId' => 'abc123'], $result);
     }

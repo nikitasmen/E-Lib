@@ -134,6 +134,44 @@ class BookServiceTest extends ServiceTestCase
         );
     }
 
+    public function testAddBookFallsBackToUnknownAuthorWhenBlank(): void
+    {
+        $books = $this->createMock(Books::class);
+        $books->expects($this->once())
+            ->method('addBook')
+            ->with($this->callback(fn ($book) => $book['author'] === 'Unknown Author'))
+            ->willReturn(['insertedId' => 'new-id']);
+
+        $this->service($books)->addBook(
+            'Title',
+            '   ',
+            '2020',
+            'Description',
+            [],
+            '1234567890',
+            '/uploads/a.pdf'
+        );
+    }
+
+    public function testAddBookKeepsProvidedAuthor(): void
+    {
+        $books = $this->createMock(Books::class);
+        $books->expects($this->once())
+            ->method('addBook')
+            ->with($this->callback(fn ($book) => $book['author'] === 'Marcus Aurelius'))
+            ->willReturn(['insertedId' => 'new-id']);
+
+        $this->service($books)->addBook(
+            'Title',
+            'Marcus Aurelius',
+            '2020',
+            'Description',
+            [],
+            '1234567890',
+            '/uploads/a.pdf'
+        );
+    }
+
     public function testSearchBooksTreatsPlainStringAsTitleSearch(): void
     {
         $books = $this->createMock(Books::class);

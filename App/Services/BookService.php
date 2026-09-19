@@ -16,12 +16,6 @@ class BookService
         $this->book = new Books();
     }
 
-    private static function resolveAuthor(string $author): string
-    {
-        $trimmed = trim($author);
-        return $trimmed !== '' ? $trimmed : self::DEFAULT_AUTHOR;
-    }
-
     /**
      * @return list<array<string, mixed>>
      */
@@ -131,7 +125,7 @@ class BookService
 
         $book = [
             'title' => $title,
-            'author' => self::resolveAuthor($author),
+            'author' => trim($author) !== '' ? trim($author) : self::DEFAULT_AUTHOR,
             'year' => (int)$year,
             'description' => $description,
             'categories' => $categories,

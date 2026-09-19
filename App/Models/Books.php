@@ -95,18 +95,9 @@ class Books extends BaseModel
      */
     public function getDistinctCategories(): array
     {
-        $pipeline = [
-            ['$unwind' => '$categories'],
-            ['$group' => ['_id' => '$categories']],
-            ['$sort' => ['_id' => 1]],
-        ];
-
-        $results = $this->db->aggregate($this->collection, $pipeline);
-
-        return array_values(array_filter(array_map(
-            static fn (array $row) => $row['_id'] ?? null,
-            $results
-        )));
+        $categories = $this->db->distinct($this->collection, 'categories');
+        sort($categories);
+        return $categories;
     }
 
     /**

@@ -41,4 +41,10 @@ interface DatabaseInterface
      * @return array<int, mixed>
      */
     public function aggregate(string $collection, array $pipeline): array;
+
+    /**
+     * @param array<string, mixed> $filter
+     * @return list<mixed>
+     */
+    public function distinct(string $collection, string $field, array $filter = []): array;
 }

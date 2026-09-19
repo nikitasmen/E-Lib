@@ -140,4 +140,14 @@ class MongoDatabase extends MongoConnectionFactory implements DatabaseInterface
             return [];
         }
     }
+
+    public function distinct(string $collection, string $field, array $filter = []): array
+    {
+        try {
+            return $this->db->selectCollection($collection)->distinct($field, $filter);
+        } catch (Exception $e) {
+            error_log("MongoDB Distinct Error: " . $e->getMessage());
+            return [];
+        }
+    }
 }
