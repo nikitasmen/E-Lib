@@ -84,8 +84,7 @@ COPY composer.json composer.lock* ./
 RUN composer install
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /var/www/html/certificates \
-    /var/www/html/storage/logs \
+RUN mkdir -p /var/www/html/storage/logs \
     /var/www/html/public/uploads \
     /var/www/html/public/assets/uploads/documents \
     /var/www/html/public/assets/uploads/thumbnails \
@@ -94,8 +93,7 @@ RUN mkdir -p /var/www/html/certificates \
     /var/www/.config \
     /var/www/.cache \
     # Set proper permissions
-    && chmod -R 777 /var/www/html/certificates \
-    /var/www/html/storage \
+    && chmod -R 777 /var/www/html/storage \
     /var/www/html/public/uploads \
     /var/www/html/public/assets \
     /var/www/html/cache \
@@ -103,25 +101,14 @@ RUN mkdir -p /var/www/html/certificates \
     /var/www/.cache \
     && chown -R www-data:www-data /var/www/
 
-# Copy the MongoDB certificate setup script and entrypoint
-COPY setup-mongodb-cert.php docker-entrypoint.php ./
-
-# Try multiple certificate download methods during build
-RUN echo "Attempting certificate download during build..." \
-    && php -r 'file_put_contents("certificates/mongodb-ca.pem", file_get_contents("https://truststore.pki.mongodb.com/atlas-root-ca.pem") ?: "");' \
-    || echo "Primary certificate download method failed, will try alternatives..."
-
-# Run the certificate setup with fallback methods during build
-RUN php setup-mongodb-cert.php
+# Copy the entrypoint
+COPY docker-entrypoint.php ./
 
 # Copy the rest of the application
 COPY . .
 
 # Build the frontend SPA into public/dist/ (served as-is by PageRouter)
 RUN cd frontend && npm ci && npm run build
-
-# Set the certificate path in environment
-ENV MONGO_CERT_FILE=/var/www/html/certificates/mongodb-ca.pem
 
 # Generate optimized autoloader
 RUN composer dump-autoload --optimize

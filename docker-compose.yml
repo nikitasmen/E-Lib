@@ -23,6 +23,24 @@ services:
     networks:
       - elib-network
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: elib-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - app
+    networks:
+      - elib-network
+
   mongo:
     image: mongo:latest
     container_name: elib-mongo
@@ -44,3 +62,5 @@ networks:
 
 volumes:
   mongo-data:
+  caddy-data:
+  caddy-config:

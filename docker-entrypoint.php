@@ -30,7 +30,6 @@ $directories = [
     __DIR__ . '/public/uploads',
     __DIR__ . '/public/assets/uploads/documents',
     __DIR__ . '/public/assets/uploads/thumbnails',
-    __DIR__ . '/certificates',
     __DIR__ . '/cache'
 ];
 
@@ -47,10 +46,6 @@ foreach ($directories as $dir) {
 output('Setting Docker environment flag...');
 putenv("DOCKER_ENV=true");
 $_ENV['DOCKER_ENV'] = 'true';
-
-// Set proper permissions for the web server user
-output('Setting proper file permissions...');
-exec('chown -R www-data:www-data /var/www/html');
 
 output('E-Lib container setup complete!');
 output('Starting Apache server...');
