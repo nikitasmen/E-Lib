@@ -143,9 +143,18 @@ class BookController
 
     public function getAllBooks(): void
     {
+        // Check if user is admin
+        if (!AuthenticatedUser::isAdmin()) {
+            ResponseHandler::respond(false, 'Unauthorized: Admin privileges required', 403);
+            return;
+        }
+
         $books = $this->bookService->getAllBooks();
         if ($books) {
             foreach ($books as &$book) {
+                unset($book['pdf_path']);
+                unset($book['file_path']);
+                unset($book['reviews']);
                 BookDisplayHelper::applyThumbnailForApi($book);
             }
             unset($book);
