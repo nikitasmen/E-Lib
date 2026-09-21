@@ -19,6 +19,7 @@ logs/
 
 #Ignore certificates 
 /certificates/
+caddy-ca/
 
 #Ignore assets folder 
 *.pdf
