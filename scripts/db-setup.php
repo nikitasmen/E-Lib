@@ -53,7 +53,7 @@ if ($envDbName !== '' && $envDbName !== false && $envDbName !== TARGET_DB) {
 echo "Connecting...\n";
 
 $uri = App\Includes\Environment::get('MONGO_URI', '');
-$masked = preg_replace('#(mongodb\+?srv?://[^:]+:)[^@]+@#', '$1***@', (string) $uri);
+$masked = preg_replace('#(mongodb(?:\+srv)?://[^:@/]+:)[^@]+@#', '$1***@', (string) $uri);
 info("URI (masked): {$masked}");
 
 try {
