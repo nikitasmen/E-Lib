@@ -151,21 +151,27 @@ class BookService
      * Search for books based on multiple criteria
      *
      * @param array<string, mixed>|string $params
+     * @param bool $publicOnly Restrict results to status: 'public' (callers pass true for
+     *                         any non-admin/unauthenticated caller so drafts stay hidden)
      * @return list<array<string, mixed>>
      */
-    public function searchBooks(array|string $params): array
+    public function searchBooks(array|string $params, bool $publicOnly = false): array
     {
         // If only a string is passed, treat it as a title search (backwards compatibility)
         if (is_string($params)) {
             $params = ['title' => $params];
         }
 
+        // preg_quote() escapes regex metacharacters in the user-supplied term before it
+        // reaches MongoDB's $regex (PCRE) evaluation — an unescaped term lets a caller submit
+        // a pathological pattern (e.g. nested quantifiers) that costs catastrophic-backtracking
+        // CPU time per document scanned (CWE-1333); this is a substring search, not a regex API.
         $query = [];
         if (!empty($params['title'])) {
-            $query['title'] = ['$regex' => $params['title'], '$options' => 'i'];
+            $query['title'] = ['$regex' => preg_quote((string) $params['title']), '$options' => 'i'];
         }
         if (!empty($params['author'])) {
-            $query['author'] = ['$regex' => $params['author'], '$options' => 'i'];
+            $query['author'] = ['$regex' => preg_quote((string) $params['author']), '$options' => 'i'];
         }
         if (!empty($params['category'])) {
             $query['categories'] = ['$in' => [$params['category']]];
@@ -173,6 +179,10 @@ class BookService
 
         if (empty($query)) {
             return [];
+        }
+
+        if ($publicOnly) {
+            $query['status'] = 'public';
         }
 
         try {

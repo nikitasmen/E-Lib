@@ -129,10 +129,13 @@ jobs:
           QA_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
         run: npx playwright test
 
+      # trace.zip (captured only on retry, i.e. only for a flaky/failed test) can contain the
+      # admin password and a live bearer token from qa/pages/LoginPage.ts's fill()/API calls —
+      # keep this artifact around only long enough to debug a failure, not 14+ days.
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 14
+          retention-days: 3

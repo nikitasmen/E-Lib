@@ -505,18 +505,25 @@ class UserController
                         continue;
                     }
 
-                    // Validate mime type
-                    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                    // Validate mime type by sniffing the actual bytes (not the client-supplied
+                    // filename/Content-Type), and derive the stored extension from that same
+                    // allowlist — never from the client filename, which a file with faked magic
+                    // bytes plus a ".php" name would otherwise smuggle straight into the webroot
+                    // and hand mod_php a script to execute (CWE-434).
+                    $extensionsByMime = [
+                        'image/jpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/gif' => 'gif',
+                    ];
                     $finfo = new \finfo(FILEINFO_MIME_TYPE);
                     $mimeType = $finfo->file($_FILES['embedded_images']['tmp_name'][$i]);
 
-                    if (!in_array($mimeType, $allowedTypes)) {
+                    if (!isset($extensionsByMime[$mimeType])) {
                         continue;
                     }
 
                     // Generate unique filename
-                    $extension = pathinfo($_FILES['embedded_images']['name'][$i], PATHINFO_EXTENSION);
-                    $filename = uniqid('support_', true) . '.' . $extension;
+                    $filename = uniqid('support_', true) . '.' . $extensionsByMime[$mimeType];
                     $filepath = $uploadDir . $filename;
 
                     // Move the uploaded file to the destination
@@ -534,6 +541,8 @@ class UserController
             // Use the EmailService with PHPMailer to send email with attachments
             $result = $this->emailService->sendSupportEmail($email, $name, $message, $attachments);
 
+            $this->deleteSupportAttachments($attachments);
+
             if ($result) {
                 ResponseHandler::respond(true, 'Support request sent successfully', 200);
             } else {
@@ -542,7 +551,23 @@ class UserController
         } catch (\Exception $e) {
             // Log the error
             error_log('Error sending support email: ' . $e->getMessage());
+            $this->deleteSupportAttachments($attachments);
             ResponseHandler::respond(false, 'Failed to send support request. Please try again later.', 500);
+        }
+    }
+
+    /**
+     * Support attachments are only ever needed for the outgoing email — leaving them under
+     * the webroot indefinitely is unbounded exposure for no benefit once it's sent (or failed).
+     *
+     * @param array<int, array{path: string}> $attachments
+     */
+    private function deleteSupportAttachments(array $attachments): void
+    {
+        foreach ($attachments as $attachment) {
+            if (is_file($attachment['path'])) {
+                @unlink($attachment['path']);
+            }
         }
     }
 }

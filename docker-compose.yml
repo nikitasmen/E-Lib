@@ -46,7 +46,12 @@ services:
     container_name: elib-mongo
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      # Bound to loopback only: the app container reaches mongo over the internal
+      # elib-network regardless of this mapping, which exists purely so a host-side
+      # client (Compass, mongosh) can connect for local debugging. Publishing to all
+      # interfaces (the Docker default for "27017:27017") would let anyone who can reach
+      # this host connect with the default root/example credentials below.
+      - "127.0.0.1:27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-example}

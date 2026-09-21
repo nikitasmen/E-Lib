@@ -177,7 +177,12 @@ class BookController
     public function viewBook(string $id): void
     {
         $book = $this->bookService->getBookDetails($id);
+        // Treat a hidden book as not found so its existence isn't disclosed either.
+        if ($book && $this->isHiddenFromCaller($book)) {
+            $book = null;
+        }
         if ($book) {
+            unset($book['pdf_path'], $book['file_path']);
             BookDisplayHelper::applyThumbnailForApi($book);
             ResponseHandler::respond(true, $book);
         } else {
@@ -191,8 +196,10 @@ class BookController
         // with 200 + an empty array so the frontend's "No books found" message
         // (as opposed to its generic network-error message) is reachable; axios
         // treats any non-2xx status as a rejected promise regardless of body.
-        $books = $this->bookService->searchBooks(urldecode($search));
+        $publicOnly = !AuthenticatedUser::isAdmin();
+        $books = $this->bookService->searchBooks(urldecode($search), $publicOnly);
         foreach ($books as &$book) {
+            unset($book['pdf_path'], $book['file_path'], $book['reviews']);
             BookDisplayHelper::applyThumbnailForApi($book);
         }
         unset($book);
@@ -316,6 +323,13 @@ class BookController
 
         $rel = $book['file_path'] ?? $book['pdf_path'] ?? '';
         if (!$book || $rel === '') {
+            ResponseHandler::respond(false, 'Book not found or has no PDF', 404);
+            return;
+        }
+
+        // Self-registration is open to anyone, so holding a valid session doesn't imply
+        // the book has been published yet — drafts stay admin-only regardless of login.
+        if ($this->isHiddenFromCaller($book)) {
             ResponseHandler::respond(false, 'Book not found or has no PDF', 404);
             return;
         }
@@ -615,6 +629,18 @@ class BookController
     }
 
     /**
+     * A non-public (draft) book is invisible to anyone but an admin — used by every
+     * unauthenticated/lightly-authenticated book route (view/preview/download) since none of
+     * them carry JWT middleware of their own.
+     *
+     * @param array<string, mixed> $book
+     */
+    private function isHiddenFromCaller(array $book): bool
+    {
+        return ($book['status'] ?? null) !== 'public' && !AuthenticatedUser::isAdmin();
+    }
+
+    /**
      * Extract the inserted book's ID from a Books::addBook() result, whatever shape it comes in
      * (data.insertedId, a BSON _id object/string, or a root-level insertedId). Null when none match.
      */
@@ -730,6 +756,11 @@ class BookController
 
         // Get book details from database
         $book = $this->bookService->getBookDetails($bookId);
+
+        // Online preview has no JWT middleware of its own, so the check has to happen here.
+        if ($book && $this->isHiddenFromCaller($book)) {
+            $book = null;
+        }
 
         $relativePath = $book['file_path'] ?? $book['pdf_path'] ?? '';
         if (!$book || $relativePath === '') {

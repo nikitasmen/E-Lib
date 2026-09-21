@@ -28,15 +28,29 @@ class PageRouter
         // fragment (never sent to/logged by the server) for AuthCallback.vue to pick up.
         if (strpos((string) $pathOnly, '/cas-login') === 0) {
             $ticket = $_GET['ticket'] ?? null;
+            // LoginForm.vue embeds a single-use nonce in the service URL's own query string
+            // before redirecting to CAS, and AuthCallback.vue refuses the token unless this
+            // same nonce comes back — binding the round trip to the tab that started it, so an
+            // externally-supplied #token= link (from a valid JWT obtained some other way) can't
+            // be adopted as a session. The service URL used here must match, character for
+            // character, the one CAS was given at login time, or ticket validation fails.
+            $state = $_GET['state'] ?? null;
             $appUrl = rtrim((string) Environment::get('APP_URL', 'http://localhost:8080'), '/');
-            $serviceUrl = $appUrl . '/cas-login';
+            $serviceUrl = $appUrl . '/cas-login'
+                . (is_string($state) && $state !== '' ? '?state=' . rawurlencode($state) : '');
 
             $token = (is_string($ticket) && $ticket !== '')
                 ? $this->casService->authenticateAndIssueToken($ticket, $serviceUrl)
                 : null;
 
             if (!headers_sent()) {
-                $fragment = $token !== null ? '#token=' . $token : '';
+                $fragment = '';
+                if ($token !== null) {
+                    $fragment = '#token=' . $token;
+                    if (is_string($state) && $state !== '') {
+                        $fragment .= '&state=' . rawurlencode($state);
+                    }
+                }
                 header('Location: ' . $appUrl . '/auth/callback' . $fragment);
                 exit;
             }

@@ -19,7 +19,15 @@ const password = ref('')
 const error = ref('')
 const submitting = ref(false)
 
-const casUrl = 'https://auth.hmu.gr/cas/login?service=https://epictetus.hmu.gr'
+// Binds this CAS round trip to the tab that started it: a nonce stored here must come back
+// from /cas-login (embedded in the service URL CAS is required to echo back unmodified) and
+// match in AuthCallback.vue before a token is accepted — see PageRouter's /cas-login handler.
+function startCasLogin() {
+  const state = crypto.randomUUID()
+  sessionStorage.setItem('cas_login_state', state)
+  const serviceUrl = `https://epictetus.hmu.gr/cas-login?state=${encodeURIComponent(state)}`
+  window.location.href = `https://auth.hmu.gr/cas/login?service=${encodeURIComponent(serviceUrl)}`
+}
 
 async function handleSubmit() {
   error.value = ''
@@ -81,7 +89,7 @@ async function handleSubmit() {
 
     <div class="cas-block">
       <p class="text-muted">Or login with CAS authentication:</p>
-      <a :href="casUrl" class="btn btn-outline full-width">Login with CAS</a>
+      <a href="#" class="btn btn-outline full-width" @click.prevent="startCasLogin">Login with CAS</a>
     </div>
   </form>
 </template>

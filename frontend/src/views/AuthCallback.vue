@@ -14,9 +14,25 @@ onMounted(async () => {
   const hash = window.location.hash.replace(/^#/, '')
   const params = new URLSearchParams(hash)
   const token = params.get('token')
+  const state = params.get('state')
+
+  // Single-use: whether this check passes or fails, the nonce this tab set before
+  // redirecting to CAS (see LoginForm.vue) must not be reusable for a second attempt.
+  const expectedState = sessionStorage.getItem('cas_login_state')
+  sessionStorage.removeItem('cas_login_state')
 
   if (!token) {
     toast.error('CAS login failed: no token received')
+    router.replace('/login')
+    return
+  }
+
+  // Refuse a token that didn't arrive via a CAS round trip this tab itself started —
+  // otherwise anyone who obtains a valid JWT (their own, via ordinary login) could craft
+  // /auth/callback#token=<that jwt> and get a victim's browser to silently adopt it as its
+  // session just by opening the link.
+  if (!expectedState || state !== expectedState) {
+    toast.error('CAS login failed: could not verify this login attempt')
     router.replace('/login')
     return
   }

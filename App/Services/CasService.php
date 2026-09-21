@@ -87,7 +87,7 @@ class CasService
         try {
             $user = $userService->getUserByEmail($casUsername);
             if ($user !== null) {
-                return $user;
+                return $this->reclaimIfNeeded($user);
             }
         } catch (\InvalidArgumentException $e) {
             // $casUsername wasn't a valid email (likely a bare netid) — fall through below.
@@ -103,10 +103,37 @@ class CasService
         }
 
         try {
-            return $userService->getUserByEmail($casUsername . $domain);
+            $user = $userService->getUserByEmail($casUsername . $domain);
+            return $user !== null ? $this->reclaimIfNeeded($user) : null;
         } catch (\InvalidArgumentException $e) {
             return null;
         }
+    }
+
+    /**
+     * Open self-signup never verifies that the registrant controls the email they supply, so
+     * an attacker can pre-register an account under a target's institutional address before
+     * the target ever uses the app (CWE-287, pre-account-takeover). CAS is the authoritative
+     * identity check, so the first successful CAS login for an account reclaims it: whatever
+     * password is on file stops working (replaced with an unguessable one an attacker can't
+     * have set) and the account is flagged so this only happens once per account.
+     *
+     * @param array<string, mixed> $user
+     * @return array<string, mixed>
+     */
+    private function reclaimIfNeeded(array $user): array
+    {
+        if (!empty($user['cas_verified'])) {
+            return $user;
+        }
+
+        $this->getUserService()->updateUser((string) $user['_id'], [
+            'password' => password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT),
+            'cas_verified' => true,
+        ]);
+        $user['cas_verified'] = true;
+
+        return $user;
     }
 
     private function getUserService(): UserService
