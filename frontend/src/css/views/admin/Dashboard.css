@@ -54,7 +54,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(20, 34, 54, 0.55);
+  background: rgba(var(--color-navy-rgb), 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,6 +77,16 @@
 
 .form-grid .span-2 {
   grid-column: 1 / -1;
+}
+
+@media (max-width: 480px) {
+  .modal-panel {
+    padding: 1.25rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .checkbox-field label {

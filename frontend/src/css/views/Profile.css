@@ -5,6 +5,7 @@
 .profile-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 1.25rem;
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.5rem;
@@ -15,7 +16,7 @@
   height: 3.5rem;
   border-radius: 50%;
   background: var(--color-accent);
-  color: #201c16;
+  color: var(--color-navy);
   font-weight: 700;
   font-size: 1.4rem;
   display: flex;
@@ -31,6 +32,7 @@
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--color-border);

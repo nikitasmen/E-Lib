@@ -1,8 +1,12 @@
 .site-footer {
   background: var(--color-navy);
   color: #d8dde5;
-  padding: 2.5rem 0 1.5rem;
+  padding: 0 0 1.5rem;
   margin-top: 3rem;
+}
+
+.site-footer .meander {
+  margin-bottom: 2.5rem;
 }
 
 .footer-grid {
@@ -46,4 +50,8 @@
   flex-direction: column;
   gap: 0.25rem;
   text-align: center;
+}
+
+.site-footer .text-muted {
+  color: #b9b2c9;
 }

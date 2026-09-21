@@ -61,12 +61,16 @@ onUnmounted(() => {
   <div>
     <section class="hero">
       <div class="container hero-inner">
-        <h1>Welcome to Epictetus Library</h1>
-        <div class="divider"></div>
-        <p class="tagline">Discover a world of knowledge with our extensive collection of books and digital resources</p>
+        <p class="hero-kicker">Epictetus Library · Hellenic Mediterranean University</p>
+        <h1>Only the educated are free.</h1>
+        <p class="hero-attribution">Epictetus, Discourses</p>
+        <div class="meander meander--on-dark hero-rule"></div>
+        <p class="tagline">
+          Search, read and annotate the university's digital collection — PDFs, EPUBs and more, straight in your browser.
+        </p>
         <div class="hero-actions">
-          <a href="#featured" class="btn btn-primary">Browse Collection</a>
-          <RouterLink to="/search" class="btn btn-outline hero-btn-light">Search Books</RouterLink>
+          <a href="#featured" class="btn btn-primary">Browse the collection</a>
+          <RouterLink to="/search" class="btn btn-outline hero-btn-light">Search the catalog</RouterLink>
         </div>
       </div>
     </section>

@@ -6,9 +6,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
   color: var(--color-text);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 
 .remove-btn {
@@ -19,7 +18,7 @@
   height: 1.75rem;
   border-radius: 50%;
   border: none;
-  background: rgba(20, 34, 54, 0.75);
+  background: rgba(var(--color-navy-rgb), 0.75);
   color: #fff;
   font-size: 1.1rem;
   line-height: 1;
@@ -32,8 +31,9 @@
 }
 
 .book-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  border-color: var(--color-navy);
+  box-shadow: 4px 4px 0 var(--color-navy);
+  transform: translate(-4px, -4px);
   text-decoration: none;
 }
 
@@ -78,7 +78,7 @@
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   padding: 0.15rem 0.55rem;
   color: var(--color-text-muted);
 }

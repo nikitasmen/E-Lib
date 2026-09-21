@@ -90,7 +90,7 @@
 }
 
 .log-line.warning {
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .log-line.info {

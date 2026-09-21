@@ -4,6 +4,7 @@ const year = new Date().getFullYear()
 
 <template>
   <footer class="site-footer">
+    <div class="meander meander--on-dark"></div>
     <div class="container footer-grid">
       <div>
         <h4>Quick Links</h4>
