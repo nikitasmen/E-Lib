@@ -28,7 +28,7 @@
     "@types/markdown-it": "^14.2.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/eslint-config-typescript": "^14.9.0",
-    "@vue/tsconfig": "^0.7.0",
+    "@vue/tsconfig": "^0.9.1",
     "eslint": "^10.11.0",
     "eslint-plugin-vue": "^10.11.0",
     "jiti": "^2.7.0",
