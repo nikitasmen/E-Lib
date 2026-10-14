@@ -10,7 +10,7 @@ consumes it via environment variables. See "Admin-gated tests" below.
 ## Layout
 
 ```
-qa/
+e2e/
   tests/            # *.spec.ts files, grouped by feature (auth/, books/, profile/, navigation/,
                      # reader/ — search, navigation, highlights & notes, rich notes, diagrams;
                      # lending/ — lent PDFs, physical books, waitlist, renewals, admin Loans page)
@@ -24,7 +24,7 @@ qa/
                      # (generates dummy PDFs in memory — no binary fixture is
                      # committed, since .gitignore blanket-ignores *.pdf; buildReaderPdf()
                      # is a 12-page text book with known search terms), env.ts
-playwright.config.ts   # repo root; testDir points at qa/tests
+playwright.config.ts   # repo root; testDir points at e2e/tests
 ```
 
 Specs only import from `pages/`, `fixtures/`, and `support/` — never assert on raw
@@ -32,8 +32,8 @@ selectors inline. If a test needs a new element, add it to the relevant Page Obj
 first.
 
 The full conventions (no assertions or single-click wrappers in page objects, locator
-priority, `test.step`, assertion style, waiting) are in `.claude/rules/qa-pages.md` and
-`.claude/rules/qa-specs.md`; PHPUnit's are in `.claude/rules/php-tests.md`.
+priority, `test.step`, assertion style, waiting) are in `.claude/rules/e2e-pages.md` and
+`.claude/rules/e2e-specs.md`; PHPUnit's are in `.claude/rules/php-tests.md`.
 
 ## Setup
 

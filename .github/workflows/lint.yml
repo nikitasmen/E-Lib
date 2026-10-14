@@ -77,5 +77,5 @@ jobs:
       - name: Install e2e tooling dependencies
         run: npm ci
 
-      - name: ESLint (qa/)
+      - name: ESLint (e2e/)
         run: npm run lint

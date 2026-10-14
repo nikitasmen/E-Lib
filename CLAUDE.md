@@ -30,7 +30,7 @@ cd frontend && npm run lint            # ESLint (eslint-plugin-vue "essential" +
 cd frontend && npm run lint:fix        # ESLint autofix
 
 npm install                            # install e2e tooling deps (repo root — separate package.json from frontend/)
-npm run lint                           # ESLint (typescript-eslint + eslint-plugin-playwright) on qa/ + playwright.config.ts
+npm run lint                           # ESLint (typescript-eslint + eslint-plugin-playwright) on e2e/ + playwright.config.ts
 npm run lint:fix                       # ESLint autofix
 ```
 
