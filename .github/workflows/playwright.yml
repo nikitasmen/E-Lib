@@ -88,7 +88,7 @@ jobs:
 
       # There's no self-service way to become an admin (by design — see
       # AuthenticatedUser::isAdmin()), so admin-gated specs need one
-      # provisioned ahead of time. See qa/README.md.
+      # provisioned ahead of time. See e2e/README.md.
       #
       # Credentials come from repo secrets, generated when those are empty
       # (GitHub withholds secrets from fork PRs). They only seed the throwaway
@@ -144,7 +144,7 @@ jobs:
         run: npx playwright test $(printf -- '--project=%s ' $BROWSERS)
 
       # trace.zip (captured only on retry, i.e. only for a flaky/failed test) can contain the
-      # admin password and a live bearer token from qa/pages/LoginPage.ts's fill()/API calls —
+      # admin password and a live bearer token from e2e/pages/LoginPage.ts's fill()/API calls —
       # keep this artifact around only long enough to debug a failure, not 14+ days.
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
