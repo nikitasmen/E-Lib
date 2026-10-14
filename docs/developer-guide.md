@@ -308,7 +308,7 @@ npm run test:e2e -- --project=chromium
 
 **Which layer?** A rule enforced by a Mongo query → integration test. A decision in a service (who may borrow, what gets refused) → unit test with mocks. Something a user sees or does across pages, or an authorization rule end to end → e2e. Don't mock the database to test a query: the mock only proves the query was built the way the test expected.
 
-CI: PHPUnit (unit + integration, against a `mongo:4.4` service) runs in `lint.yml`; Playwright runs in `playwright.yml`, Chromium only on pull requests and all three browsers on pushes to `main`. `elib.yml` boots the production stack (Caddy TLS → app image) and checks it over HTTPS with `docker/https-smoke.sh`; run it locally with the commands at the top of `docker-compose.ci.yml`.
+CI: PHPUnit (unit + integration, against a `mongo:4.4` service) runs in `lint.yml`; Playwright runs in `playwright.yml` over HTTPS (Caddy with its local CA in front of `php -S`, so `Secure` cookies and the https CSP apply), Chromium only on pull requests and all three browsers on pushes to `main`. `elib.yml` boots the production stack (Caddy TLS → app image) and checks it over HTTPS with `docker/https-smoke.sh`; run it locally with the commands at the top of `docker-compose.ci.yml`.
 
 Writing tests: conventions live in `.claude/rules/` — `php-tests.md`, `e2e-specs.md`, `e2e-pages.md`.
 

@@ -34,6 +34,9 @@ export default defineConfig({
 
   use: {
     baseURL,
+    // CI serves the app over HTTPS through Caddy with its own local CA (see playwright.yml); only trust that
+    // for localhost, never for a real host.
+    ignoreHTTPSErrors: /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(`${baseURL}/`),
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
