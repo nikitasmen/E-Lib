@@ -108,8 +108,9 @@ export function bookId(book: UploadedBook): string {
 }
 
 /**
- * GET /api/v1/books is unauthenticated and returns every book regardless of
- * status — the same admin "all books" list the Dashboard table reads from.
+ * GET /api/v1/books returns every book regardless of status — the admin "all
+ * books" list the Dashboard table reads from. Admin-only (403 otherwise): the
+ * request context must already hold an admin session (`loginAsAdmin`).
  * Used both to find a book's id for cleanup, and to cross-check that a UI
  * action (an upload, a status toggle, ...) actually persisted the fields it
  * claimed to, rather than trusting the page's own success message.

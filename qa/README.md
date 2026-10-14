@@ -31,6 +31,10 @@ Specs only import from `pages/`, `fixtures/`, and `support/` — never assert on
 selectors inline. If a test needs a new element, add it to the relevant Page Object
 first.
 
+The full conventions (no assertions or single-click wrappers in page objects, locator
+priority, `test.step`, assertion style, waiting) are in `.claude/rules/qa-pages.md` and
+`.claude/rules/qa-specs.md`; PHPUnit's are in `.claude/rules/php-tests.md`.
+
 ## Setup
 
 ```bash

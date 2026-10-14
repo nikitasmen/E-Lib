@@ -4,10 +4,12 @@ import { HeaderComponent } from './HeaderComponent';
 
 export class HomePage extends BasePage {
   readonly header: HeaderComponent;
+  readonly featuredSection: Locator;
 
   constructor(page: Page) {
     super(page);
     this.header = new HeaderComponent(page);
+    this.featuredSection = page.getByTestId('featured-section');
   }
 
   async open(): Promise<void> {

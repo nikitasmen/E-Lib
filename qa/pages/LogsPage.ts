@@ -11,12 +11,16 @@ export class LogsPage extends BasePage {
   readonly errorLogsTab: Locator;
   readonly requestLogsTab: Locator;
   readonly loadError: Locator;
+  readonly loadingSpinner: Locator;
+  readonly requestLogsHeading: Locator;
 
   constructor(page: Page) {
     super(page);
     this.heading = page.getByRole('heading', { name: 'System Logs' });
     this.errorLogsTab = page.getByRole('button', { name: 'Error Logs' });
     this.requestLogsTab = page.getByRole('button', { name: 'Request Logs' });
+    this.loadingSpinner = page.getByRole('status', { name: 'Loading logs' });
+    this.requestLogsHeading = page.getByRole('heading', { name: 'Request Logs' });
     this.loadError = page.locator('.logs-page .alert-danger');
   }
 

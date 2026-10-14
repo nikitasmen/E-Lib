@@ -172,7 +172,7 @@ test.describe('Admin book management actions', () => {
 
       expect((await getBookByTitle(request, title))?.featured).toBe(false);
       await home.open();
-      await expect(adminPage.getByTestId('featured-section')).toBeVisible();
+      await expect(home.featuredSection).toBeVisible();
       await expect(home.bookCardById(id)).toHaveCount(0);
     } finally {
       await deleteBookViaApi(request, token, id);
@@ -202,7 +202,7 @@ test.describe('Admin book management actions', () => {
       await dashboard.editField('Categories').press('Escape');
       await dashboard.saveEditButton.click();
 
-      await expect(adminPage.getByText('Book updated successfully.')).toBeVisible();
+      await expect(dashboard.toasts).toContainText('Book updated successfully.');
       await expect(dashboard.editDialog).toHaveCount(0);
       await expect(dashboard.rowById(id)).toContainText(newTitle);
       await expect(dashboard.rowById(id)).toContainText('E. Kazantzakis');

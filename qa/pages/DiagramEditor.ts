@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
  * The visual diagram editor (frontend/src/components/diagram/DiagramDialog.vue), opened
@@ -24,8 +24,8 @@ export class DiagramEditor {
     this.inlineText = this.dialog.getByLabel('Shape text');
   }
 
-  async chooseSet(name: 'Flowchart' | 'UML' | 'Database'): Promise<void> {
-    await this.dialog.getByRole('tab', { name }).click();
+  setTab(name: 'Flowchart' | 'UML' | 'Database'): Locator {
+    return this.dialog.getByRole('tab', { name });
   }
 
   shapeButton(name: string): Locator {
@@ -42,11 +42,11 @@ export class DiagramEditor {
    */
   async addNamedShape(button: string, name: string): Promise<void> {
     await this.shapeButton(button).click();
-    await expect(this.inlineText).toBeFocused();
-    await this.page.keyboard.type(name);
+    // pressSequentially focuses the field first, so typing can't start before the editor has focus.
+    await this.inlineText.pressSequentially(name);
     if (button === 'Text' || button === 'Note') await this.clearSelection();
     else await this.page.keyboard.press('Enter');
-    await expect(this.shape(name)).toBeVisible();
+    await this.shape(name).waitFor();
   }
 
   /** Pairs of shapes (by index) whose boxes overlap on the canvas. */

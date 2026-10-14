@@ -38,10 +38,10 @@ test.describe('Server logs (/admin/logs)', () => {
     await expect(adminPage).toHaveURL('/admin/logs');
     await expect(logs.heading).toBeVisible();
     await expect(logs.errorLogsTab).toBeVisible();
-    await expect(adminPage.getByRole('status', { name: 'Loading logs' })).toHaveCount(0);
+    await expect(logs.loadingSpinner).toHaveCount(0);
     await expect(logs.loadError).toHaveCount(0);
 
     await logs.requestLogsTab.click();
-    await expect(adminPage.getByRole('heading', { name: 'Request Logs' })).toBeVisible();
+    await expect(logs.requestLogsHeading).toBeVisible();
   });
 });

@@ -13,6 +13,7 @@ export class BookDetailPage extends BasePage {
   readonly loginHint: Locator;
   readonly rating: Locator;
   readonly reviewForm: Locator;
+  readonly reviews: Locator;
   readonly reviewComment: Locator;
   readonly submitReview: Locator;
 
@@ -41,6 +42,7 @@ export class BookDetailPage extends BasePage {
     this.loginHint = page.getByTestId('login-hint');
     this.rating = page.getByTestId('book-rating');
     this.reviewForm = page.locator('form.review-form');
+    this.reviews = page.getByTestId('review');
     this.reviewComment = this.reviewForm.getByLabel('Comment');
     // 'Submit Review' for a new review, 'Update Review' when editing the user's existing one.
     this.submitReview = this.reviewForm.getByRole('button', { name: /^(Submit|Update) Review$/ });
@@ -71,6 +73,10 @@ export class BookDetailPage extends BasePage {
   /** A physical book's call number, drawn as a spine label. */
   spineLabel(callNumber: string): Locator {
     return this.page.getByLabel(`Shelf ${callNumber}`);
+  }
+
+  reviewWithText(text: string): Locator {
+    return this.reviews.filter({ hasText: text });
   }
 
   /** A review in the list, by its author's username. */

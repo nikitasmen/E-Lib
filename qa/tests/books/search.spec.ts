@@ -52,14 +52,14 @@ test.describe('Book search', () => {
       await expect(results.cardById(idA)).toBeVisible();
       await expect(results.cardById(idB)).toBeVisible();
 
-      await page.getByTestId(`facet-category-${subjectA}`).check();
+      await results.facetOption('category', subjectA).checkbox.check();
       await expect(results.cardById(idB)).toHaveCount(0);
       await expect(results.cardById(idA)).toBeVisible();
       await expect(page).toHaveURL(/category=/);
       // The other subject still shows how many books picking it would add.
-      await expect(page.getByTestId(`facet-category-${subjectB}`).locator('xpath=..')).toContainText('1');
+      await expect(results.facetOption('category', subjectB).count).toHaveText('1');
 
-      await page.getByTestId('clear-filters').click();
+      await results.clearFilters.click();
       await expect(results.cardById(idB)).toBeVisible();
     } finally {
       await deleteBookViaApi(request, token, idA);

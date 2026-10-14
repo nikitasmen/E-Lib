@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 /**
@@ -70,7 +70,7 @@ export class ReaderPage extends BasePage {
   /** Opens the book and waits until the first page's text layer exists (the reader is ready). */
   async open(bookId: string): Promise<void> {
     await this.page.goto(`/read/${bookId}`);
-    await expect(this.pageLine('Chapter 1')).toBeVisible({ timeout: 20_000 });
+    await this.pageLine('Chapter 1').waitFor({ timeout: 20_000 });
   }
 
   /** A rendered page (or its placeholder while not yet drawn) by number. */
@@ -131,8 +131,8 @@ export class ReaderPage extends BasePage {
   }
 
   /** Highlights the current selection in a colour from the popover (Saffron, Olive, Aegean, Rose). */
-  async highlightSelection(colour: string): Promise<void> {
-    await this.selectionPopover.getByRole('radio', { name: `Highlight in ${colour}` }).click();
+  highlightColour(colour: string): Locator {
+    return this.selectionPopover.getByRole('radio', { name: `Highlight in ${colour}` });
   }
 
   /** Clicks a saved highlight on the page, which opens its edit popover. */
@@ -163,7 +163,7 @@ export class ReaderPage extends BasePage {
 
   async openNotes(): Promise<void> {
     if ((await this.notesToggle.getAttribute('aria-pressed')) !== 'true') await this.notesToggle.click();
-    await expect(this.notesPanel).toBeVisible();
+    await this.notesPanel.waitFor();
   }
 
   /** Writes and saves a note on the current page from the sidebar. */

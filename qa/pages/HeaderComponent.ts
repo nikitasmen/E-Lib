@@ -7,6 +7,7 @@ export class HeaderComponent {
   readonly browseLink: Locator;
   readonly loginLink: Locator;
   readonly userChip: Locator;
+  readonly username: Locator;
   readonly logoutMenuButton: Locator;
 
   constructor(private readonly page: Page) {
@@ -17,15 +18,12 @@ export class HeaderComponent {
     this.loginLink = page.getByTestId('nav-login-link');
     // Authenticated-only: clicking the chip reveals the dropdown menu.
     this.userChip = page.getByTestId('nav-user-chip');
+    this.username = page.getByTestId('nav-username');
     this.logoutMenuButton = page.getByTestId('nav-menu-logout');
   }
 
-  async openUserMenu(): Promise<void> {
-    await this.userChip.click();
-  }
-
   async logout(): Promise<void> {
-    await this.openUserMenu();
+    await this.userChip.click();
     await this.logoutMenuButton.click();
     // NavBar's handleLogout is async — it awaits POST /v1/logout before clearing
     // auth state and redirecting. The click itself resolves long before that
