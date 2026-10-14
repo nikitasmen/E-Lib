@@ -85,7 +85,6 @@ class ApiRouter
         ['method' => 'GET', 'path' => '/api/v1/logout', 'handler' => [UserController::class, 'handleLogout']],
 
         ['method' => 'GET', 'path' => '/api/v1/user/profile', 'handler' => [UserController::class, 'getProfile']],
-        ['method' => 'GET', 'path' => '/api/v1/user', 'handler' => [UserController::class, 'getUser']],
         ['method' => 'POST', 'path' => '/api/v1/save-book', 'handler' => [UserController::class, 'saveBook']],
         ['method' => 'POST', 'path' => '/api/v1/remove-book', 'handler' => [UserController::class, 'removeBook']],
         ['method' => 'GET', 'path' => '/api/v1/saved-books', 'handler' => [UserController::class, 'getSavedBooks']],

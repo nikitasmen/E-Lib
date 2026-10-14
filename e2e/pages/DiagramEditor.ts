@@ -42,8 +42,10 @@ export class DiagramEditor {
    */
   async addNamedShape(button: string, name: string): Promise<void> {
     await this.shapeButton(button).click();
-    // pressSequentially focuses the field first, so typing can't start before the editor has focus.
-    await this.inlineText.pressSequentially(name);
+    // Wait for the app to focus the field itself: DiagramNode retries focus() each frame and then select()s
+    // the text, so typing any earlier (e.g. pressSequentially focusing it first) gets half-overwritten.
+    await this.page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === 'Shape text');
+    await this.page.keyboard.type(name);
     if (button === 'Text' || button === 'Note') await this.clearSelection();
     else await this.page.keyboard.press('Enter');
     await this.shape(name).waitFor();

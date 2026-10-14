@@ -141,7 +141,7 @@ jobs:
       - name: Run Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
-        run: npx playwright test $(printf -- '--project=%s ' $BROWSERS)
+        run: npx playwright test ${{ github.event_name == 'pull_request' && '--project=chromium' || '' }}
 
       # trace.zip (captured only on retry, i.e. only for a flaky/failed test) can contain the
       # admin password and a live bearer token from e2e/pages/LoginPage.ts's fill()/API calls —

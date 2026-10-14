@@ -11,83 +11,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # deploy.sh builds this image on the server; catch a broken Dockerfile here instead.
-  docker-build:
+  # The production stack as deploy.sh runs it (Caddy TLS -> Apache app image) with a throwaway MongoDB,
+  # checked over HTTPS: what php -S over plain HTTP (the e2e job) can't show — redirect, HSTS, CSP for the
+  # https origin, the Secure session cookie, auth headers surviving the proxy. Also catches a broken Dockerfile.
+  production-stack:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Build production image
-        run: docker build -t e-lib-app .
 
-  smoke-test:
-    runs-on: ubuntu-latest
-
-    services:
-      mongodb:
-        image: mongo:4.4
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd="mongo --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          coverage: none
-          extensions: mbstring, mongodb
-
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-
-      # public/dist/index.html must exist before the PHP server starts — PageRouter
-      # serves it as the SPA shell for every non-API, non-/cas-login request.
-      - name: Build frontend
-        run: cd frontend && npm ci && npm run build
-
-      - name: Create .env for smoke test
+      - name: Create .env.ci
         run: |
-          cat > .env << 'EOL'
-          APP_ENV=development
-          APP_DEBUG=true
-          APP_URL=http://localhost:8000
-          API_BASE_URL=http://localhost:8000/
-          MONGO_URI=mongodb://localhost:27017
-          DATABASE_NAME=LibraryDb
-          JWT_SECRET_KEY=ci-smoke-test-secret
+          cat > .env.ci << 'EOL'
+          APP_URL=https://localhost
+          API_BASE_URL=https://localhost/
+          MONGO_URI=mongodb://mongo:27017
+          JWT_SECRET_KEY=ci-https-smoke-secret
           CAS_SERVER_URL=https://auth.example.com/cas
           EOL
 
-      - name: Prepare storage directories
-        run: mkdir -p storage/logs uploads
+      - name: Build and start the stack
+        run: docker compose -p elib-ci --env-file .env.ci -f docker-compose.yml -f docker-compose.ci.yml up -d --build app caddy mongo
 
-      - name: Start PHP built-in server
-        run: php -S 127.0.0.1:8000 -t public &
+      - name: HTTPS checks
+        run: docker/https-smoke.sh
 
-      - name: Wait for server and verify it responds
+      - name: Logs on failure
+        if: failure()
         run: |
-          attempt=0
-          max_attempts=15
-          until curl -sf http://127.0.0.1:8000/ -o /dev/null; do
-            attempt=$((attempt + 1))
-            if [ "$attempt" -ge "$max_attempts" ]; then
-              echo "Server did not become available in time"
-              cat storage/logs/php_errors.log 2>/dev/null || true
-              exit 1
-            fi
-            sleep 2
-          done
-          echo "Server responded successfully"
+          docker compose -p elib-ci -f docker-compose.yml -f docker-compose.ci.yml logs --tail 100
+          docker exec elib-ci-app tail -50 /var/www/html/storage/logs/php_errors.log || true
