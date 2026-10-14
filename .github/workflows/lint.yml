@@ -16,6 +16,19 @@ concurrency:
 jobs:
   php-quality:
     runs-on: ubuntu-latest
+
+    # For tests/Integration (real queries against the MongoDB version production code must support).
+    services:
+      mongodb:
+        image: mongo:4.4
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd="mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v7
 
@@ -35,7 +48,9 @@ jobs:
       - name: PHPStan
         run: composer run analyse
 
-      - name: PHPUnit
+      - name: PHPUnit (unit + integration)
+        env:
+          MONGO_TEST_URI: mongodb://localhost:27017
         run: composer run test
 
   js-quality:
