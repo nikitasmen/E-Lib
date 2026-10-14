@@ -190,16 +190,6 @@ class UserController
         }
     }
 
-    public function getUser(string $id): void
-    {
-        $user = $this->userService->getUserById($id);
-        if ($user) {
-            ResponseHandler::respond(true, $user, 200);
-        } else {
-            ResponseHandler::respond(false, 'User not found', 404);
-        }
-    }
-
     /**
      * Current user's profile for GET /api/v1/user/profile (JWT or session).
      */

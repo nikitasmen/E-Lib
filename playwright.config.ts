@@ -20,12 +20,12 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8000';
 if (!process.env.CI && existsSync('/etc/NIXOS') && !process.env.PLAYWRIGHT_BROWSERS_PATH) {
   throw new Error(
     'PLAYWRIGHT_BROWSERS_PATH is not set. Run tests from inside `nix-shell` ' +
-      '(it exports this for you) — see shell.nix / qa/README.md.',
+      '(it exports this for you) — see shell.nix / e2e/README.md.',
   );
 }
 
 export default defineConfig({
-  testDir: './qa/tests',
+  testDir: './e2e/tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -34,6 +34,9 @@ export default defineConfig({
 
   use: {
     baseURL,
+    // CI serves the app over HTTPS through Caddy with its own local CA (see playwright.yml); only trust that
+    // for localhost, never for a real host.
+    ignoreHTTPSErrors: /^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(`${baseURL}/`),
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

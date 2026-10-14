@@ -255,7 +255,7 @@ watch(
                 @change="toggle(group.key, opt.value)"
               />
               <span class="facet-name">{{ facetLabel(group.key, opt.value) }}</span>
-              <span class="facet-count">{{ opt.count }}</span>
+              <span class="facet-count" :data-testid="`facet-${group.key}-${opt.value}-count`">{{ opt.count }}</span>
             </label>
             <button
               v-if="options(group.key).length > SHOWN"

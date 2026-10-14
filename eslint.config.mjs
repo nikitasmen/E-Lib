@@ -1,4 +1,4 @@
-// ESLint for the E2E test suite (qa/) — see qa/README.md. Kept separate from
+// ESLint for the E2E test suite (e2e/) — see e2e/README.md. Kept separate from
 // frontend/eslint.config.ts, which lints the Vue app and has its own
 // package.json/node_modules.
 import tseslint from 'typescript-eslint';
@@ -9,7 +9,7 @@ export default tseslint.config(
     ignores: ['node_modules/**', 'playwright-report/**', 'test-results/**', 'frontend/**'],
   },
   {
-    files: ['qa/**/*.ts', 'playwright.config.ts'],
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
     extends: [tseslint.configs.recommended, playwright.configs['flat/recommended']],
     rules: {
       // Page Objects/fixtures are plain async helpers, not tests — some
@@ -22,7 +22,7 @@ export default tseslint.config(
     // calls there are setup and teardown helpers, not assertions on
     // behavior-under-test, so the "always await expect" style rules that
     // matter inside specs are noise here.
-    files: ['qa/fixtures/**/*.ts', 'qa/pages/**/*.ts', 'qa/support/**/*.ts'],
+    files: ['e2e/fixtures/**/*.ts', 'e2e/pages/**/*.ts', 'e2e/support/**/*.ts'],
     rules: {
       'playwright/expect-expect': 'off',
       'playwright/no-standalone-expect': 'off',
