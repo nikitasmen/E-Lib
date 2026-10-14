@@ -19,7 +19,7 @@ test.describe('Admin dashboard (/admin)', () => {
     // the URL and that the "Manage Books" table never rendered, not just
     // where we ended up.
     await expect(authenticatedPage).toHaveURL('/');
-    await expect(authenticatedPage.getByTestId('dashboard-heading')).toHaveCount(0);
+    await expect(new DashboardPage(authenticatedPage).heading).toHaveCount(0);
   });
 
   test('an admin sees the Manage Books table', async ({ adminPage }) => {
@@ -87,7 +87,7 @@ test.describe('Admin dashboard (/admin)', () => {
       // Search applies on top of the "All" filter, matching on title.
       await dashboard.filter('All').click();
       await dashboard.searchInput.fill(tag.toLowerCase());
-      await expect(adminPage.locator('[data-testid^="book-row-"]')).toHaveCount(2);
+      await expect(dashboard.rows).toHaveCount(2);
 
       await dashboard.searchInput.fill(`${tag} no such book`);
       await expect(dashboard.noMatchMessage).toBeVisible();
@@ -115,15 +115,15 @@ test.describe('Admin dashboard (/admin)', () => {
       await dashboard.open();
       await dashboard.searchInput.fill(tag.toLowerCase());
       await dashboard.filter('Drafts').click();
-      await expect(adminPage.locator('[data-testid^="book-row-"]')).toHaveCount(1);
+      await expect(dashboard.rows).toHaveCount(1);
 
-      await adminPage.getByTestId('select-all-books').check();
+      await dashboard.selectAllCheckbox.check();
       adminPage.once('dialog', (dialog) => dialog.accept());
-      await adminPage.getByTestId('bulk-delete-button').click();
+      await dashboard.bulkDeleteButton.click();
       deleted.push(draftId);
 
       await expect(dashboard.rowById(draftId)).toHaveCount(0);
-      await expect(adminPage.getByTestId('bulk-delete-button')).toHaveCount(0);
+      await expect(dashboard.bulkDeleteButton).toHaveCount(0);
       // The public book matched the search but was hidden by the Drafts filter: it must survive.
       await dashboard.filter('All').click();
       await expect(dashboard.rowById(publicId)).toBeVisible();

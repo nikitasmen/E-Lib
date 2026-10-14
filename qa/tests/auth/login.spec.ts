@@ -1,5 +1,6 @@
 import { expect, test } from '../../fixtures';
 import { LoginPage } from '../../pages/LoginPage';
+import { HeaderComponent } from '../../pages/HeaderComponent';
 
 // The app has no login popup anymore: "Log in" in the nav is a RouterLink to
 // a dedicated, guest-only /login page (frontend/src/views/Login.vue).
@@ -7,7 +8,7 @@ import { LoginPage } from '../../pages/LoginPage';
 test.describe('Login', () => {
   test('the "Log in" nav link opens the login page', async ({ page }) => {
     await page.goto('/');
-    await page.getByTestId('nav-login-link').click();
+    await new HeaderComponent(page).loginLink.click();
 
     await expect(page).toHaveURL('/login');
     const login = new LoginPage(page);
@@ -23,7 +24,7 @@ test.describe('Login', () => {
     // to home before the login form ever renders — check both the URL and
     // that the form itself never showed up, not just where we ended up.
     await expect(authenticatedPage).toHaveURL('/');
-    await expect(authenticatedPage.getByTestId('login-form')).toHaveCount(0);
+    await expect(new LoginPage(authenticatedPage).form).toHaveCount(0);
   });
 
   test('shows an error for invalid credentials', async ({ page }) => {
@@ -43,7 +44,8 @@ test.describe('Login', () => {
     await login.login(registeredUser.email, registeredUser.password);
 
     await expect(page).toHaveURL('/');
-    await expect(page.getByTestId('nav-user-chip')).toBeVisible();
-    await expect(page.getByTestId('nav-username')).toHaveText(registeredUser.username);
+    const header = new HeaderComponent(page);
+    await expect(header.userChip).toBeVisible();
+    await expect(header.username).toHaveText(registeredUser.username);
   });
 });

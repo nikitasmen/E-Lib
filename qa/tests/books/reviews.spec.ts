@@ -14,9 +14,9 @@ test.describe('Book reviews', () => {
 
     await detail.writeReview(4, 'Clear and well paced.');
 
-    await expect(authenticatedPage.getByText('Your review has been submitted')).toBeVisible();
+    await expect(detail.toasts).toContainText('Your review has been submitted');
     await expect(detail.reviewForm.getByRole('alert')).toHaveCount(0);
-    await expect(authenticatedPage.getByText('Clear and well paced.')).toBeVisible();
+    await expect(detail.reviewWithText('Clear and well paced.')).toBeVisible();
 
     expect(await getBookViaApi(request, seededBook.id)).toMatchObject({ average_rating: 4, review_count: 1 });
     await authenticatedPage.reload();
@@ -28,16 +28,16 @@ test.describe('Book reviews', () => {
     await detail.openBook(seededBook.id);
 
     await detail.writeReview(5, 'Excellent.');
-    await expect(authenticatedPage.getByText('Excellent.')).toBeVisible();
+    await expect(detail.reviewWithText('Excellent.')).toBeVisible();
 
     // The form now holds the saved review, ready to edit.
     await expect(detail.reviewForm.getByRole('heading', { name: 'Edit Your Review' })).toBeVisible();
     await expect(detail.reviewComment).toHaveValue('Excellent.');
 
     await detail.writeReview(2, 'Second look: too dense.');
-    await expect(authenticatedPage.getByText('Your review has been updated')).toBeVisible();
-    await expect(authenticatedPage.getByText('Second look: too dense.')).toBeVisible();
-    await expect(authenticatedPage.getByText('Excellent.')).toHaveCount(0);
+    await expect(detail.toasts).toContainText('Your review has been updated');
+    await expect(detail.reviewWithText('Second look: too dense.')).toBeVisible();
+    await expect(detail.reviewWithText('Excellent.')).toHaveCount(0);
 
     expect(await getBookViaApi(request, seededBook.id)).toMatchObject({ average_rating: 2, review_count: 1 });
   });
@@ -47,7 +47,7 @@ test.describe('Book reviews', () => {
     await detail.openBook(seededBook.id);
 
     await detail.writeReview(5, 'Excellent.');
-    await expect(authenticatedPage.getByText('Excellent.')).toBeVisible();
+    await expect(detail.reviewWithText('Excellent.')).toBeVisible();
     // A second reader, reviewing through the API (only signup + login needed, no browser).
     const other = buildTestUser();
     expect((await request.post('/api/v1/signup', { data: other })).ok()).toBeTruthy();

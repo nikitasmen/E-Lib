@@ -18,7 +18,7 @@ test.describe('Upload PDF (admin book upload)', () => {
     // the URL and that the upload form never rendered, not just where we
     // ended up.
     await expect(authenticatedPage).toHaveURL('/');
-    await expect(authenticatedPage.getByTestId('file-input')).toHaveCount(0);
+    await expect(new UploadPdfPage(authenticatedPage).fileInput).toHaveCount(0);
   });
 
   test('an admin can upload a single PDF', async ({ adminPage, request, adminCredentials }) => {

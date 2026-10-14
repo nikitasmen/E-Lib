@@ -21,7 +21,7 @@ test.describe('Reader: highlights and notes', () => {
 
     await view.selectText(READER_PDF.page1Line);
     await expect(view.selectionPopover).toBeVisible();
-    await view.highlightSelection('Olive');
+    await view.highlightColour('Olive').click();
 
     await expect(view.selectionPopover).toBeHidden();
     await expect(view.highlights.first()).toBeVisible();
@@ -76,7 +76,7 @@ test.describe('Reader: highlights and notes', () => {
     const view = new ReaderPage(reader.page);
     await view.open(readerBook.id);
     await view.selectText(READER_PDF.page1Line);
-    await view.highlightSelection('Saffron');
+    await view.highlightColour('Saffron').click();
     await expect(view.highlights.first()).toHaveClass(/hl-saffron/);
 
     await view.openHighlight();

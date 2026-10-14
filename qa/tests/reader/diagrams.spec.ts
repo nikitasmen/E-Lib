@@ -73,7 +73,7 @@ test.describe('Reader: drawing diagrams in notes', () => {
 
   test('UML classes are filled in from the side panel and linked by inheritance', async ({ reader, readerBook }) => {
     const { view, editor } = await openDiagramEditor(reader.page, readerBook.id);
-    await editor.chooseSet('UML');
+    await editor.setTab('UML').click();
 
     await editor.shapeButton('Class').click();
     await expect(editor.field('Name')).toBeFocused();
@@ -108,7 +108,7 @@ test.describe('Reader: drawing diagrams in notes', () => {
 
   test('database tables get columns and keys, and are joined one-to-many by default', async ({ reader, readerBook }) => {
     const { view, editor } = await openDiagramEditor(reader.page, readerBook.id);
-    await editor.chooseSet('Database');
+    await editor.setTab('Database').click();
 
     await editor.shapeButton('Table').click();
     await reader.page.keyboard.type('users');

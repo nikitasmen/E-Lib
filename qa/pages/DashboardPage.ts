@@ -12,6 +12,10 @@ export class DashboardPage extends BasePage {
   readonly header: HeaderComponent;
   readonly heading: Locator;
   readonly table: Locator;
+  /** Every book row the table currently shows. */
+  readonly rows: Locator;
+  readonly selectAllCheckbox: Locator;
+  readonly bulkDeleteButton: Locator;
   readonly searchInput: Locator;
   readonly noMatchMessage: Locator;
   readonly showAllBooksButton: Locator;
@@ -29,6 +33,9 @@ export class DashboardPage extends BasePage {
     this.header = new HeaderComponent(page);
     this.heading = page.getByTestId('dashboard-heading');
     this.table = page.getByTestId('books-table');
+    this.rows = this.table.locator('[data-testid^="book-row-"]');
+    this.selectAllCheckbox = page.getByTestId('select-all-books');
+    this.bulkDeleteButton = page.getByTestId('bulk-delete-button');
     this.searchInput = page.getByRole('searchbox', { name: 'Find a book by title or author' });
     this.noMatchMessage = page.getByText('No books match these filters.');
     this.showAllBooksButton = page.getByRole('button', { name: 'Show all books' });

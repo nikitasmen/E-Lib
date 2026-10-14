@@ -1,6 +1,7 @@
 import { expect, test } from '../../fixtures';
 import { ProfilePage } from '../../pages/ProfilePage';
 import { LoginPage } from '../../pages/LoginPage';
+import { HeaderComponent } from '../../pages/HeaderComponent';
 
 test.describe('Profile', () => {
   test('shows the logged-in user\'s account info', async ({ authenticatedPage, registeredUser }) => {
@@ -54,7 +55,7 @@ test.describe('Profile', () => {
 
     await login.login(registeredUser.email, newPassword);
     await expect(authenticatedPage).toHaveURL('/');
-    await expect(authenticatedPage.getByTestId('nav-username')).toHaveText(registeredUser.username);
+    await expect(new HeaderComponent(authenticatedPage).username).toHaveText(registeredUser.username);
   });
 
   test('rejects the wrong current password', async ({ authenticatedPage }) => {

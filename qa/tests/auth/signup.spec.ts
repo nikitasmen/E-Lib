@@ -2,6 +2,7 @@ import { buildTestUser } from '../../support/testData';
 import { expect, test } from '../../fixtures';
 import { SignupPage } from '../../pages/SignupPage';
 import { LoginPage } from '../../pages/LoginPage';
+import { HeaderComponent } from '../../pages/HeaderComponent';
 
 // Accounts created below are not deleted afterwards — there's no self-service
 // "delete my account" API, and this suite only ever talks to the app's HTTP/UI
@@ -29,7 +30,7 @@ test.describe('Signup', () => {
     const login = new LoginPage(page);
     await login.login(user.email, user.password);
     await expect(page).toHaveURL('/');
-    await expect(page.getByTestId('nav-username')).toHaveText(user.username);
+    await expect(new HeaderComponent(page).username).toHaveText(user.username);
   });
 
   test('rejects mismatched passwords before calling the API', async ({ page }) => {
