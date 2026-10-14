@@ -78,8 +78,8 @@ jobs:
           cat > .env << 'EOL'
           APP_ENV=development
           APP_DEBUG=true
-          APP_URL=http://localhost:8000
-          API_BASE_URL=http://localhost:8000/
+          APP_URL=https://localhost:8443
+          API_BASE_URL=https://localhost:8443/
           MONGO_URI=mongodb://localhost:27017
           DATABASE_NAME=LibraryDb
           JWT_SECRET_KEY=ci-e2e-secret
@@ -122,11 +122,17 @@ jobs:
       - name: Start PHP built-in server
         run: php -S 127.0.0.1:8000 -t public &
 
+      # The browser talks HTTPS, as in production: Caddy terminates TLS (its local CA) and forwards to
+      # php -S with X-Forwarded-Proto, so Secure cookies and the https CSP are what the suite runs under.
+      # The production image itself is covered by elib.yml's production-stack job.
+      - name: Start Caddy (HTTPS on :8443)
+        run: docker run -d --network host caddy:2-alpine caddy reverse-proxy --from https://localhost:8443 --to 127.0.0.1:8000 --internal-certs --disable-redirects
+
       - name: Wait for server
         run: |
           attempt=0
           max_attempts=15
-          until curl -sf http://127.0.0.1:8000/ -o /dev/null; do
+          until curl -sfk https://localhost:8443/ -o /dev/null; do
             attempt=$((attempt + 1))
             if [ "$attempt" -ge "$max_attempts" ]; then
               echo "Server did not become available in time"
@@ -140,7 +146,7 @@ jobs:
       # provisioned above — see the comment on "Provision admin test account".
       - name: Run Playwright tests
         env:
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
+          PLAYWRIGHT_BASE_URL: https://localhost:8443
         run: npx playwright test ${{ github.event_name == 'pull_request' && '--project=chromium' || '' }}
 
       # trace.zip (captured only on retry, i.e. only for a flaky/failed test) can contain the
