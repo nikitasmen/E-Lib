@@ -13,6 +13,9 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    env:
+      # PRs check Chromium only; every push to main runs all three engines.
+      BROWSERS: ${{ github.event_name == 'pull_request' && 'chromium' || 'chromium firefox webkit' }}
 
     services:
       mongodb:
@@ -59,16 +62,16 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-${{ github.event_name == 'pull_request' && 'chromium' || 'all' }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: npx playwright install --with-deps $BROWSERS
 
       # System deps (fonts, codecs, etc.) still need installing even on a cache hit.
       - name: Install Playwright OS dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium firefox webkit
+        run: npx playwright install-deps $BROWSERS
 
       - name: Create .env
         run: |
@@ -138,7 +141,7 @@ jobs:
       - name: Run Playwright tests
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
-        run: npx playwright test
+        run: npx playwright test $(printf -- '--project=%s ' $BROWSERS)
 
       # trace.zip (captured only on retry, i.e. only for a flaky/failed test) can contain the
       # admin password and a live bearer token from qa/pages/LoginPage.ts's fill()/API calls —

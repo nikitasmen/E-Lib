@@ -8,6 +8,10 @@
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
         </testsuite>
+        <!-- Real MongoDB; skipped unless MONGO_TEST_URI is set (see tests/Support/IntegrationTestCase.php). -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
