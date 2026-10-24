@@ -56,7 +56,8 @@ E-Lib/
 │   └── uploads/         # User uploads
 ├── vendor/              # Dependencies (Composer)
 ├── docker/              # Docker configuration
-├── tests/               # Test files
+├── tests/               # PHPUnit: Unit/ and Integration/ (see Testing)
+├── e2e/                 # Playwright end-to-end suite (see e2e/README.md)
 └── docs/                # Documentation
 ```
 
@@ -286,23 +287,30 @@ For a complete API reference, see the [API Documentation](../api-docs.md).
 
 ## Testing
 
-E-Lib uses PHPUnit for testing.
+Three layers, two folders: `tests/` is PHPUnit (next to the PHP code it tests), `e2e/` is Playwright (a black-box suite that only talks to the running app over HTTP).
 
-### Running Tests
+| Layer | Where | What it checks | Needs | Run |
+| --- | --- | --- | --- | --- |
+| Unit | `tests/Unit/` | Validation, service branching (mocked collaborators), the API route ↔ auth table | Nothing | `composer test` |
+| Integration | `tests/Integration/` | Model queries against a real MongoDB 4.4: upserts, unique `_id`s, aggregations | `MONGO_TEST_URI` (skipped otherwise) | see below |
+| End-to-end | `e2e/tests/` | User journeys in a browser against a running app | The app + an admin account | `npm run test:e2e` |
 
 ```bash
-# Run all tests
-./vendor/bin/phpunit
+composer run check                       # lint + PHPStan + PHPUnit — what CI runs
 
-# Run a specific test file
-./vendor/bin/phpunit tests/specs/BooksModelTest.php
+# Integration tests: a throwaway MongoDB, never Atlas (each test creates and drops its own database)
+docker run -d --rm --name elib-test-mongo -p 127.0.0.1:27099:27017 mongo:4.4
+MONGO_TEST_URI=mongodb://127.0.0.1:27099 composer test
+
+# E2E: start the app first, then (see e2e/README.md for admin credentials and NixOS notes)
+npm run test:e2e -- --project=chromium
 ```
 
-### Test Types
+**Which layer?** A rule enforced by a Mongo query → integration test. A decision in a service (who may borrow, what gets refused) → unit test with mocks. Something a user sees or does across pages, or an authorization rule end to end → e2e. Don't mock the database to test a query: the mock only proves the query was built the way the test expected.
 
-1. **Unit Tests**: Test individual components in isolation
-2. **Integration Tests**: Test interactions between components
-3. **End-to-End Tests**: Test complete user flows
+CI: PHPUnit (unit + integration, against a `mongo:4.4` service) runs in `lint.yml`; Playwright runs in `playwright.yml` over HTTPS (Caddy with its local CA in front of `php -S`, so `Secure` cookies and the https CSP apply), Chromium only on pull requests and all three browsers on pushes to `main`. `elib.yml` boots the production stack (Caddy TLS → app image) and checks it over HTTPS with `docker/https-smoke.sh`; run it locally with the commands at the top of `docker-compose.ci.yml`.
+
+Writing tests: conventions live in `.claude/rules/` — `php-tests.md`, `e2e-specs.md`, `e2e-pages.md`.
 
 ## Troubleshooting
 

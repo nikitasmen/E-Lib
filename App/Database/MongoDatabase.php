@@ -16,11 +16,12 @@ class MongoDatabase extends MongoConnectionFactory implements DatabaseInterface
     /**
      * Constructor
      *
-     * Connects to the 'LibraryDb' database via MongoConnectionFactory.
+     * Connects to the 'LibraryDb' database via MongoConnectionFactory, unless given a database
+     * (the integration tests pass a throwaway one).
      */
-    public function __construct()
+    public function __construct(?Database $db = null)
     {
-        $this->db = self::create('mongo', ['dbName' => 'LibraryDb']);
+        $this->db = $db ?? self::create('mongo', ['dbName' => 'LibraryDb']);
     }
 
     public function insert(string $collection, array $data): array

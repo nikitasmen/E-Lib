@@ -5,7 +5,7 @@ const store = useToastStore()
 </script>
 
 <template>
-  <div class="toast-stack" role="status" aria-live="polite">
+  <div class="toast-stack" role="status" aria-live="polite" data-testid="toasts">
     <div v-for="toast in store.toasts" :key="toast.id" class="toast" :class="toast.variant" @click="store.dismiss(toast.id)">
       {{ toast.message }}
     </div>

@@ -400,6 +400,10 @@ It isn't in CI: it needs Atlas Search, indexed books and the embedder (CI's plai
 6. **Featuring Books**: Mark books as featured to highlight them
 7. **Monitoring System**: Check logs for errors or suspicious activity
 
+## Testing
+
+`composer run check` runs lint, PHPStan and PHPUnit; `npm run test:e2e` runs the Playwright suite in `e2e/` against a running app. See [Testing in the developer guide](docs/developer-guide.md#testing) for the three layers, how to run integration tests against a throwaway MongoDB, and which layer a new test belongs in.
+
 ## Documentation
 
 Comprehensive documentation is available within the application at `/docs`. This includes:
